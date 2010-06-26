@@ -22,12 +22,38 @@ namespace Sider
     }
 
 
+    public void WriteLine()
+    {
+      _stream.Write(_crLf, 0, _crLf.Length);
+      _stream.Flush();
+    }
+
     public void WriteLine(string line)
     {
       var length = encode(line, _buffer);
 
       _stream.Write(_buffer, 0, length);
       _stream.Write(_crLf, 0, _crLf.Length);
+      _stream.Flush();
+    }
+
+    public void Write(string text)
+    {
+      var length = encode(text, _buffer);
+
+      _stream.Write(_buffer, 0, length);
+      _stream.Flush();
+    }
+
+    public void Write(byte[] bytes)
+    {
+      _stream.Write(bytes, 0, bytes.Length);
+      _stream.Flush();
+    }
+
+    public void Write(byte[] bytes, int offset, int count)
+    {
+      _stream.Write(bytes, offset, count);
       _stream.Flush();
     }
 

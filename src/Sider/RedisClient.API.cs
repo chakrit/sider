@@ -37,5 +37,20 @@ namespace Sider
     {
       return ((SiderAsyncResult<bool>)ar).Result;
     }
+
+
+    public bool Set(string key, byte[] value)
+    {
+      var line = string.Format("SET {0} {1}", key, value.Length);
+
+      _writer.WriteLine(line);
+      _writer.Write(value);
+      _writer.WriteLine();
+
+      var result = _reader.ReadSingleLine();
+
+      return result.Type == ResponseType.SingleLine &&
+        result.Result == "OK";
+    }
   }
 }

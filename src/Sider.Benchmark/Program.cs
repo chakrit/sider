@@ -15,9 +15,9 @@ namespace Sider.Benchmark
     {
       // configuration
       var instances = 1;
-      var iterations = 100000;
+      var iterations = 10000;
 
-      Func<Job> getJob = () => new PingJob();
+      Func<Job> getJob = () => new SetJob();
 
 
       while (true) {
@@ -54,7 +54,7 @@ namespace Sider.Benchmark
             task.Result.Job.Description,
             task.Result.MillisecondsTaken);
         }
-        Console.ReadLine();
+        Console.ReadKey();
 
       }
     }
