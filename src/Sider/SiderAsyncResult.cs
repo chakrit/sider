@@ -1,10 +1,12 @@
 ﻿
 using System;
-using System.Threading;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Sider
 {
+  // TODO: Add support for (void) return value
+  // TODO: Add support for attached IAsyncResult
   [DebuggerStepThrough]
   internal class SiderAsyncResult<T> : IAsyncResult, IDisposable
   {
@@ -32,9 +34,6 @@ namespace Sider
     }
 
 
-    /// <summary>
-    /// Sets the result of this IAsyncResult object and set IsCompleted = true;
-    /// </summary>
     public void SetResult(T result)
     {
       if (_waitHandle != null)
@@ -45,11 +44,6 @@ namespace Sider
     }
 
 
-    /// <summary>
-    /// Creates a delegating callback that automatically calls SetResult() using
-    /// the supplied asynchronous EndXXX function and invoke the user's provided
-    /// callback.
-    /// </summary>
     public AsyncCallback MakeAsyncCallback(Func<IAsyncResult, T> endFunc,
       AsyncCallback userCallback)
     {
@@ -60,10 +54,6 @@ namespace Sider
       };
     }
 
-    /// <summary>
-    /// Creates a simple delegate callback for passing into another function to
-    /// automatically call SetResult() and the user-supplied AsyncCallback.
-    /// </summary>
     public Action<T> MakeSimpleCallback(AsyncCallback userCallback)
     {
       return result =>

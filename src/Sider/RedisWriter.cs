@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.IO;
 using System.Text;
 
@@ -56,6 +57,25 @@ namespace Sider
       _stream.Write(bytes, offset, count);
       _stream.Flush();
     }
+
+
+    public IAsyncResult BeginWrite(byte[] bytes, int offset, int count,
+      AsyncCallback callback, object asyncState)
+    {
+      var result = new SiderAsyncResult<object>(asyncState);
+
+      _stream.BeginWrite(bytes, offset, count, ar =>
+      {
+        _stream.EndWrite(ar);
+        result.SetResult(null);
+
+        callback(result);
+      }, asyncState);
+
+      return result;
+    }
+
+    public void EndWrite(IAsyncResult ar) {      /* no-op */    }
 
 
     private int encode(string s, byte[] buffer)
