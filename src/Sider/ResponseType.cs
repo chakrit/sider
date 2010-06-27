@@ -11,6 +11,6 @@ namespace Sider
     SingleLine = '+',
     Bulk = '$',
     MultiBulk = '*',
-    Integer = ':'
+    Integer = ':',
   }
 }

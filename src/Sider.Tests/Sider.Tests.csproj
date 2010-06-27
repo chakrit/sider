@@ -48,7 +48,9 @@
     <Compile Include="..\..\SiderAssemblyInfo.cs">
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="BasicClientTests.cs" />
+    <Compile Include="RedisReaderTests.cs" />
+    <Compile Include="RedisWriterTests.cs" />
+    <Compile Include="SiderTestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sider\Sider.csproj">

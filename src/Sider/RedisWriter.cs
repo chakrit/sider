@@ -1,86 +1,33 @@
 ﻿
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Sider
 {
-  internal class RedisWriter
+  public class RedisWriter
   {
-    public const int DefaultLineBufferSize = 1024;
+    public const int DefaultLineBufferSize = 256;
 
 
     private Stream _stream;
     private byte[] _buffer;
-    private byte[] _crLf;
 
-    public RedisWriter(Stream s, int lineBufferSize = DefaultLineBufferSize)
+    public RedisWriter(Stream stream, int lineBufferSize = 256)
     {
-      _stream = s;
-      _buffer = new byte[DefaultLineBufferSize];
+      assert(stream != null, () => new ArgumentNullException("stream"));
 
-      _crLf = new byte[] { 0x0D, 0x0A };
+      _stream = stream;
+      _buffer = new byte[lineBufferSize];
     }
 
 
-    public void WriteLine()
+    [Conditional("DEBUG")]
+    private void assert(bool condition,
+      Func<Exception> exceptionIfFalse)
     {
-      _stream.Write(_crLf, 0, _crLf.Length);
-      _stream.Flush();
-    }
-
-    public void WriteLine(string line)
-    {
-      var length = encode(line, _buffer);
-
-      _stream.Write(_buffer, 0, length);
-      _stream.Write(_crLf, 0, _crLf.Length);
-      _stream.Flush();
-    }
-
-    public void Write(string text)
-    {
-      var length = encode(text, _buffer);
-
-      _stream.Write(_buffer, 0, length);
-      _stream.Flush();
-    }
-
-    public void Write(byte[] bytes)
-    {
-      _stream.Write(bytes, 0, bytes.Length);
-      _stream.Flush();
-    }
-
-    public void Write(byte[] bytes, int offset, int count)
-    {
-      _stream.Write(bytes, offset, count);
-      _stream.Flush();
-    }
-
-
-    public IAsyncResult BeginWrite(byte[] bytes, int offset, int count,
-      AsyncCallback callback, object asyncState)
-    {
-      var result = new SiderAsyncResult<object>(asyncState);
-
-      _stream.BeginWrite(bytes, offset, count, ar =>
-      {
-        _stream.EndWrite(ar);
-        result.SetResult(null);
-
-        callback(result);
-      }, asyncState);
-
-      return result;
-    }
-
-    public void EndWrite(IAsyncResult ar) {      /* no-op */    }
-
-
-    private int encode(string s, byte[] buffer)
-    {
-      return Encoding.Default.GetBytes(s, 0, s.Length, buffer, 0);
+      if (!condition)
+        throw exceptionIfFalse();
     }
   }
 }
