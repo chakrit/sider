@@ -14,10 +14,10 @@ namespace Sider.Benchmark
     public void Run()
     {
       // configuration
-      var instances = 1;
+      var instances = 50;
       var iterations = 10000;
 
-      Func<Job> getJob = () => new SetJob();
+      Func<Job> getJob = () => new SetJob(256);
 
 
       while (true) {
@@ -38,46 +38,56 @@ namespace Sider.Benchmark
         Console.ReadKey();
 
         // starting
-
         if (instances == 1)
           tasks.First().RunSynchronously();
         else
-          foreach (var task in tasks)
-            task.Start();
+          Array.ForEach(tasks, t => t.Start());
 
         Task.WaitAll(tasks);
         Console.WriteLine("All done.");
 
         // report time taken
-        foreach (var task in tasks) {
+        var results = tasks.Select(t => t.Result);
+
+        foreach (var result in results) {
           Console.WriteLine("{0} : {1}ms",
-            task.Result.Job.Description,
-            task.Result.MillisecondsTaken);
+            result.Job.Description,
+            result.MillisecondsTaken);
         }
+
+        var avg = results.Average(r => r.MillisecondsTaken);
+        var max = results.Max(r => r.MillisecondsTaken);
+        var min = results.Min(r => r.MillisecondsTaken);
+
+        Console.WriteLine("Maximum : {0}ms", max);
+        Console.WriteLine("Minimum : {0}ms", min);
+        Console.WriteLine("Average : {0}ms", avg);
+
         Console.ReadKey();
 
       }
     }
 
 
-    private BenchmarkResult benchMark(Job job, int iterations,
-      Action<int> onIteration = null)
+    private BenchmarkResult benchMark(Job job, int iterations)
     {
       var client = job.Client = new RedisClient();
-      onIteration = onIteration ?? (_ => { });
-
       var sw = new Stopwatch();
+
+      // setop
       sw.Reset();
+      job.Setup();
 
       // run the benchmark
       sw.Start();
-      for (var i = 0; i < iterations; i++) {
-        onIteration(i);
+      for (var i = 0; i < iterations; i++)
         job.RunOneIteration();
-      }
       sw.Stop();
 
+      // cleanup
+      job.Teardown();
       job.Client = null;
+
       client.Dispose();
 
       return new BenchmarkResult {

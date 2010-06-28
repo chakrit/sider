@@ -47,6 +47,7 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="BenchmarkResult.cs" />
+    <Compile Include="GetJob.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="PingJob.cs" />
     <Compile Include="Program.cs" />

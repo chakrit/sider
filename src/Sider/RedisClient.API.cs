@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.IO;
+using System.Diagnostics;
 
 namespace Sider
 {
@@ -9,48 +10,53 @@ namespace Sider
     public bool Ping()
     {
       _writer.WriteLine("PING");
-      var result = _reader.ReadSingleLine();
 
-      return result.Type == ResponseType.SingleLine &&
-        result.Result == "PONG";
+      return _reader.ReadTypeChar() == ResponseType.SingleLine &&
+        _reader.ReadStatusLine() == "PONG";
     }
 
-    public IAsyncResult BeginPing(AsyncCallback callback, object asyncState)
+    public int Del(params string[] keys)
     {
-      var result = new SiderAsyncResult<bool>(asyncState);
+      _writer.WriteLine("DEL " + string.Join(" ", keys));
 
-      _writer.WriteLine("PING");
-      _reader.BeginReadSingleLine(ar =>
-      {
-        var readResult = _reader.EndReadSingleLine(ar);
-        result.SetResult(
-          readResult.Type == ResponseType.SingleLine &&
-          readResult.Result == "PONG");
+      var success = _reader.ReadTypeChar() == ResponseType.Integer;
 
-        callback(result);
-      }, null);
+      Assert.IsTrue(success, () => new ResponseException(
+        "Issused a DEL but didn't receive an expected integer reply."));
 
-      return result;
+      return _reader.ReadNumberLine();
     }
 
-    public bool EndPing(IAsyncResult ar)
+    public void Set(string key, byte[] value)
     {
-      return ((SiderAsyncResult<bool>)ar).Result;
+      _writer.WriteLine(string.Format("SET {0} {1}", key, value.Length));
+      _writer.WriteBulk(value);
+
+      var success = _reader.ReadTypeChar() == ResponseType.SingleLine &&
+        _reader.ReadStatusLine() == "OK";
+
+      Assert.IsTrue(success, () => new ResponseException(
+        "Issused a SET but didn't receive an expected OK message."));
     }
 
-
-    public bool Set(string key, byte[] value)
+    public byte[] Get(string key)
     {
-      var line = string.Format("SET {0} {1}", key, value.Length);
+      _writer.WriteLine(string.Format("GET {0}", key));
 
-      _writer.WriteLine(line);
-      _writer.Write(value);
-      _writer.WriteLine();
+      var success = _reader.ReadTypeChar() == ResponseType.Bulk;
 
-      var result = _reader.ReadSingleLine();
+      Assert.IsTrue(success, () => new ResponseException(
+        "Issued a GET but didn't receive an expected bulk reply."));
 
-      return result.Type == ResponseType.SingleLine &&
-        result.Result == "OK";
+      var length = _reader.ReadNumberLine();
+
+      if (length > -1)
+        return _reader.ReadBulk(length);
+
+      return new byte[] { };
     }
+
+
+
   }
 }

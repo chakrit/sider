@@ -1,10 +1,9 @@
 ﻿
-using System;
 using System.Security.Cryptography;
 
 namespace Sider.Benchmark
 {
-  public class SetJob : Job
+  public class GetJob : Job
   {
     private byte[] _data;
     private string _key;
@@ -12,29 +11,32 @@ namespace Sider.Benchmark
 
     public override string Description
     {
-      get { return string.Format("Repeated SET with {0} bytes payload.", _data.Length); }
+      get { return string.Format("Repeated GET with {0} bytes payload.", _data.Length); }
     }
 
-    public SetJob(int dataSize = 1024)
+    public GetJob(int dataSize = 1024)
     {
       using (var rng = RandomNumberGenerator.Create()) {
         rng.GetBytes(_data = new byte[dataSize]);
 
-        // snatch the first byte as a random ID
-        _key = "TEST" + (_data[0].ToString());
+        _key = "TEST" + _data[0].ToString();
       }
     }
 
 
-    public override void RunOneIteration()
+    public override void Setup()
     {
       Client.Set(_key, _data);
+    }
+
+    public override void RunOneIteration()
+    {
+      Client.Get(_key);
     }
 
     public override void Teardown()
     {
       Client.Del(_key);
     }
-
   }
 }
