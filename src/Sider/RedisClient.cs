@@ -7,8 +7,12 @@ namespace Sider
 {
   // see redis protocol specification for more info
   // http://code.google.com/p/redis/wiki/ProtocolSpecification
-  public partial class RedisClient : IDisposable
+  public partial class RedisClient : IRedisClient
   {
+    public const string DefaultHost = "localhost";
+    public const int DefaultPort = 6379;
+
+
     private Socket _socket;
     private NetworkStream _stream;
 
@@ -16,7 +20,7 @@ namespace Sider
     private RedisWriter _writer;
 
 
-    public RedisClient(string host = "localhost", int port = 6379, int bufferSize = 4096)
+    public RedisClient(string host = DefaultHost, int port = DefaultPort)
     {
       _socket = new Socket(AddressFamily.InterNetwork,
         SocketType.Stream,

@@ -27,16 +27,13 @@ namespace Sider
       return _reader.ReadNumberLine();
     }
 
-    public void Set(string key, byte[] value)
+    public bool Set(string key, byte[] value)
     {
       _writer.WriteLine(string.Format("SET {0} {1}", key, value.Length));
       _writer.WriteBulk(value);
 
-      var success = _reader.ReadTypeChar() == ResponseType.SingleLine &&
+      return _reader.ReadTypeChar() == ResponseType.SingleLine &&
         _reader.ReadStatusLine() == "OK";
-
-      Assert.IsTrue(success, () => new ResponseException(
-        "Issused a SET but didn't receive an expected OK message."));
     }
 
     public byte[] Get(string key)

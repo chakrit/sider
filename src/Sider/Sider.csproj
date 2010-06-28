@@ -44,12 +44,15 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Assert.cs" />
+    <Compile Include="IClientsPool.cs" />
+    <Compile Include="IRedisClient.cs" />
     <Compile Include="RedisClient.API.cs" />
     <Compile Include="RedisClient.cs" />
     <Compile Include="RedisReader.cs" />
     <Compile Include="RedisWriter.cs" />
     <Compile Include="ResponseException.cs" />
     <Compile Include="ResponseType.cs" />
+    <Compile Include="ThreadwisePool.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
