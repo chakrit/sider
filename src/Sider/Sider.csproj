@@ -47,7 +47,7 @@
     <Compile Include="RedisReader.cs" />
     <Compile Include="RedisResponse.cs" />
     <Compile Include="RedisWriter.cs" />
-    <Compile Include="ResponseException.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="ResponseType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

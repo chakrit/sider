@@ -123,19 +123,19 @@ namespace Sider.Tests
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
     public void ReadNumberLine_GarbledData_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("SDOIJFOEIWJF");
+      readNumberLine_exceptionTest("SDOIJFOEIWJF\r\n");
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
     public void ReadNumberLine_SomeGarbledDigit_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("123G456");
+      readNumberLine_exceptionTest("123G456\r\n");
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
     public void ReadNumberLine_NegativeNumWithSomeGarbledDigit_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("-123G456");
+      readNumberLine_exceptionTest("-123G456\r\n");
     }
 
     [TestMethod]
@@ -268,10 +268,13 @@ namespace Sider.Tests
       readBulk_exceptionTest("", -1);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
-    public void ReadBulk_LengthIsZero_ExceptionThrown()
+    [TestMethod]
+    public void ReadBulk_ZeroLengthData_EmptyBufferReturned()
     {
-      readBulk_exceptionTest("", 0);
+      var reader = createReader("\r\n");
+      var buffer = reader.ReadBulk(0);
+
+      Assert.AreEqual(0, buffer.Length);
     }
 
     [TestMethod]
@@ -362,16 +365,16 @@ namespace Sider.Tests
       readBulk_withBuffer_exceptionTest("asdf", 99, 4);
     }
 
+    [TestMethod, ExpectedException(typeof(ArgumentException)), Conditional("DEBUG")]
+    public void ReadBulk_WithBuffer_TooLargeBulkLength_ExceptionThrown()
+    {
+      readBulk_withBuffer_exceptionTest("0123456\r\n", 0, 999);
+    }
+
     [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
     public void ReadBulk_WithBuffer_LengthIsNegative_ExceptionThrown()
     {
       readBulk_withBuffer_exceptionTest("asdf", 0, -1);
-    }
-
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
-    public void ReadBulk_WithBuffer_LengthIsZero_ExceptionThrown()
-    {
-      readBulk_withBuffer_exceptionTest("asdf", 0, 0);
     }
 
     [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
@@ -380,6 +383,15 @@ namespace Sider.Tests
       byte[] buffer = null;
       var reader = createReader("asdf");
       reader.ReadBulk(buffer, 0, 4);
+    }
+
+    [TestMethod]
+    public void ReadBulk_WithBuffer_OffsetAndLengthIsZero_EmptyBufferReturned()
+    {
+      var buffer = new byte[0];
+      var reader = createReader("\r\n");
+
+      reader.ReadBulk(buffer, 0, 0);
     }
 
     [TestMethod]
@@ -410,66 +422,93 @@ namespace Sider.Tests
     }
 
 
+    private void readBulk_exceptionTest(string data, int length)
+    {
+      var reader = createReader(data);
+      reader.ReadBulk(length);
+    }
+
+    private void readBulk_withBuffer_exceptionTest(string data, int offset, int length)
+    {
+      var buffer = new byte[data.Length];
+      var reader = createReader(data);
+      reader.ReadBulk(buffer, offset, length);
+    }
+    #endregion
+
+    #region ReadBulkTo
     [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
-    public void ReadBulk_WithStream_StreamIsNull_ExceptionThrown()
+    public void ReadBulkTo_StreamIsNull_ExceptionThrown()
     {
       readBulk_withStream_exceptionTest("0123\r\n", null, 4);
     }
 
     [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
-    public void ReadBulk_WithStream_LengthIsNegative_ExceptionThrown()
+    public void ReadBulkTo_LengthIsNegative_ExceptionThrown()
     {
       readBulk_withStream_exceptionTest("0123\r\n", new MemoryStream(), -1);
     }
 
     [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
-    public void ReadBulk_WithStream_NegativeBufferSize_ExceptionThrown()
+    public void ReadBulkTo_NegativeBufferSize_ExceptionThrown()
     {
       readBulk_withStream_exceptionTest("012345\r\n",
         new MemoryStream(), 6, -1);
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
-    public void ReadBulk_WithStream_DataWithNoCrLf_ExceptionThrown()
+    public void ReadBulkTo_DataWithNoCrLf_ExceptionThrown()
     {
       readBulk_withStream_exceptionTest("012345",
         new MemoryStream(), 6);
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
-    public void ReadBulk_WithStream_DataWithJustCr_ExceptionThrown()
+    public void ReadBulkTo_DataWithJustCr_ExceptionThrown()
     {
       readBulk_withStream_exceptionTest("012345\r",
         new MemoryStream(), 6);
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
-    public void ReadBulk_WithStream_DataWithJustLf_ExceptionThrown()
+    public void ReadBulkTo_DataWithJustLf_ExceptionThrown()
     {
       readBulk_withStream_exceptionTest("012345\n",
         new MemoryStream(), 6);
     }
 
     [TestMethod]
-    public void ReadBulk_WithStream_LengthIsPositive_StreamContainsDataWithSameLength()
+    public void ReadBulkTo_LengthIsZero_StreamContainsJustCrLf()
+    {
+      var reader = createReader("\r\n");
+      var ms = new MemoryStream();
+
+      reader.ReadBulkTo(ms, 0);
+
+      Assert.AreEqual(0, ms.Length);
+      ms.Dispose();
+    }
+
+    [TestMethod]
+    public void ReadBulkTo_LengthIsPositive_StreamContainsDataWithSameLength()
     {
       var reader = createReader("012345\r\n");
       var ms = new MemoryStream();
 
-      reader.ReadBulk(ms, 6);
+      reader.ReadBulkTo(ms, 6);
 
       Assert.AreEqual(6, ms.Length);
       ms.Dispose();
     }
 
     [TestMethod]
-    public void ReadBulk_WithStream_ValidArgs_StreamContainsCorrectData()
+    public void ReadBulkTo_ValidArgs_StreamContainsCorrectData()
     {
       var testStr = "012345";
       var reader = createReader(testStr + "\r\n");
 
       var ms = new MemoryStream();
-      reader.ReadBulk(ms, testStr.Length);
+      reader.ReadBulkTo(ms, testStr.Length);
 
       Assert.AreEqual(testStr.Length, ms.Length);
 
@@ -481,27 +520,14 @@ namespace Sider.Tests
     }
 
 
-    private void readBulk_exceptionTest(string data, int length)
-    {
-      var reader = createReader(data);
-      reader.ReadBulk(length);
-    }
-
     private void readBulk_withStream_exceptionTest(string data, Stream s, int length,
       int? bufferSize = null)
     {
       var reader = createReader(data);
       if (bufferSize.HasValue)
-        reader.ReadBulk(s, length, bufferSize.Value);
+        reader.ReadBulkTo(s, length, bufferSize.Value);
       else
-        reader.ReadBulk(s, length);
-    }
-
-    private void readBulk_withBuffer_exceptionTest(string data, int offset, int length)
-    {
-      var buffer = new byte[data.Length];
-      var reader = createReader(data);
-      reader.ReadBulk(buffer, offset, length);
+        reader.ReadBulkTo(s, length);
     }
     #endregion
   }

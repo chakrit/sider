@@ -1,7 +1,7 @@
 ﻿
+using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
-using System;
 
 namespace Sider
 {
@@ -32,6 +32,15 @@ namespace Sider
     {
       var value = expr.Compile()();
       if (value > 0) return;
+
+      throw new ArgumentOutOfRangeException(extractParamName(expr));
+    }
+
+    [Conditional("DEBUG")]
+    public static void ArgumentNonNegative(Expression<Func<int>> expr)
+    {
+      var value = expr.Compile()();
+      if (value >= 0) return;
 
       throw new ArgumentOutOfRangeException(extractParamName(expr));
     }

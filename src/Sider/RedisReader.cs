@@ -7,6 +7,9 @@ namespace Sider
 {
   public partial class RedisReader
   {
+    public const int DefaultBufferSize = 256;
+
+
     private Stream _stream;
 
     public RedisReader(Stream stream)
@@ -85,7 +88,7 @@ namespace Sider
 
     public byte[] ReadBulk(int length)
     {
-      Assert.ArgumentPositive(() => length);
+      Assert.ArgumentNonNegative(() => length);
 
       var buffer = new byte[length];
       ReadBulk(buffer, 0, length);
@@ -96,8 +99,14 @@ namespace Sider
     public void ReadBulk(byte[] buffer, int offset, int bulkLength)
     {
       Assert.ArgumentNotNull(() => buffer);
-      Assert.ArgumentPositive(() => bulkLength);
+      Assert.ArgumentNonNegative(() => bulkLength);
+
+      // special case for empty reads
+      if (offset == 0 && bulkLength == 0) return;
+
       Assert.ArgumentBetween(() => offset, 0, buffer.Length);
+      Assert.ArgumentSatisfy(() => offset, o => o + bulkLength <= buffer.Length,
+        "Offset plus bulkLength is larger than the supplied buffer.");
 
       // read data from the stream, expect as much data as there's bulkLength
       var bytesRead = _stream.Read(buffer, 0, bulkLength);
@@ -114,10 +123,11 @@ namespace Sider
         () => new ResponseException("Expected CRLF, found instead: " + (char)b));
     }
 
-    public void ReadBulk(Stream target, int bulkLength, int bufferSize = 256)
+    public void ReadBulkTo(Stream target, int bulkLength,
+      int bufferSize = DefaultBufferSize)
     {
       Assert.ArgumentNotNull(() => target);
-      Assert.ArgumentPositive(() => bulkLength);
+      Assert.ArgumentNonNegative(() => bulkLength);
       Assert.ArgumentPositive(() => bufferSize);
 
       var buffer = new byte[bufferSize];
