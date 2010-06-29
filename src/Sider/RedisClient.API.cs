@@ -17,7 +17,7 @@ namespace Sider
 
     public int Del(params string[] keys)
     {
-      _writer.WriteLine("DEL " + string.Join(" ", keys));
+      _writer.WriteLine("DEL {0}".F(string.Join(" ", keys)));
 
       var success = _reader.ReadTypeChar() == ResponseType.Integer;
 
@@ -29,16 +29,17 @@ namespace Sider
 
     public bool Set(string key, byte[] value)
     {
-      _writer.WriteLine(string.Format("SET {0} {1}", key, value.Length));
+      _writer.WriteLine("SET {0} {1}".F(key, value.Length));
       _writer.WriteBulk(value);
 
+      // TODO: Handle error cases
       return _reader.ReadTypeChar() == ResponseType.SingleLine &&
         _reader.ReadStatusLine() == "OK";
     }
 
     public byte[] Get(string key)
     {
-      _writer.WriteLine(string.Format("GET {0}", key));
+      _writer.WriteLine("GET {0}".F(key));
 
       var success = _reader.ReadTypeChar() == ResponseType.Bulk;
 
@@ -47,12 +48,22 @@ namespace Sider
 
       var length = _reader.ReadNumberLine();
 
-      if (length > -1)
-        return _reader.ReadBulk(length);
-
-      return new byte[] { };
+      return length > -1 ?
+        _reader.ReadBulk(length) :
+        new byte[] { };
     }
 
+    public long Incr(string key)
+    {
+      _writer.WriteLine("INCR {0}".F(key));
+
+      var success = _reader.ReadTypeChar() == ResponseType.Integer;
+
+      Assert.IsTrue(success, () => new ResponseException(
+        "Issued a GET but didn't receive an expected integer reply."));
+
+      return _reader.ReadNumberLine64();
+    }
 
 
   }

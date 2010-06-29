@@ -11,5 +11,7 @@ namespace Sider
 
     bool Set(string key, byte[] value);
     byte[] Get(string key);
+
+    long Incr(string key);
   }
 }
