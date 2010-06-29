@@ -1,7 +1,5 @@
 ﻿
-using System;
 using System.IO;
-using System.Diagnostics;
 
 namespace Sider
 {
@@ -9,115 +7,150 @@ namespace Sider
   {
     public bool Ping()
     {
-      _writer.WriteLine("PING");
-
-      return _reader.ReadTypeChar() == ResponseType.SingleLine &&
-        _reader.ReadStatusLine() == "PONG";
+      writeCore(w => w.WriteLine("PING"));
+      return readStatus("PONG");
     }
+
 
     public int Del(params string[] keys)
     {
-      _writer.WriteLine("DEL {0}".F(string.Join(" ", keys)));
-
-      var success = _reader.ReadTypeChar() == ResponseType.Integer;
-
-      Assert.IsTrue(success, () => new ResponseException(
-        "Issused a DEL but didn't receive an expected integer reply."));
-
-      return _reader.ReadNumberLine();
+      writeCmd("DEL", string.Join(" ", keys));
+      return readInt();
     }
 
     public bool Exists(string key)
     {
-      _writer.WriteLine("EXISTS {0}".F(key));
-
-      return _reader.ReadTypeChar() == ResponseType.Integer &&
-        _reader.ReadNumberLine() == 1;
+      writeCmd("EXISTS", key);
+      return readBool();
     }
 
 
     public bool Set(string key, string value)
     {
-      return SetRaw(key, encodeStr(value));
+      writeCmd("SET", key, value);
+      return readStatus("OK");
     }
 
     public bool SetRaw(string key, byte[] raw)
     {
-      _writer.WriteLine("SET {0} {1}".F(key, raw.Length));
-      _writer.WriteBulk(raw);
-
-      return _reader.ReadTypeChar() == ResponseType.SingleLine &&
-        _reader.ReadStatusLine() == "OK";
+      writeCmd("SET", key, raw);
+      return readStatus("OK");
     }
 
     public bool SetFrom(string key, Stream source, int count)
     {
-      _writer.WriteLine("SET {0} {1}".F(key, count));
-      _writer.WriteBulkFrom(source, count);
-
-      return _reader.ReadTypeChar() == ResponseType.SingleLine &&
-        _reader.ReadStatusLine() == "OK";
+      writeCore(w =>
+      {
+        w.WriteLine("SET {0} {1}".F(key, count));
+        w.WriteBulkFrom(source, count);
+      });
+      return readStatus("OK");
     }
 
 
     public bool SetNX(string key, string value)
     {
-      var raw = encodeStr(value);
-
-      _writer.WriteLine("SETNX {0} {1}".F(key, value.Length));
-      _writer.WriteBulk(raw);
-
-      var type = _reader.ReadTypeChar();
-      Assert.ResponseType(ResponseType.Integer, type);
-
-      return _reader.ReadNumberLine() == 1;
+      writeCmd("SETNX", key, value);
+      return readBool();
     }
 
 
     public string Get(string key)
     {
-      return decodeStr(GetRaw(key));
+      writeCmd("GET", key);
+      return readBulk();
     }
 
     public byte[] GetRaw(string key)
     {
-      _writer.WriteLine("GET {0}".F(key));
-
-      var type = _reader.ReadTypeChar();
-      Assert.ResponseType(ResponseType.Bulk, type);
-
-      var length = _reader.ReadNumberLine();
-
-      return length > -1 ?
-        _reader.ReadBulk(length) :
-        new byte[] { };
+      writeCmd("GET", key);
+      return readBulkRaw();
     }
 
     public int GetTo(string key, Stream target)
     {
-      _writer.WriteLine("GET {0}".F(key));
+      writeCmd("GET", key);
+      return readCore(ResponseType.Bulk, r =>
+      {
+        var length = r.ReadNumberLine();
+        if (length > -1)
+          r.ReadBulkTo(target, length);
 
-      var type = _reader.ReadTypeChar();
-      Assert.ResponseType(ResponseType.Bulk, type);
-
-      var length = _reader.ReadNumberLine();
-      if (length > -1)
-        _reader.ReadBulkTo(target, length);
-
-      return length;
+        return length;
+      });
     }
 
 
     public long Incr(string key)
     {
-      _writer.WriteLine("INCR {0}".F(key));
-
-      var type = _reader.ReadTypeChar();
-      Assert.ResponseType(ResponseType.Integer, type);
-
-      return _reader.ReadNumberLine64();
+      writeCmd("INCR", key);
+      return readInt64();
     }
 
 
+    public bool SAdd(string key, string value)
+    {
+      writeCmd("SADD", key, value);
+      return readBool();
+    }
+
+    public bool SRem(string key, string value)
+    {
+      writeCmd("SREM", key, value);
+      return readBool();
+    }
+
+    public string[] SMembers(string key)
+    {
+      writeCmd("SMEMBERS", key);
+
+      return readCore(ResponseType.MultiBulk, r =>
+      {
+        var bulksCount = _reader.ReadNumberLine();
+        var result = new string[bulksCount];
+
+        for (var i = 0; i < bulksCount; i++) {
+          var type = _reader.ReadTypeChar();
+          Assert.ResponseType(ResponseType.Bulk, type);
+
+          var length = _reader.ReadNumberLine();
+          result[i] = decodeStr(_reader.ReadBulk(length));
+        }
+
+        return result;
+      });
+    }
+
+
+    public bool ZAdd(string key, float score, string value)
+    {
+      writeCmd("ZADD", key, score, value);
+      return readBool();
+    }
+
+    public bool ZRem(string key, string value)
+    {
+      writeCmd("ZREM", key, value);
+      return readBool();
+    }
+
+    public int ZRemRangeByScore(string key, float minInclusive, float maxInclusive)
+    {
+      writeCmd("ZREMRANGEBYSCORE", key, minInclusive, maxInclusive);
+      return readInt();
+    }
+
+    public float ZIncrBy(string key, float amount, string value)
+    {
+      writeCmd("ZINCRBY", key, amount, value);
+
+      return readCore(ResponseType.Bulk, r =>
+      {
+        var length = _reader.ReadNumberLine();
+        var raw = _reader.ReadBulk(length);
+
+        return parseFloat(raw);
+      });
+    }
   }
 }
