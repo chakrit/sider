@@ -66,6 +66,36 @@ namespace Sider
       return negate ? -num : num;
     }
 
+    // same implementation as ReadNumberLine() but expecting 64-bit values
+    public long ReadNumberLine64()
+    {
+      bool negate = false;
+      long num = 0;
+      int b;
+
+      b = _stream.ReadByte();
+      if (b == '-')
+        negate = true;
+      else
+        num = b - '0';
+
+      while ((b = _stream.ReadByte()) != -1) {
+        if (b == '\r') break;
+
+        num = num * 10 + b - '0';
+
+        Assert.IsTrue(b >= '0' && b <= '9',
+          () => new ResponseException("Expected a digit, found instead: " + (char)b));
+      }
+
+      b = _stream.ReadByte();
+
+      Assert.IsTrue(b == '\n',
+        () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
+
+      return negate ? -num : num;
+    }
+
     public string ReadStatusLine()
     {
       var sb = new StringBuilder();
