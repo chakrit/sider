@@ -1,7 +1,9 @@
 ﻿
+
 using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Text;
 
 namespace Sider
 {
@@ -33,6 +35,10 @@ namespace Sider
       _reader = new RedisReader(_stream);
       _writer = new RedisWriter(_stream);
     }
+
+
+    private byte[] encodeStr(string s) { return Encoding.UTF8.GetBytes(s); }
+    private string decodeStr(byte[] raw) { return Encoding.UTF8.GetString(raw); }
 
 
     public void Dispose()
