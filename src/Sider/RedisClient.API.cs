@@ -27,6 +27,14 @@ namespace Sider
       return _reader.ReadNumberLine();
     }
 
+    public bool Exists(string key)
+    {
+      _writer.WriteLine("EXISTS {0}".F(key));
+
+      return _reader.ReadTypeChar() == ResponseType.Integer &&
+        _reader.ReadNumberLine() == 1;
+    }
+
 
     public bool Set(string key, string value)
     {
@@ -52,6 +60,20 @@ namespace Sider
     }
 
 
+    public bool SetNX(string key, string value)
+    {
+      var raw = encodeStr(value);
+
+      _writer.WriteLine("SETNX {0} {1}".F(key, value.Length));
+      _writer.WriteBulk(raw);
+
+      var type = _reader.ReadTypeChar();
+      Assert.ResponseType(ResponseType.Integer, type);
+
+      return _reader.ReadNumberLine() == 1;
+    }
+
+
     public string Get(string key)
     {
       return decodeStr(GetRaw(key));
@@ -61,10 +83,8 @@ namespace Sider
     {
       _writer.WriteLine("GET {0}".F(key));
 
-      var success = _reader.ReadTypeChar() == ResponseType.Bulk;
-
-      Assert.IsTrue(success, () => new ResponseException(
-        "Issued a GET but didn't receive an expected bulk reply."));
+      var type = _reader.ReadTypeChar();
+      Assert.ResponseType(ResponseType.Bulk, type);
 
       var length = _reader.ReadNumberLine();
 
@@ -77,10 +97,8 @@ namespace Sider
     {
       _writer.WriteLine("GET {0}".F(key));
 
-      var success = _reader.ReadTypeChar() == ResponseType.Bulk;
-
-      Assert.IsTrue(success, () => new ResponseException(
-        "Issued a GET but didn't receive an expected bulk reply."));
+      var type = _reader.ReadTypeChar();
+      Assert.ResponseType(ResponseType.Bulk, type);
 
       var length = _reader.ReadNumberLine();
       if (length > -1)
@@ -94,10 +112,8 @@ namespace Sider
     {
       _writer.WriteLine("INCR {0}".F(key));
 
-      var success = _reader.ReadTypeChar() == ResponseType.Integer;
-
-      Assert.IsTrue(success, () => new ResponseException(
-        "Issued a GET but didn't receive an expected integer reply."));
+      var type = _reader.ReadTypeChar();
+      Assert.ResponseType(ResponseType.Integer, type);
 
       return _reader.ReadNumberLine64();
     }

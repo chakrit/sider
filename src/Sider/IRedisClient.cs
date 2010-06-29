@@ -9,10 +9,13 @@ namespace Sider
     bool Ping();
 
     int Del(params string[] keys);
+    bool Exists(string key);
 
     bool Set(string key, string value);
     bool SetRaw(string key, byte[] raw);
     bool SetFrom(string key, Stream source, int count);
+
+    bool SetNX(string key, string value);
 
     string Get(string key);
     byte[] GetRaw(string key);
