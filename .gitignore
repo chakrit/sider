@@ -5,3 +5,4 @@ obj
 *.cache
 TestResults
 build
+build.zip
