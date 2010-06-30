@@ -1,6 +1,55 @@
 # `SIDER : REDIS bindings for C#`
 
-Still in development
+Inspired by migueldeicaza's first stab at the problem (I used some of his algorithm)
+and ServiceStack.Redis (to take it a lot further).
+
+This is a REDIS bindings for C# that try to stick to the metal as much as possible which
+results in:
+
+* Simple API that maps directly to the Redis commands reference. (no name guessing)
+* As fast as practical and can be implemented without too much cryptic code.
+* Easy to setup, no gigantic class hierarchies.
+* Supports streaming mode to allow Redis to be used to store really really large blobs
+  (e.g. user-uploading files) without consuming up too much memory.
+
+At the moment, foundation work is there and works but not all commands are implemented,
+yet. The commands I needed are going to be implemented first. But implementing new ones
+is realtively easy.
+
+If you'd like a command implemented, look at the `RedisClient.API.cs` file, it should
+be pretty easy to add one, or ping me on twitter (@chakrit) I'll happily do it for you :)
+
+For example, here's the code for the `SMembers` command:
+
+    public string[] SMembers(string key)
+    {
+      writeCmd("SMEMBERS", key);
+      return readMultiBulk();
+    }
+
+You can figure that out, right?
+
+And here's how to use the lib:
+
+    var client = new RedisClient(); // default host:port
+    var client = new RedisClient("localhost", 6379);
+
+    client.Set("HELLO", "World");
+    var result = client.Get("HELLO");
+
+    // result == "World";
+
+    client.Dispose() // disconnect
+
+For ASP.NET/Web and/or multi-threaded scenarios, you can try the `ThreadwisePool` like this:
+
+    var pool = new ThreadwisePool(); // manages clients activations/disposal
+
+    var client = pool.GetClient();
+    var result = client.Get("HELLO") == "WORLD";
+
+both the client and the clients pool can be plugged into an IoC by using the respective
+`IRedisClient` and `IClientsPool` interface respectively.
 
 # License
 
