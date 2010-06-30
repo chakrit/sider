@@ -1,4 +1,4 @@
-# `SIDER : REDIS bindings for C#`
+# SIDER : REDIS bindings for C#
 
 Inspired by migueldeicaza's first stab at the problem (I used some of his algorithm)
 and ServiceStack.Redis (to take it a lot further).
