@@ -1,12 +1,13 @@
 ﻿
-using System;
+using System.Threading;
 
 namespace Sider
 {
   public class ThreadwisePool : IClientsPool
   {
-    [ThreadStatic] // separate value for each thread
-    private WeakReference _client;
+    // separate value for each thread... 
+    // TODO: WeakReference? does this scales-down?
+    private ThreadLocal<IRedisClient> _clientRef;
 
 
     private string _host;
@@ -17,21 +18,12 @@ namespace Sider
     {
       _host = host;
       _port = port;
+
+      _clientRef = new ThreadLocal<IRedisClient>(() =>
+        new RedisClient(_host, _port));
     }
 
 
-    public IRedisClient GetClient()
-    {
-      var client = _client.Target ??
-        (_client = new WeakReference(buildClient()));
-
-      return (IRedisClient)client;
-    }
-
-
-    private IRedisClient buildClient()
-    {
-      return new RedisClient(_host, _port);
-    }
+    public IRedisClient GetClient() { return _clientRef.Value; }
   }
 }
