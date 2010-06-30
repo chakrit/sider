@@ -26,7 +26,7 @@ namespace Sider.Benchmark
 
     public override void Setup()
     {
-      Client.Set(_key, _data);
+      Client.SetRaw(_key, _data);
     }
 
     public override void RunOneIteration()

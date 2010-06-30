@@ -28,7 +28,7 @@ namespace Sider.Benchmark
 
     public override void RunOneIteration()
     {
-      Client.Set(_key, _data);
+      Client.SetRaw(_key, _data);
     }
 
     public override void Teardown()

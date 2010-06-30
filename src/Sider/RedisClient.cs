@@ -4,8 +4,6 @@ using System.Net.Sockets;
 
 namespace Sider
 {
-  // see redis protocol specification for more info
-  // http://code.google.com/p/redis/wiki/ProtocolSpecification
   public partial class RedisClient : IRedisClient
   {
     public const string DefaultHost = "localhost";

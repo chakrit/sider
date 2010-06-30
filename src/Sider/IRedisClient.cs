@@ -4,12 +4,15 @@ using System.IO;
 
 namespace Sider
 {
+  // see the redis commands reference for more info:
+  // http://code.google.com/p/redis/wiki/CommandReference
   public interface IRedisClient : IDisposable
   {
     bool Ping();
 
 
     int Del(params string[] keys);
+    string[] Keys(string pattern);
     bool Exists(string key);
 
     bool Set(string key, string value);
@@ -22,7 +25,18 @@ namespace Sider
     byte[] GetRaw(string key);
     int GetTo(string key, Stream target);
 
+    string[] MGet(params string[] keys);
+
     long Incr(string key);
+
+
+    int LPush(string key, string value);
+    int RPush(string key, string value);
+
+    string[] LRange(string key, int minInclusive, int maxInclusive);
+
+    string LPop(string key);
+    string RPop(string key);
 
 
     bool SAdd(string key, string value);
@@ -31,11 +45,13 @@ namespace Sider
     string[] SMembers(string key);
 
 
-    bool ZAdd(string key, float score, string value);
+    bool ZAdd(string key, double score, string value);
     bool ZRem(string key, string value);
 
-    int ZRemRangeByScore(string key, float minInclusive, float maxInclusive);
+    string[] ZRangeByScore(string key, double minInclusive, double maxInclusive);
 
-    float ZIncrBy(string key, float amount, string value);
+    int ZRemRangeByScore(string key, double minInclusive, double maxInclusive);
+
+    double ZIncrBy(string key, double amount, string value);
   }
 }

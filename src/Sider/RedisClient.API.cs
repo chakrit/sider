@@ -3,6 +3,8 @@ using System.IO;
 
 namespace Sider
 {
+  // see the redis commands reference for more info:
+  // http://code.google.com/p/redis/wiki/CommandReference
   public partial class RedisClient
   {
     public bool Ping()
@@ -14,8 +16,14 @@ namespace Sider
 
     public int Del(params string[] keys)
     {
-      writeCmd("DEL", string.Join(" ", keys));
+      writeCmd("DEL", keys);
       return readInt();
+    }
+
+    public string[] Keys(string pattern)
+    {
+      writeCmd("KEYS", pattern);
+      return readMultiBulk();
     }
 
     public bool Exists(string key)
@@ -81,10 +89,48 @@ namespace Sider
     }
 
 
+    public string[] MGet(params string[] keys)
+    {
+      writeCmd("MGET", keys);
+      return readMultiBulk();
+    }
+
+
     public long Incr(string key)
     {
       writeCmd("INCR", key);
       return readInt64();
+    }
+
+
+    public int LPush(string key, string value)
+    {
+      writeCmd("LPUSH", key, value);
+      return readInt();
+    }
+
+    public int RPush(string key, string value)
+    {
+      writeCmd("RPUSH", key, value);
+      return readInt();
+    }
+
+    public string[] LRange(string key, int minInclusive, int maxInclusive)
+    {
+      writeListCmd("LRANGE", key, minInclusive, maxInclusive);
+      return readMultiBulk();
+    }
+
+    public string LPop(string key)
+    {
+      writeCmd("LPOP", key);
+      return readBulk();
+    }
+
+    public string RPop(string key)
+    {
+      writeCmd("RPOP", key);
+      return readBulk();
     }
 
 
@@ -103,28 +149,13 @@ namespace Sider
     public string[] SMembers(string key)
     {
       writeCmd("SMEMBERS", key);
-
-      return readCore(ResponseType.MultiBulk, r =>
-      {
-        var bulksCount = _reader.ReadNumberLine();
-        var result = new string[bulksCount];
-
-        for (var i = 0; i < bulksCount; i++) {
-          var type = _reader.ReadTypeChar();
-          Assert.ResponseType(ResponseType.Bulk, type);
-
-          var length = _reader.ReadNumberLine();
-          result[i] = decodeStr(_reader.ReadBulk(length));
-        }
-
-        return result;
-      });
+      return readMultiBulk();
     }
 
 
-    public bool ZAdd(string key, float score, string value)
+    public bool ZAdd(string key, double score, string value)
     {
-      writeCmd("ZADD", key, score, value);
+      writeZSetCmd("ZADD", key, score, value);
       return readBool();
     }
 
@@ -134,22 +165,28 @@ namespace Sider
       return readBool();
     }
 
-    public int ZRemRangeByScore(string key, float minInclusive, float maxInclusive)
+    public string[] ZRangeByScore(string key, double minInclusive, double maxInclusive)
     {
-      writeCmd("ZREMRANGEBYSCORE", key, minInclusive, maxInclusive);
+      writeZSetCmd("ZRANGEBYSCORE", key, minInclusive, maxInclusive);
+      return readMultiBulk();
+    }
+
+    public int ZRemRangeByScore(string key, double minInclusive, double maxInclusive)
+    {
+      writeZSetCmd("ZREMRANGEBYSCORE", key, minInclusive, maxInclusive);
       return readInt();
     }
 
-    public float ZIncrBy(string key, float amount, string value)
+    public double ZIncrBy(string key, double amount, string value)
     {
-      writeCmd("ZINCRBY", key, amount, value);
+      writeZSetCmd("ZINCRBY", key, amount, value);
 
       return readCore(ResponseType.Bulk, r =>
       {
         var length = _reader.ReadNumberLine();
         var raw = _reader.ReadBulk(length);
 
-        return parseFloat(raw);
+        return parseDouble(raw);
       });
     }
   }

@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Sider
 {
+  // see redis protocol specification for more info
+  // http://code.google.com/p/redis/wiki/ProtocolSpecification
   public partial class RedisReader
   {
     public const int DefaultBufferSize = 256;

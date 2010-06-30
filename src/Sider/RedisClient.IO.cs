@@ -4,19 +4,36 @@ using System.Text;
 
 namespace Sider
 {
-  // IO helpers
   public partial class RedisClient
   {
     private static byte[] encodeStr(string s) { return Encoding.UTF8.GetBytes(s); }
     private static string decodeStr(byte[] raw) { return Encoding.UTF8.GetString(raw); }
 
-    private static string formatFloat(float f) { return f.ToString("0.0"); }
-    private static float parseFloat(byte[] raw) { return float.Parse(decodeStr(raw)); }
+    private static string formatDouble(double d)
+    {
+      return double.IsPositiveInfinity(d) ? "+inf" :
+        double.IsNegativeInfinity(d) ? "-inf" :
+        d.ToString("0.0");
+    }
+
+    private static double parseDouble(byte[] raw)
+    {
+      var str = Encoding.Default.GetString(raw);
+
+      return str == "inf" || str == "+inf" ? double.PositiveInfinity :
+        str == "-inf" ? double.NegativeInfinity :
+        double.Parse(str);
+    }
 
 
     private void writeCmd(string command, string key)
     {
       writeCore(w => w.WriteLine("{0} {1}".F(command, key)));
+    }
+
+    private void writeCmd(string command, string[] keys)
+    {
+      writeCore(w => w.WriteLine("{0} {1}".F(command, string.Join(" ", keys))));
     }
 
     private void writeCmd(string command, string key, string value)
@@ -33,21 +50,27 @@ namespace Sider
       });
     }
 
-    private void writeCmd(string command, string key, float score, string value)
+    private void writeListCmd(string command, string key, int min, int max)
+    {
+      writeCore(w => w.WriteLine("{0} {1} {2} {3}".F(
+        command, key, min, max)));
+    }
+
+    private void writeZSetCmd(string command, string key, double score, string value)
     {
       writeCore(w =>
       {
         var raw = encodeStr(value);
 
-        w.WriteLine("{0} {1} {2} {3}".F(command, key, formatFloat(score), raw.Length);
+        w.WriteLine("{0} {1} {2} {3}".F(command, key, formatDouble(score), raw.Length));
         w.WriteBulk(raw);
       });
     }
 
-    private void writeCmd(string command, string key, float min, float max)
+    private void writeZSetCmd(string command, string key, double min, double max)
     {
-      writeCore(w =>
-        w.WriteLine("{0} {1} {2} {3}".F(command, key, formatFloat(min), formatFloat(max)));
+      writeCore(w => w.WriteLine("{0} {1} {2} {3}".F(
+        command, key, formatDouble(min), formatDouble(max))));
     }
 
 
@@ -67,7 +90,7 @@ namespace Sider
 
     private string readBulk()
     {
-      return readCore(ResponseType.Integer, r =>
+      return readCore(ResponseType.Bulk, r =>
       {
         var length = r.ReadNumberLine();
         return length < 0 ? null : decodeStr(r.ReadBulk(length));
@@ -80,6 +103,28 @@ namespace Sider
       {
         var length = r.ReadNumberLine();
         return length < 0 ? null : r.ReadBulk(length);
+      });
+    }
+
+    private string[] readMultiBulk()
+    {
+      return readCore(ResponseType.MultiBulk, r =>
+      {
+        var count = r.ReadNumberLine();
+        var result = new string[count];
+
+        for (var i = 0; i < count; i++) {
+          var type = _reader.ReadTypeChar();
+          Assert.ResponseType(ResponseType.Bulk, type);
+
+          var length = _reader.ReadNumberLine();
+          if (length > -1)
+            result[i] = decodeStr(_reader.ReadBulk(length));
+          else
+            result[i] = null;
+        }
+
+        return result;
       });
     }
 
