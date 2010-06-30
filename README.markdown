@@ -14,7 +14,7 @@ results in:
 
 At the moment, foundation work is there and works but not all commands are implemented,
 yet. The commands I needed are going to be implemented first. But implementing new ones
-is realtively easy.
+should be relatively easy.
 
 If you'd like a command implemented, look at the `RedisClient.API.cs` file, it should
 be pretty easy to add one, or ping me on twitter (@chakrit) I'll happily do it for you :)
@@ -32,7 +32,7 @@ You can figure that out, right?
 And here's how to use the lib:
 
     var client = new RedisClient(); // default host:port
-    var client = new RedisClient("localhost", 6379);
+    client = new RedisClient("localhost", 6379); // custom
 
     client.Set("HELLO", "World");
     var result = client.Get("HELLO");
@@ -49,7 +49,7 @@ For ASP.NET/Web and/or multi-threaded scenarios, you can use the
     var client = pool.GetClient();
     var result = client.Get("HELLO") == "WORLD";
 
-Internally, a `ThreadLocal<T>` is used.
+Internally, a .NET 40 `ThreadLocal<T>` is used.
 
 Both the client and the clients pool can be plugged into an IoC by using the respective
 `IRedisClient` and `IClientsPool` interface respectively.
