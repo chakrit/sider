@@ -3,7 +3,7 @@
 Inspired by migueldeicaza's first stab at the problem (I used some of his algorithm)
 and ServiceStack.Redis (to take it a lot further).
 
-This is a REDIS bindings for C# that try to stick to the metal as much as possible which
+This is a REDIS bindings for C# 4.0 that try to stick to the metal as much as possible which
 results in:
 
 * Simple API that maps directly to the Redis commands reference. (no name guessing)
@@ -41,14 +41,17 @@ And here's how to use the lib:
 
     client.Dispose() // disconnect
 
-For ASP.NET/Web and/or multi-threaded scenarios, you can try the `ThreadwisePool` like this:
+For ASP.NET/Web and/or multi-threaded scenarios, you can use the
+`ThreadwisePool` like this:
 
     var pool = new ThreadwisePool(); // manages clients activations/disposal
 
     var client = pool.GetClient();
     var result = client.Get("HELLO") == "WORLD";
 
-both the client and the clients pool can be plugged into an IoC by using the respective
+Internally, a `ThreadLocal<T>` is used.
+
+Both the client and the clients pool can be plugged into an IoC by using the respective
 `IRedisClient` and `IClientsPool` interface respectively.
 
 # License
