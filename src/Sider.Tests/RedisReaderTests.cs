@@ -7,12 +7,19 @@ using System.Linq;
 using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Net.Sockets;
+using System.Net;
 
 namespace Sider.Tests
 {
   [TestClass]
   public class RedisReaderTests : SiderTestBase
   {
+    public const int ReadBulkTestTimeout = 5000;
+
+
     private RedisReader createReader(string data)
     {
       return createReader(Encoding.Default.GetBytes(data));
@@ -20,7 +27,12 @@ namespace Sider.Tests
 
     private RedisReader createReader(byte[] data)
     {
-      return new RedisReader(new MemoryStream(data));
+      return createReader(new MemoryStream(data));
+    }
+
+    private RedisReader createReader(Stream s)
+    {
+      return new RedisReader(s);
     }
 
 
@@ -311,6 +323,7 @@ namespace Sider.Tests
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Timeout(ReadBulkTestTimeout)]
     public void ReadBulk_LengthIsPositiveButNotEnoughData_ExceptionThrown()
     {
       readBulk_exceptionTest("012345/r/n", 99);
@@ -328,6 +341,62 @@ namespace Sider.Tests
 
       Assert.AreEqual(data.Length, buffer.Length);
       CollectionAssert.AreEquivalent(data, buffer);
+    }
+
+    [TestMethod, Timeout(ReadBulkTestTimeout), Ignore()]
+    // TODO: Implement a Stream wrapper that does controllable chunking
+    //       The method implemented in this test is not good enough
+    public void ReadBulk_LargeDataWithIntermittentStream_CorrectDataReturned()
+    {
+      // write data in small increments from another thread
+      // make sure total data size is large enough so the read will have to block
+      const int increment = 1024;
+      const int repeatCount = 10;
+
+      var data = new byte[increment * repeatCount];
+      var dataBuffer = new byte[data.Length + 2 /* for CRLF */];
+
+      (new Random()).NextBytes(data);
+      Buffer.BlockCopy(data, 0, dataBuffer, 0, data.Length);
+
+      // end with CRLF
+      dataBuffer[dataBuffer.Length - 2] = 0x0D;
+      dataBuffer[dataBuffer.Length - 1] = 0x0A;
+
+      // prepare a stream based on fixed memory, to simulate chunked response
+      var memStream = Stream.Synchronized(new MemoryStream(dataBuffer));
+      memStream.SetLength(0);
+
+      var stream = new BufferedStream(memStream);
+
+      var thread = new Thread(() =>
+      {
+        try {
+          // simulate "incoming" data by extending the memStream length
+          for (var i = 0; i < (repeatCount - 1); i++) {
+            memStream.SetLength(stream.Length + increment);
+            Thread.Sleep(100);
+          }
+          // "write" the last chunk with CRLF
+          memStream.SetLength(stream.Length + increment + 2);
+        }
+        catch (Exception ex) {
+          TestContext.WriteLine(ex.ToString());
+        }
+      });
+
+      // ensure the reader waits for all the data to arrives before returning
+      thread.Start();
+
+      var reader = createReader(stream);
+      var buffer = reader.ReadBulk(data.Length);
+      thread.Join();
+
+      Assert.AreEqual(data.Length, buffer.Length);
+      CollectionAssert.AreEquivalent(data, buffer);
+
+      // cleanup
+      stream.Dispose();
     }
 
     [TestMethod]
