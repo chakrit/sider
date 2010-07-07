@@ -1,13 +1,45 @@
 ﻿
 using System;
+using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Sider
 {
+  // TODO: Detect invalid client state and self-dispose or restart
+  //       e.g. when protocol errors occour
   public partial class RedisClient
   {
+    // 1st Jan 1970
+    public const long UnixEpochL = 621355968000000000L;
+    public static readonly DateTime UnixEpoch = new DateTime(UnixEpochL);
+
+
+    // TODO: use a shared buffer?
     private static byte[] encodeStr(string s) { return Encoding.UTF8.GetBytes(s); }
     private static string decodeStr(byte[] raw) { return Encoding.UTF8.GetString(raw); }
+
+    private static string formatDateTime(DateTime dt)
+    {
+      return (dt - UnixEpoch).TotalSeconds.ToString();
+    }
+    private static DateTime parseDateTime(byte[] raw)
+    {
+      var str = Encoding.Default.GetString(raw);
+
+      return new DateTime(long.Parse(str) + UnixEpochL);
+    }
+
+    private static string formatTimeSpan(TimeSpan t)
+    {
+      return t.TotalSeconds.ToString();
+    }
+    private static TimeSpan parseTimeSpan(byte[] raw)
+    {
+      var str = Encoding.Default.GetString(raw);
+
+      return TimeSpan.FromSeconds(long.Parse(str));
+    }
 
     private static string formatDouble(double d)
     {
@@ -15,7 +47,6 @@ namespace Sider
         double.IsNegativeInfinity(d) ? "-inf" :
         d.ToString("0.0");
     }
-
     private static double parseDouble(byte[] raw)
     {
       var str = Encoding.Default.GetString(raw);
@@ -26,51 +57,65 @@ namespace Sider
     }
 
 
+    private void writeCmd(string command)
+    {
+      writeCore(w => w.WriteLine(command));
+    }
+
     private void writeCmd(string command, string key)
     {
-      writeCore(w => w.WriteLine("{0} {1}".F(command, key)));
+      writeCore(w => w.WriteLine(command + " " + key));
+    }
+
+    private void writeCmd(string command, string key, object param1)
+    {
+      writeCore(w => w.WriteLine("{0} {1} {2}".F(command, key, param1)));
+    }
+
+    private void writeCmd(string command, string key, object param1, object param2)
+    {
+      writeCore(w => w.WriteLine("{0} {1} {2} {3}".F(command, key, param1, param2)));
     }
 
     private void writeCmd(string command, string[] keys)
     {
-      writeCore(w => w.WriteLine("{0} {1}".F(command, string.Join(" ", keys))));
+      writeCore(w => w.WriteLine("{0} {1}".F(
+        command, string.Join(" ", keys))));
     }
 
-    private void writeCmd(string command, string key, string value)
+    private void writeCmd(string command, string key, string[] keys)
     {
-      writeCmd(command, key, encodeStr(value));
+      writeCore(w => w.WriteLine("{0} {1} {2}".F(
+        command, key, string.Join(" ", keys))));
     }
 
-    private void writeCmd(string command, string key, byte[] data)
-    {
-      writeCore(w =>
-      {
-        w.WriteLine("{0} {1} {2}".F(command, key, data.Length));
-        w.WriteBulk(data);
-      });
-    }
-
-    private void writeListCmd(string command, string key, int min, int max)
+    private void writeCmd(string command, string key, object param, string[] keys)
     {
       writeCore(w => w.WriteLine("{0} {1} {2} {3}".F(
-        command, key, min, max)));
+        command, key, param, string.Join(" ", keys))));
     }
 
-    private void writeZSetCmd(string command, string key, double score, string value)
+
+    private void writeValue(string command, string key, string value)
     {
       writeCore(w =>
       {
         var raw = encodeStr(value);
 
-        w.WriteLine("{0} {1} {2} {3}".F(command, key, formatDouble(score), raw.Length));
+        w.WriteLine("{0} {1} {2}".F(command, key, raw.Length));
         w.WriteBulk(raw);
       });
     }
 
-    private void writeZSetCmd(string command, string key, double min, double max)
+    private void writeValue(string command, string key, object param, string value)
     {
-      writeCore(w => w.WriteLine("{0} {1} {2} {3}".F(
-        command, key, formatDouble(min), formatDouble(max))));
+      writeCore(w =>
+      {
+        var raw = encodeStr(value);
+
+        w.WriteLine("{0} {1} {2} {3}".F(command, key, param, raw.Length));
+        w.WriteBulk(raw);
+      });
     }
 
 
@@ -83,9 +128,20 @@ namespace Sider
     private bool readBool()
     { return readCore(ResponseType.Integer, r => r.ReadNumberLine() == 1); }
 
+    private bool readOk() { return readStatus("OK"); }
+
     private bool readStatus(string expectedMsg)
     {
       return readCore(ResponseType.SingleLine, r => r.ReadStatusLine() == expectedMsg);
+    }
+
+    private double readDouble()
+    {
+      return readCore(ResponseType.Bulk, r =>
+      {
+        var length = r.ReadNumberLine();
+        return parseDouble(r.ReadBulk(length));
+      });
     }
 
     private string readBulk()
@@ -131,20 +187,36 @@ namespace Sider
 
     private void writeCore(Action<RedisWriter> writeAction)
     {
-      // TODO: Add pipelining support by recording writes
-      // TODO: Add logging
-      writeAction(_writer);
+      ensureState();
+
+      try {
+        // TODO: Add pipelining support by recording writes
+        // TODO: Add logging
+        writeAction(_writer);
+      }
+      catch {
+        Dispose();
+        throw;
+      }
     }
 
     private T readCore<T>(ResponseType expectedType, Func<RedisReader, T> readFunc)
     {
-      // TODO: Add pipelining support by recording reads
-      // TODO: Add logging
-      // TODO: Add error-checking support to reads
-      var type = _reader.ReadTypeChar();
-      Assert.ResponseType(expectedType, type);
+      ensureState();
 
-      return readFunc(_reader);
+      try {
+        // TODO: Add pipelining support by recording reads
+        // TODO: Add logging
+        // TODO: Add error-checking support to reads
+        var type = _reader.ReadTypeChar();
+        Assert.ResponseType(expectedType, type);
+
+        return readFunc(_reader);
+      }
+      catch {
+        Dispose();
+        throw;
+      }
     }
   }
 }

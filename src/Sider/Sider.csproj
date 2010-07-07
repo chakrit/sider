@@ -51,6 +51,7 @@
     <Compile Include="RedisClient.cs" />
     <Compile Include="RedisClient.IO.cs" />
     <Compile Include="RedisReader.cs" />
+    <Compile Include="RedisType.cs" />
     <Compile Include="RedisWriter.cs" />
     <Compile Include="ResponseException.cs" />
     <Compile Include="ResponseType.cs" />

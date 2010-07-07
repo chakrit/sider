@@ -19,11 +19,25 @@ namespace Sider
       _host = host;
       _port = port;
 
-      _clientRef = new ThreadLocal<IRedisClient>(() =>
-        new RedisClient(_host, _port));
+      _clientRef = new ThreadLocal<IRedisClient>(buildClient);
     }
 
 
-    public IRedisClient GetClient() { return _clientRef.Value; }
+    public IRedisClient GetClient()
+    {
+      // gets thread-local value
+      var client = _clientRef.Value;
+
+      // rebuild the client if it's disposed
+      if (client.IsDisposed)
+        _clientRef.Value = client = buildClient();
+
+      return client;
+    }
+
+    private IRedisClient buildClient()
+    {
+      return new RedisClient(_host, _port);
+    }
   }
 }
