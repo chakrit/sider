@@ -545,13 +545,13 @@ namespace Sider
 
     public byte[] HGetRaw(string key, string field)
     {
-      writeCmd("HGET", key, field);
+      writeValue("HGET", key, field);
       return readBulkRaw();
     }
 
     public int HGetTo(string key, string field, Stream target)
     {
-      writeCmd("HGET", key, field);
+      writeValue("HGET", key, field);
       return readCore(ResponseType.Bulk, r =>
       {
         var length = r.ReadNumberLine();
