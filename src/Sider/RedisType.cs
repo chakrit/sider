@@ -3,11 +3,29 @@ namespace Sider
 {
   public enum RedisType
   {
-    None = "none",
-    String = "string",
-    List = "list",
-    Set = "set",
-    ZSet = "zset",
-    Hash = "hash"
+    None,
+    String,
+    List,
+    Set,
+    ZSet,
+    Hash,
+  }
+
+  public static class RedisTypes
+  {
+    public static RedisType Parse(string value)
+    {
+      switch (value) {
+        case "string": return RedisType.String;
+        case "list": return RedisType.List;
+        case "set": return RedisType.Set;
+        case "zset": return RedisType.ZSet;
+        case "hash": return RedisType.Hash;
+
+        case "none":
+        default:
+          return RedisType.None;
+      }
+    }
   }
 }

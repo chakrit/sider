@@ -135,5 +135,22 @@ namespace Sider
 
 
     // commands operating on hashes
+    bool HSet(string key, string field, string value);
+    string HGet(string key, string field);
+    bool HSetNX(string key, string field, string value);
+    string[] HMGet(string key, params string[] fields);
+    long HIncrBy(string key, string field, long amount);
+
+    bool HExists(string key, string field);
+    bool HDel(string key, string field);
+    int HLen(string key);
+
+    string[] HKeys(string key);
+    string[] HVals(string key);
+
+    //IEnumerable<KeyValuePair<string, string>> HGetAll(string key);
+
+    // TODO: HMSet Require MultiBulk write support
+
   }
 }

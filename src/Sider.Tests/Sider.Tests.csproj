@@ -50,7 +50,6 @@
     </Compile>
     <Compile Include="RedisClientTests.cs" />
     <Compile Include="RedisReaderTests.cs" />
-    <Compile Include="RedisResponseException.cs" />
     <Compile Include="RedisWriterTests.cs" />
     <Compile Include="SiderTestBase.cs" />
   </ItemGroup>

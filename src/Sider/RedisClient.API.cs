@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Sider
 {
@@ -49,19 +50,7 @@ namespace Sider
     {
       writeCmd("TYPE", key);
       return readCore(ResponseType.SingleLine, r =>
-      {
-        // TODO: Eliminate this switch (not sure if Enum.Parse will be slow)
-        switch (r.ReadStatusLine()) {
-          case "string": return RedisType.String;
-          case "list": return RedisType.List;
-          case "set": return RedisType.Set;
-          case "zset": return RedisType.ZSet;
-          case "hash": return RedisType.Hash;
-
-          //case "none": 
-          default: return RedisType.None;
-        }
-      });
+        RedisTypes.Parse(r.ReadStatusLine()));
     }
 
     public string[] Keys(string pattern)
@@ -515,6 +504,73 @@ namespace Sider
     {
       writeCmd("ZINTERSTORE", destKey, srcKeys.Length, srcKeys);
       return readInt();
+    }
+
+    #endregion
+
+    #region Commands operating on hashes
+
+    public bool HSet(string key, string field, string value)
+    {
+      writeValue("HSET", key, field, value);
+      return readBool();
+    }
+
+    public string HGet(string key, string field)
+    {
+      writeValue("HGET", key, field);
+      return readBulk();
+    }
+
+    public bool HSetNX(string key, string field, string value)
+    {
+      writeValue("HSETNX", key, field, value);
+      return readBool();
+    }
+
+    public string[] HMGet(string key, params string[] fields)
+    {
+      writeCore(w =>
+        w.WriteLine("{0} {1} {2}".F("HMGET", key, string.Join(" ", fields))));
+      return readMultiBulk();
+    }
+
+    public long HIncrBy(string key, string field, long amount)
+    {
+      writeCmd("HINCRBY", key, field, amount);
+      return readInt64();
+    }
+
+
+    public bool HExists(string key, string field)
+    {
+      writeCmd("HEXISTS", key, field);
+      return readBool();
+    }
+
+    public bool HDel(string key, string field)
+    {
+      writeCmd("HDEL", key, field);
+      return readBool();
+    }
+
+    public int HLen(string key)
+    {
+      writeCmd("HLEN", key);
+      return readInt();
+    }
+
+
+    public string[] HKeys(string key)
+    {
+      writeCmd("HKEYS", key);
+      return readMultiBulk();
+    }
+
+    public string[] HVals(string key)
+    {
+      writeCmd("HVALS", key);
+      return readMultiBulk();
     }
 
     #endregion
