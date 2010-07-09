@@ -136,7 +136,13 @@ namespace Sider
 
     // commands operating on hashes
     bool HSet(string key, string field, string value);
+    bool HSetRaw(string key, string field, byte[] data);
+    bool HSetFrom(string key, string field, Stream source, int count);
+
     string HGet(string key, string field);
+    byte[] HGetRaw(string key, string field);
+    int HGetTo(string key, string field, Stream target);
+
     bool HSetNX(string key, string field, string value);
     string[] HMGet(string key, params string[] fields);
     long HIncrBy(string key, string field, long amount);

@@ -516,11 +516,52 @@ namespace Sider
       return readBool();
     }
 
+    public bool HSetRaw(string key, string field, byte[] data)
+    {
+      writeCore(w =>
+      {
+        w.WriteLine("HSET {0} {1} {2}".F(key, field, data.Length));
+        w.WriteBulk(data);
+      });
+      return readBool();
+    }
+
+    public bool HSetFrom(string key, string field, Stream source, int count)
+    {
+      writeCore(w =>
+      {
+        w.WriteLine("HSET {0} {1} {2}".F(key, field, count));
+        w.WriteBulkFrom(source, count);
+      });
+      return readBool();
+    }
+
+
     public string HGet(string key, string field)
     {
       writeValue("HGET", key, field);
       return readBulk();
     }
+
+    public byte[] HGetRaw(string key, string field)
+    {
+      writeCmd("HGET", key, field);
+      return readBulkRaw();
+    }
+
+    public int HGetTo(string key, string field, Stream target)
+    {
+      writeCmd("HGET", key, field);
+      return readCore(ResponseType.Bulk, r =>
+      {
+        var length = r.ReadNumberLine();
+        if (length > -1)
+          r.ReadBulkTo(target, length);
+
+        return length;
+      });
+    }
+
 
     public bool HSetNX(string key, string field, string value)
     {
