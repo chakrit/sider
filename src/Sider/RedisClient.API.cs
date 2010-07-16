@@ -585,13 +585,13 @@ namespace Sider
 
     public bool HExists(string key, string field)
     {
-      writeCmd("HEXISTS", key, field);
+      writeValue("HEXISTS", key, field);
       return readBool();
     }
 
     public bool HDel(string key, string field)
     {
-      writeCmd("HDEL", key, field);
+      writeValue("HDEL", key, field);
       return readBool();
     }
 
