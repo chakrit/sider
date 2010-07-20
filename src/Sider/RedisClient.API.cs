@@ -18,16 +18,49 @@ namespace Sider
       return readStatus("PONG");
     }
 
+    public bool Auth(string password)
+    {
+      writeCmd("AUTH", password);
+      return readOk();
+    }
+
+
+    public bool Save()
+    {
+      writeCmd("SAVE");
+      return readOk();
+    }
+
+    public bool BgSave()
+    {
+      writeCmd("BGSAVE");
+      return readStatus("Background saving started");
+    }
+
+    public bool BgRewriteAOF()
+    {
+      writeCmd("BGREWRITEAOF");
+      return readStatus("Background append only file rewriting started");
+    }
+
+    public DateTime LastSave()
+    {
+      writeCmd("LASTSAVE");
+      return readCore(ResponseType.Integer, r =>
+        parseDateTime(r.ReadNumberLine64()));
+    }
+
+
     public void Quit()
     {
       writeCmd("QUIT");
       Dispose();
     }
 
-    public bool Auth(string password)
+    public void Shutdown()
     {
-      writeCmd("AUTH", password);
-      return readOk();
+      writeCmd("SHUTDOWN");
+      // TODO: Docs says error is possible but how to produce it?
     }
 
     #endregion

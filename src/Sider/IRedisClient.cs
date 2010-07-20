@@ -12,10 +12,19 @@ namespace Sider
     bool IsDisposed { get; }
 
 
-    // connection handling
+    // connection handling / misc management
     bool Ping();
-    void Quit();
     bool Auth(string password);
+    //IDictionary<string, string> Info();
+    // INFO requires a special no-response-type-char read
+
+    bool Save();
+    bool BgSave();
+    bool BgRewriteAOF();
+    DateTime LastSave();
+
+    void Quit();
+    void Shutdown();
 
 
     // commands operating on all kinds of values

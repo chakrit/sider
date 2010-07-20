@@ -23,11 +23,9 @@ namespace Sider
     {
       return (dt - UnixEpoch).TotalSeconds.ToString();
     }
-    private static DateTime parseDateTime(byte[] raw)
+    private static DateTime parseDateTime(long dateValue)
     {
-      var str = Encoding.Default.GetString(raw);
-
-      return new DateTime(long.Parse(str) + UnixEpochL);
+      return new DateTime(dateValue + UnixEpochL);
     }
 
     private static string formatTimeSpan(TimeSpan t)
