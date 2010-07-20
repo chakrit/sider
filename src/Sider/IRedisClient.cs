@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.IO;
-using System.Collections.Generic;
 
 namespace Sider
 {
@@ -63,8 +62,8 @@ namespace Sider
     bool SetEX(string key, TimeSpan ttl, string value);
 
     // TODO: Require MultiBulk write support
-    //bool MSet(IEnumerable<KeyValuePair<string, string>> mapping);
-    //bool MSetNX(IEnumerable<KeyValuePair<string, string>> mapping);
+    // bool MSet(IEnumerable<KeyValuePair<string, string>> mapping);
+    // bool MSetNX(IEnumerable<KeyValuePair<string, string>> mapping);
 
     long Incr(string key);
     long IncrBy(string key, long value);
@@ -91,8 +90,8 @@ namespace Sider
     string RPop(string key);
 
     // TODO: Require blocking semantic (needs to tinker with socket ReadTimeout)
-    //KeyValuePair<string, string> BLPop(TimeSpan timeout, params string[] keys);
-    //KeyValuePair<string, string> BRPop(TimeSpan timeout, params string[] keys);
+    // KeyValuePair<string, string> BLPop(TimeSpan timeout, params string[] keys);
+    // KeyValuePair<string, string> BRPop(TimeSpan timeout, params string[] keys);
 
     string RPopLPush(string srcKey, string destKey);
 
@@ -163,7 +162,7 @@ namespace Sider
     string[] HKeys(string key);
     string[] HVals(string key);
 
-    //IEnumerable<KeyValuePair<string, string>> HGetAll(string key);
+    // IEnumerable<KeyValuePair<string, string>> HGetAll(string key);
 
     // TODO: HMSet Require MultiBulk write support
 

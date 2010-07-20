@@ -53,7 +53,7 @@ namespace Sider
 
         // shifts the number by one digit, adding the current
         // digit to the end e.g. "99" + "7" = 99 * 10 + 7 = "997"
-        num = num * 10 + b - '0';
+        num = (num * 10) + b - '0';
 
         Assert.IsTrue(b >= '0' && b <= '9',
           () => new ResponseException("Expecting a digit, found instead: " + (char)b));
@@ -84,7 +84,7 @@ namespace Sider
       while ((b = _stream.ReadByte()) != -1) {
         if (b == '\r') break;
 
-        num = num * 10 + b - '0';
+        num = (num * 10) + b - '0';
 
         Assert.IsTrue(b >= '0' && b <= '9',
           () => new ResponseException("Expected a digit, found instead: " + (char)b));
@@ -169,7 +169,7 @@ namespace Sider
 
       while (bytesLeft > 0) {
         chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;
-        bytesLeft -= (bytesRead = _stream.Read(buffer, 0, chunkSize));
+        bytesLeft -= bytesRead = _stream.Read(buffer, 0, chunkSize);
 
         target.Write(buffer, 0, bytesRead);
       }

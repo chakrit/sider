@@ -1,7 +1,7 @@
 ﻿
+using System;
 using System.IO;
 using System.Text;
-using System;
 
 namespace Sider
 {
@@ -92,7 +92,7 @@ namespace Sider
         bytesLeft -= bytesRead;
       }
 
-      //Assert.IsTrue(bytesRead == count,
+      // Assert.IsTrue(bytesRead == count,
       //  () => new InvalidOperationException("Not enough data."));
       writeCrLf();
     }
