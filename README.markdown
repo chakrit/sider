@@ -1,36 +1,23 @@
 SIDER : REDIS bindings for C#
 ====
 
-Inspired by migueldeicaza's first stab at the problem (I used some of his algorithm)
-and ServiceStack.Redis (to take it a lot further).
+Inspired by migueldeicaza's first stab at the problem (I used some of his
+algorithm) and ServiceStack.Redis (to take it a lot further).
 
-This is a REDIS bindings for C# 4.0 that try to stick to the metal as much as possible which
-results in:
+This is a REDIS bindings for C# 4.0 that try to stick to the metal as much as
+possible which results in:
 
-* Simple API that maps directly to the Redis commands reference. (no name guessing)
-* As fast as practical and can be implemented without too much cryptic code.
-* Easy to setup, no gigantic class hierarchies.
-* Supports streaming mode to allow Redis to be used to store really really large blobs
-  (e.g. user-uploading files) without consuming up too much memory.
+* Simple API that maps directly to the Redis commands reference. (no confusing
+  names/classes)
+* As fast as practical and as can be implemented without too much cryptic code.
+* Easy to use, no gigantic class hierarchies to setup.
+* Supports streaming mode to allow Redis to be used to store really really
+  large blobs (e.g. user-uploaded files) without consuming a lot of memory.
 
-At the moment, foundation work is there and works but not all commands are implemented,
-yet. The commands I needed are going to be implemented first. But implementing new ones
-should be relatively easy.
+Right now, almost all basic commands have been implemented including streaming
+mode for `GET` and `SET`.
 
-If you'd like a command implemented, look at the `RedisClient.API.cs` file, it should
-be pretty easy to add one, or ping me on twitter (@chakrit) I'll happily do it for you :)
-
-For example, here's the code for the `SMembers` command:
-
-    public string[] SMembers(string key)
-    {
-      writeCmd("SMEMBERS", key);
-      return readMultiBulk();
-    }
-
-You can figure that out, right?
-
-And here's how to use the lib:
+Here's how to use the lib:
 
     var client = new RedisClient(); // default host:port
     client = new RedisClient("localhost", 6379); // custom
@@ -41,6 +28,10 @@ And here's how to use the lib:
     // result == "World";
 
     client.Dispose() // disconnect
+
+Although commands which requires multi-bulk write and transaction control
+operations are not implemented, yet, right now the library is solid and
+works well (I'm using it in production code).
 
 For ASP.NET/Web and/or multi-threaded scenarios, you can use the
 `ThreadwisePool` like this:
