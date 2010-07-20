@@ -14,7 +14,7 @@ namespace Sider
     // connection handling / misc management
     bool Ping();
     bool Auth(string password);
-    //IDictionary<string, string> Info();
+    // IDictionary<string, string> Info();
     // INFO requires a special no-response-type-char read
 
     bool Save();
