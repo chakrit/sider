@@ -241,14 +241,41 @@ namespace Sider
         var result = new string[count];
 
         for (var i = 0; i < count; i++) {
-          var type = _reader.ReadTypeChar();
+          var type = r.ReadTypeChar();
           Assert.ResponseType(ResponseType.Bulk, type);
 
-          var length = _reader.ReadNumberLine();
+          var length = r.ReadNumberLine();
           if (length > -1)
-            result[i] = decodeStr(_reader.ReadBulk(length));
+            result[i] = decodeStr(r.ReadBulk(length));
           else
             result[i] = null;
+        }
+
+        return result;
+      });
+    }
+
+    private KeyValuePair<string, string>[] readKeyValues()
+    {
+      return readCore(ResponseType.MultiBulk, r =>
+      {
+        var count = r.ReadNumberLine();
+        var result = new KeyValuePair<string, string>[count];
+
+        for (var i = 0; i < count; i++) {
+          var type = r.ReadTypeChar();
+          Assert.ResponseType(ResponseType.Bulk, type);
+
+          var length = r.ReadNumberLine();
+          var key = decodeStr(r.ReadBulk(length));
+
+          type = r.ReadTypeChar();
+          Assert.ResponseType(ResponseType.Bulk, type);
+
+          length = r.ReadNumberLine();
+          var value = decodeStr(r.ReadBulk(length));
+
+          result[i] = new KeyValuePair<string, string>(key, value);
         }
 
         return result;

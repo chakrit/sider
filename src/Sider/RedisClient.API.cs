@@ -667,6 +667,13 @@ namespace Sider
       return readMultiBulk();
     }
 
+
+    public IEnumerable<KeyValuePair<string, string>> HGetAll(string key)
+    {
+      writeCmd("HGETALL", key);
+      return readKeyValues();
+    }
+
     #endregion
   }
 }

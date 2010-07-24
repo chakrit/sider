@@ -165,7 +165,7 @@ namespace Sider
     string[] HKeys(string key);
     string[] HVals(string key);
 
-    // IEnumerable<KeyValuePair<string, string>> HGetAll(string key);
+    IEnumerable<KeyValuePair<string, string>> HGetAll(string key);
 
   }
 }
