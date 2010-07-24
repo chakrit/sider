@@ -1,5 +1,7 @@
 ﻿
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Sider
@@ -128,6 +130,44 @@ namespace Sider
 
         w.WriteTypeChar(ResponseType.MultiBulk);
         w.WriteLine(keyValues.Length * 2 + 1);
+
+        w.WriteTypeChar(ResponseType.Bulk);
+        w.WriteLine(buffer.Length);
+        w.WriteBulk(buffer);
+
+        for (var i = 0; i < keyValues.Length; i++) {
+          buffer = encodeStr(keyValues[i].Key);
+
+          w.WriteTypeChar(ResponseType.Bulk);
+          w.WriteLine(buffer.Length);
+          w.WriteBulk(buffer);
+
+          buffer = encodeStr(keyValues[i].Value);
+
+          w.WriteTypeChar(ResponseType.Bulk);
+          w.WriteLine(buffer.Length);
+          w.WriteBulk(buffer);
+        }
+      });
+    }
+
+    private void writeMultiBulk(string command, string key,
+      IEnumerable<KeyValuePair<string, string>> kvPairs)
+    {
+      var keyValues = kvPairs.ToArray();
+
+      writeCore(w =>
+      {
+        var buffer = encodeStr(command);
+
+        w.WriteTypeChar(ResponseType.MultiBulk);
+        w.WriteLine(keyValues.Length * 2 + 2);
+
+        w.WriteTypeChar(ResponseType.Bulk);
+        w.WriteLine(buffer.Length);
+        w.WriteBulk(buffer);
+
+        buffer = encodeStr(key);
 
         w.WriteTypeChar(ResponseType.Bulk);
         w.WriteLine(buffer.Length);

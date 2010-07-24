@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Sider
@@ -89,7 +90,7 @@ namespace Sider
     string LPop(string key);
     string RPop(string key);
 
-    // TODO: Require blocking semantic (needs to tinker with socket ReadTimeout)
+    // TODO: Require blocking semantic (might have problems with Socket timeouts)
     // KeyValuePair<string, string> BLPop(TimeSpan timeout, params string[] keys);
     // KeyValuePair<string, string> BRPop(TimeSpan timeout, params string[] keys);
 
@@ -152,7 +153,9 @@ namespace Sider
     int HGetTo(string key, string field, Stream target);
 
     bool HSetNX(string key, string field, string value);
+    bool HMSet(IEnumerable<KeyValuePair<string, string>> mappings);
     string[] HMGet(string key, params string[] fields);
+
     long HIncrBy(string key, string field, long amount);
 
     bool HExists(string key, string field);
@@ -163,8 +166,6 @@ namespace Sider
     string[] HVals(string key);
 
     // IEnumerable<KeyValuePair<string, string>> HGetAll(string key);
-
-    // TODO: HMSet Require MultiBulk write support
 
   }
 }

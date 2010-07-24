@@ -1,8 +1,7 @@
 ﻿
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 
 namespace Sider
 {
@@ -616,12 +615,19 @@ namespace Sider
       return readBool();
     }
 
+    public bool HMSet(string key, IEnumerable<KeyValuePair<string, string>> mappings)
+    {
+      writeMultiBulk("HMSET", key, mappings);
+      return readOk();
+    }
+
     public string[] HMGet(string key, params string[] fields)
     {
       writeCore(w =>
         w.WriteLine("{0} {1} {2}".F("HMGET", key, string.Join(" ", fields))));
       return readMultiBulk();
     }
+
 
     public long HIncrBy(string key, string field, long amount)
     {
