@@ -14,8 +14,8 @@ namespace Sider
     // connection handling / misc management
     bool Ping();
     bool Auth(string password);
-    // IDictionary<string, string> Info();
-    // INFO requires a special no-response-type-char read
+    // INFO is meant for human consumption,
+    // thus I'm intentionally not implementing it.
 
     bool Save();
     bool BgSave();
@@ -62,8 +62,8 @@ namespace Sider
     bool SetEX(string key, TimeSpan ttl, string value);
 
     // TODO: Require MultiBulk write support
-    // bool MSet(IEnumerable<KeyValuePair<string, string>> mapping);
-    // bool MSetNX(IEnumerable<KeyValuePair<string, string>> mapping);
+    bool MSet(IEnumerable<KeyValuePair<string, string>> mapping);
+    bool MSetNX(IEnumerable<KeyValuePair<string, string>> mapping);
 
     long Incr(string key);
     long IncrBy(string key, long value);

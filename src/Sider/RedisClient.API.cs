@@ -1,6 +1,8 @@
 ﻿
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sider
 {
@@ -240,6 +242,19 @@ namespace Sider
     {
       writeValue("SETEX", key, formatTimeSpan(ttl), value);
       return readOk();
+    }
+
+
+    public bool MSet(IEnumerable<KeyValuePair<string, string>> mappings)
+    {
+      writeMultiBulk("MSET", mappings);
+      return readOk();
+    }
+
+    public bool MSetNX(IEnumerable<KeyValuePair<string, string>> mappings)
+    {
+      writeMultiBulk("MSETNX", mappings);
+      return readBool();
     }
 
 

@@ -13,7 +13,7 @@ namespace Sider
     public static readonly DateTime UnixEpoch = new DateTime(UnixEpochL);
 
 
-    // TODO: use a shared buffer?
+    // TODO: use a shared/reusable buffer?
     private static byte[] encodeStr(string s) { return Encoding.UTF8.GetBytes(s); }
     private static string decodeStr(byte[] raw) { return Encoding.UTF8.GetString(raw); }
 
@@ -111,6 +111,41 @@ namespace Sider
 
         w.WriteLine("{0} {1} {2} {3}".F(command, key, param, raw.Length));
         w.WriteBulk(raw);
+      });
+    }
+
+
+    private void writeMultiBulk(string command,
+      IEnumerable<KeyValuePair<string, string>> kvPairs)
+    {
+      // TODO: ensure there aren't too many elements
+      var keyValues = kvPairs.ToArray();
+
+      writeCore(w =>
+      {
+        // TODO: Definitely should reuse the buffers here
+        var buffer = encodeStr(command);
+
+        w.WriteTypeChar(ResponseType.MultiBulk);
+        w.WriteLine(keyValues.Length * 2 + 1);
+
+        w.WriteTypeChar(ResponseType.Bulk);
+        w.WriteLine(buffer.Length);
+        w.WriteBulk(buffer);
+
+        for (var i = 0; i < keyValues.Length; i++) {
+          buffer = encodeStr(keyValues[i].Key);
+
+          w.WriteTypeChar(ResponseType.Bulk);
+          w.WriteLine(buffer.Length);
+          w.WriteBulk(buffer);
+
+          buffer = encodeStr(keyValues[i].Value);
+
+          w.WriteTypeChar(ResponseType.Bulk);
+          w.WriteLine(buffer.Length);
+          w.WriteBulk(buffer);
+        }
       });
     }
 
