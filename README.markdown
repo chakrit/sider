@@ -4,24 +4,38 @@ SIDER : REDIS bindings for C#
 Inspired by migueldeicaza's first stab at the problem (I used some of his
 algorithm) and ServiceStack.Redis (to take it a lot further).
 
-This is a REDIS bindings for C# 4.0 that try to stick to the metal as much as
+This is a REDIS bindings for C# 4.0 that try to **stick to the metal** as much as
 possible which results in:
 
-* Simple API that maps directly to the Redis commands reference. (no confusing
-  names/classes)
-* As fast as practical and as can be implemented without too much cryptic code.
-* Easy to use, no gigantic class hierarchies to setup.
-* Supports streaming mode to allow Redis to be used to store really really
-  large blobs (e.g. user-uploaded files) without consuming a lot of memory.
+* Simple API that maps directly to the Redis commands reference.
+* Easy to use, no gigantic class hierarchies to setup. No confusing method names.
+* As fast as my limited networking skills will allow.
+* Supports direct-to-Redis streaming mode for GET/SET and a few other similar
+  commands to allow Redis to be used to store really really
+  large blobs (e.g. user-uploaded files) without buffering.
+* Upcoming no-frill pipelining support.
 
-Right now, almost all basic commands have been implemented including streaming
-mode for `GET` and `SET`.
+As of 24th July 2010, all basic commands have been implemented except for the
+following:
+
+* Blocking commands `BLPOP`, `BLPUSH` and the likes. - Needs a few more tests
+  with varying Socket configurations.
+* Extra options for some commands - e.g. `WITHSCORES` and `AGGREGATE`
+* Transaction and pipelining support. - Sider has been designed from the ground
+  up to make it easy to pipeline and do transactions, the foundation work is
+  already there. I just need a bit more time to finalize and streamline the API.
+
+Other than that, it's solid and somewhat fault-tolerant. I'm using this myself
+in production code as well, so expect fast fixes should there be any problems.
+
+# HOWTO
 
 Here's how to use the lib:
 
     var client = new RedisClient(); // default host:port
     client = new RedisClient("localhost", 6379); // custom
 
+    // redis commands are methods of the RedisClient class
     client.Set("HELLO", "World");
     var result = client.Get("HELLO");
 
@@ -29,14 +43,11 @@ Here's how to use the lib:
 
     client.Dispose() // disconnect
 
-Although commands which requires multi-bulk write and transaction control
-operations are not implemented, yet, right now the library is solid and
-works well (I'm using it in production code).
+For ASP.NET/Web and/or multi-threaded concurrent access scenarios, you can use
+the `ThreadwisePool` like this:
 
-For ASP.NET/Web and/or multi-threaded scenarios, you can use the
-`ThreadwisePool` like this:
-
-    var pool = new ThreadwisePool(); // manages clients activations/disposal
+    // manages clients activations/disposal
+    var pool = new ThreadwisePool();
 
     var client = pool.GetClient();
     var result = client.Get("HELLO") == "WORLD";
