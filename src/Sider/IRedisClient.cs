@@ -153,7 +153,7 @@ namespace Sider
     int HGetTo(string key, string field, Stream target);
 
     bool HSetNX(string key, string field, string value);
-    bool HMSet(IEnumerable<KeyValuePair<string, string>> mappings);
+    bool HMSet(string key, IEnumerable<KeyValuePair<string, string>> mappings);
     string[] HMGet(string key, params string[] fields);
 
     long HIncrBy(string key, string field, long amount);
