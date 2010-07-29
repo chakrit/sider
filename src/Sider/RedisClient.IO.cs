@@ -129,7 +129,7 @@ namespace Sider
         var buffer = encodeStr(command);
 
         w.WriteTypeChar(ResponseType.MultiBulk);
-        w.WriteLine(keyValues.Length * 2 + 1);
+        w.WriteLine((keyValues.Length * 2) + 1);
 
         w.WriteTypeChar(ResponseType.Bulk);
         w.WriteLine(buffer.Length);
@@ -161,7 +161,7 @@ namespace Sider
         var buffer = encodeStr(command);
 
         w.WriteTypeChar(ResponseType.MultiBulk);
-        w.WriteLine(keyValues.Length * 2 + 2);
+        w.WriteLine((keyValues.Length * 2) + 2);
 
         w.WriteTypeChar(ResponseType.Bulk);
         w.WriteLine(buffer.Length);
