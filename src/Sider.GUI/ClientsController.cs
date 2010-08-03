@@ -13,21 +13,13 @@ namespace Sider.GUI
     public string Host
     {
       get { return _host; }
-      set
-      {
-        _host = value;
-        _invalidated = true;
-      }
+      set { _host = value; _invalidated = true; }
     }
 
     public int Port
     {
       get { return _port; }
-      set
-      {
-        _port = value;
-        _invalidated = true;
-      }
+      set { _port = value; _invalidated = true; }
     }
 
 

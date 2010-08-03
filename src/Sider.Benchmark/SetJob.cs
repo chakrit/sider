@@ -21,7 +21,7 @@ namespace Sider.Benchmark
         rng.GetBytes(_data = new byte[dataSize]);
 
         // snatch the first byte as a random ID
-        _key = "TEST" + (_data[0].ToString());
+        _key = "TEST" + _data[0].ToString();
       }
     }
 

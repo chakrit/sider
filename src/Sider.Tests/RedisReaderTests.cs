@@ -5,12 +5,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Net.Sockets;
-using System.Net;
 
 namespace Sider.Tests
 {
@@ -350,10 +347,10 @@ namespace Sider.Tests
     {
       // write data in small increments from another thread
       // make sure total data size is large enough so the read will have to block
-      const int increment = 1024;
-      const int repeatCount = 10;
+      const int Increment = 1024;
+      const int RepeatCount = 10;
 
-      var data = new byte[increment * repeatCount];
+      var data = new byte[Increment * RepeatCount];
       var dataBuffer = new byte[data.Length + 2 /* for CRLF */];
 
       (new Random()).NextBytes(data);
@@ -373,12 +370,12 @@ namespace Sider.Tests
       {
         try {
           // simulate "incoming" data by extending the memStream length
-          for (var i = 0; i < (repeatCount - 1); i++) {
-            memStream.SetLength(stream.Length + increment);
+          for (var i = 0; i < (RepeatCount - 1); i++) {
+            memStream.SetLength(stream.Length + Increment);
             Thread.Sleep(100);
           }
           // "write" the last chunk with CRLF
-          memStream.SetLength(stream.Length + increment + 2);
+          memStream.SetLength(stream.Length + Increment + 2);
         }
         catch (Exception ex) {
           TestContext.WriteLine(ex.ToString());
