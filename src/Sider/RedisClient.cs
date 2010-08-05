@@ -48,7 +48,7 @@ namespace Sider
 
 
     [Conditional("DEBUG")]
-    private void ensureState()
+    private void ensureNotDisposed()
     {
       Assert.IsTrue(!_disposed,
         () => new ObjectDisposedException(

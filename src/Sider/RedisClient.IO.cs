@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace Sider
 {
@@ -285,22 +286,26 @@ namespace Sider
 
     private void writeCore(Action<RedisWriter> writeAction)
     {
-      ensureState();
+      ensureNotDisposed();
 
       try {
         // TODO: Add pipelining support by recording writes
         // TODO: Add logging
         writeAction(_writer);
       }
-      catch {
-        Dispose();
+      catch (Exception ex) {
+
+        if (!(ex is IOException ||
+          ex is ObjectDisposedException))
+          Dispose();
+
         throw;
       }
     }
 
     private T readCore<T>(ResponseType expectedType, Func<RedisReader, T> readFunc)
     {
-      ensureState();
+      ensureNotDisposed();
 
       try {
         // TODO: Add pipelining support by recording reads
@@ -311,8 +316,12 @@ namespace Sider
 
         return readFunc(_reader);
       }
-      catch {
-        Dispose();
+      catch (Exception ex) {
+
+        if (!(ex is IOException ||
+          ex is ObjectDisposedException))
+          Dispose();
+
         throw;
       }
     }

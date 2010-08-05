@@ -14,19 +14,22 @@ namespace Sider.Benchmark
     public void Run()
     {
       // configuration
-      var instances = 50;
-      var iterations = 10000;
+      var instances = 8;
+      var iterations = 1000;
 
-      Func<Job> getJob = () => new SetJob(256);
+      Func<Job> getJob = () => new GetJob();
 
 
       while (true) {
 
         // setup
+        var options = TaskCreationOptions.LongRunning;
+
         var tasks = Enumerable
           .Range(0, instances)
           .Select(n => getJob())
-          .Select(job => new Task<BenchmarkResult>(() => benchMark(job, iterations)))
+          .Select(job => new Task<BenchmarkResult>(
+            () => benchMark(job, iterations), options))
           .ToArray();
 
         Console.WriteLine("{0} instances of `{1}` each doing {2} iterations.",

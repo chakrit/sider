@@ -167,28 +167,17 @@ namespace Sider
       var bytesLeft = bulkLength;
       var bytesRead = 0;
 
-      try {
+      // Use a wrapper to absorbs write exceptions since we don't have control
+      // over the supplied Stream but should still maintains a valid reader
+      // state. Note that the wrapper does not dispose underlying stream.
+      using (var wrapper = new AbsorbingStreamWrapper(_stream)) {
         while (bytesLeft > 0) {
           chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;
           bytesLeft -= bytesRead = _stream.Read(buffer, 0, chunkSize);
 
-          target.Write(buffer, 0, bytesRead);
+          //wrapper.Write(buffer, 0, bytesRead);
+          _stream.Write(buffer, 0, bytesRead);
         }
-      }
-      catch (Exception ex) {
-
-        // should only handles IOException and ObjectDisposedException
-        if (!(ex is IOException ||
-          ex is ObjectDisposedException))
-          throw;
-
-        // make sure to read out all the bytes to ensure proper stream state
-        while (bytesLeft > 0) {
-          chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;
-          bytesLeft -= bytesRead = _stream.Read(buffer, 0, chunkSize);
-        }
-
-        throw;
       }
 
       // eat up crlf
@@ -200,3 +189,4 @@ namespace Sider
     }
   }
 }
+
