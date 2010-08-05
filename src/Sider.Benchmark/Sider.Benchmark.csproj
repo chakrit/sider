@@ -48,6 +48,7 @@
     </Compile>
     <Compile Include="BenchmarkResult.cs" />
     <Compile Include="GetJob.cs" />
+    <Compile Include="GetToJob.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="PingJob.cs" />
     <Compile Include="Program.cs" />

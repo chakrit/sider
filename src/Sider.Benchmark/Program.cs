@@ -15,9 +15,9 @@ namespace Sider.Benchmark
     {
       // configuration
       var instances = 8;
-      var iterations = 1000;
+      var iterations = 2000;
 
-      Func<Job> getJob = () => new GetJob();
+      Func<Job> getJob = () => new GetToJob();
 
 
       while (true) {

@@ -19,6 +19,9 @@ namespace Sider
       Assert.ArgumentNotNull(() => stream);
       Assert.ArgumentSatisfy(() => stream, s => s.CanRead, "Stream must be readable.");
 
+      // Use a wrapper to absorbs write exceptions since we don't have control
+      // over the supplied Stream but should still maintains a valid reader
+      // state. Note that the wrapper does not dispose underlying stream.
       _stream = stream;
     }
 
@@ -167,17 +170,19 @@ namespace Sider
       var bytesLeft = bulkLength;
       var bytesRead = 0;
 
-      // Use a wrapper to absorbs write exceptions since we don't have control
-      // over the supplied Stream but should still maintains a valid reader
-      // state. Note that the wrapper does not dispose underlying stream.
-      using (var wrapper = new AbsorbingStreamWrapper(_stream)) {
+      // absorb exceptions to maintain valid reader state
+      // rethrow when we've properly read out all the bytes
+      // TODO: This can probably be better functionally in a try/catch helper
+      //       method that accepts the entire block below as a parameter
+      using (var wrapper = new AbsorbingStreamWrapper(target)) {
         while (bytesLeft > 0) {
           chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;
           bytesLeft -= bytesRead = _stream.Read(buffer, 0, chunkSize);
 
-          //wrapper.Write(buffer, 0, bytesRead);
-          _stream.Write(buffer, 0, bytesRead);
+          wrapper.Write(buffer, 0, bytesRead);
         }
+
+        wrapper.ThrowIfError();
       }
 
       // eat up crlf

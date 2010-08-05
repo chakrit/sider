@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.IO;
+using System.Diagnostics;
 
 namespace Sider
 {
@@ -10,9 +11,9 @@ namespace Sider
     private Exception _ex;
 
 
-    public override bool CanRead { get { return false; } }
+    public override bool CanRead { get { return _target.CanRead; } }
+    public override bool CanWrite { get { return _target.CanWrite; } }
     public override bool CanSeek { get { return false; } }
-    public override bool CanWrite { get { return true; } }
 
     public Exception Error { get { return _ex; } }
     public bool HasError { get { return _ex != null; } }
@@ -25,15 +26,44 @@ namespace Sider
     }
 
 
+    [DebuggerHidden, DebuggerStepThrough]
+    public void ThrowIfError()
+    {
+      if (_ex != null) throw _ex;
+    }
+
+
     public override void Flush() { _target.Flush(); }
+
+    public override void WriteByte(byte value)
+    {
+      _target.WriteByte(value);
+    }
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-      if (_ex != null)
-        return; // absorb writes
+      if (_ex != null) return;
 
+      // absorb exceptions
       try { _target.Write(buffer, offset, count); }
       catch (Exception ex) { _ex = ex; }
+    }
+
+    public override int ReadByte()
+    {
+      return _target.ReadByte();
+    }
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+      if (_ex != null) return count;
+
+      // absorb exceptions
+      try { return _target.Read(buffer, offset, count); }
+      catch (Exception ex) {
+        _ex = ex;
+        return count;
+      }
     }
 
 
@@ -48,11 +78,6 @@ namespace Sider
     {
       get { throw new NotSupportedException(); }
       set { throw new NotSupportedException(); }
-    }
-
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-      throw new NotSupportedException();
     }
 
     public override long Seek(long offset, SeekOrigin origin)

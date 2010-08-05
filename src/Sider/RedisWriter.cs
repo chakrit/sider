@@ -74,26 +74,37 @@ namespace Sider
       writeCrLf();
     }
 
-    public void WriteBulkFrom(Stream stream, int count)
+    public void WriteBulkFrom(Stream source, int count)
     {
-      Assert.ArgumentNotNull(() => stream);
+      Assert.ArgumentNotNull(() => source);
       Assert.ArgumentNonNegative(() => count);
 
       var bytesLeft = count;
+      var chunkSize = 0;
+      var bytesRead = 0;
 
-      while (bytesLeft > 0) {
-        var chunkSize = bytesLeft > _buffer.Length ? _buffer.Length : bytesLeft;
-        var bytesRead = stream.Read(_buffer, 0, chunkSize);
+      // absorb exceptions to maintain valid reader state
+      // rethrow when we've properly read out all the bytes
+      // TODO: This can probably be better functionally in a try/catch helper
+      //       method that accepts the entire block below as a parameter
+      // RedisReader.ReadBulkTo should looks about the same
+      using (var wrapper = new AbsorbingStreamWrapper(source)) {
+        while (bytesLeft > 0) {
+          chunkSize = bytesLeft > _buffer.Length ? _buffer.Length : bytesLeft;
+          bytesRead = source.Read(_buffer, 0, chunkSize);
 
-        Assert.IsTrue(bytesRead > 0,
-          () => new InvalidOperationException("Stream does not contains enough data."));
+          Assert.IsTrue(bytesRead > 0,
+            () => new InvalidOperationException("Stream does not contains enough data."));
 
-        _stream.Write(_buffer, 0, bytesRead);
-        bytesLeft -= bytesRead;
+          wrapper.Write(_buffer, 0, bytesRead);
+          bytesLeft -= bytesRead;
+        }
+
+        wrapper.ThrowIfError();
       }
 
-      // Assert.IsTrue(bytesRead == count,
-      //  () => new InvalidOperationException("Not enough data."));
+      Assert.IsTrue(bytesRead == count,
+       () => new InvalidOperationException("Not enough data."));
       writeCrLf();
     }
 

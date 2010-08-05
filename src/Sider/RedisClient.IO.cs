@@ -292,9 +292,9 @@ namespace Sider
         // TODO: Add pipelining support by recording writes
         // TODO: Add logging
         writeAction(_writer);
+
       }
       catch (Exception ex) {
-
         if (!(ex is IOException ||
           ex is ObjectDisposedException))
           Dispose();
@@ -315,9 +315,9 @@ namespace Sider
         Assert.ResponseType(expectedType, type);
 
         return readFunc(_reader);
+
       }
       catch (Exception ex) {
-
         if (!(ex is IOException ||
           ex is ObjectDisposedException))
           Dispose();
