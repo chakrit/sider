@@ -167,11 +167,28 @@ namespace Sider
       var bytesLeft = bulkLength;
       var bytesRead = 0;
 
-      while (bytesLeft > 0) {
-        chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;
-        bytesLeft -= bytesRead = _stream.Read(buffer, 0, chunkSize);
+      try {
+        while (bytesLeft > 0) {
+          chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;
+          bytesLeft -= bytesRead = _stream.Read(buffer, 0, chunkSize);
 
-        target.Write(buffer, 0, bytesRead);
+          target.Write(buffer, 0, bytesRead);
+        }
+      }
+      catch (Exception ex) {
+
+        // should only handles IOException and ObjectDisposedException
+        if (!(ex is IOException ||
+          ex is ObjectDisposedException))
+          throw;
+
+        // make sure to read out all the bytes to ensure proper stream state
+        while (bytesLeft > 0) {
+          chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;
+          bytesLeft -= bytesRead = _stream.Read(buffer, 0, chunkSize);
+        }
+
+        throw;
       }
 
       // eat up crlf

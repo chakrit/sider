@@ -30,7 +30,7 @@ namespace Sider
 
       // rebuild the client if it's disposed
       if (client.IsDisposed)
-        _clientRef.Value = client = buildClient();
+        client = _clientRef.Value = buildClient();
 
       return client;
     }
