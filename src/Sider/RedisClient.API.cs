@@ -522,7 +522,7 @@ namespace Sider
 
     public int ZRemRangeByScore(string key, double minIncl, double maxIncl)
     {
-      writeCmd("ZREMRANGEBYRANK", key, formatDouble(minIncl), formatDouble(maxIncl));
+      writeCmd("ZREMRANGEBYSCORE", key, formatDouble(minIncl), formatDouble(maxIncl));
       return readInt();
     }
 
