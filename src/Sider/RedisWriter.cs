@@ -88,7 +88,7 @@ namespace Sider
       // TODO: This can probably be better functionally in a try/catch helper
       //       method that accepts the entire block below as a parameter
       // RedisReader.ReadBulkTo should looks about the same
-      using (var wrapper = new AbsorbingStreamWrapper(source)) {
+      using (var wrapper = new AbsorbingStreamWrapper(_stream)) {
         while (bytesLeft > 0) {
           chunkSize = bytesLeft > _buffer.Length ? _buffer.Length : bytesLeft;
           bytesRead = source.Read(_buffer, 0, chunkSize);
