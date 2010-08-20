@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 
 namespace Sider
 {
+  [DebuggerNonUserCode]
   internal static partial class Assert
   {
     [Conditional("DEBUG")]

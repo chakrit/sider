@@ -103,8 +103,6 @@ namespace Sider
         wrapper.ThrowIfError();
       }
 
-      Assert.IsTrue(bytesRead == count,
-       () => new InvalidOperationException("Not enough data."));
       writeCrLf();
     }
 
