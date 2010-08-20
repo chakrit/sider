@@ -7,7 +7,7 @@ namespace Sider
 {
   public class RedisWriter
   {
-    public const int DefaultBufferSize = 256;
+    public const int DefaultBufferSize = 4096;
 
 
     public static byte[] CrLfBuffer = new byte[] { 0x0D, 0x0A };
@@ -16,7 +16,7 @@ namespace Sider
     private Stream _stream;
     private byte[] _buffer;
 
-    public RedisWriter(Stream stream, int _bufferSize = 256)
+    public RedisWriter(Stream stream, int _bufferSize = DefaultBufferSize)
     {
       Assert.ArgumentNotNull(() => stream);
       Assert.ArgumentPositive(() => _bufferSize);
@@ -31,6 +31,7 @@ namespace Sider
     {
       Assert.ArgumentNotNull(() => str);
 
+      // TODO: Account for strings larger than the buffer
       var bytesWrote = Encoding.Default.GetBytes(str, 0, str.Length, _buffer, 0);
       _stream.Write(_buffer, 0, bytesWrote);
       writeCrLf();
