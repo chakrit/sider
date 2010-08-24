@@ -506,41 +506,75 @@ namespace Sider.Tests
     [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
     public void ReadBulkTo_StreamIsNull_ExceptionThrown()
     {
-      readBulk_withStream_exceptionTest("0123\r\n", null, 4);
+      readBulkTo_withStream_exceptionTest("0123\r\n", null, 4);
     }
 
     [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
     public void ReadBulkTo_LengthIsNegative_ExceptionThrown()
     {
-      readBulk_withStream_exceptionTest("0123\r\n", new MemoryStream(), -1);
+      readBulkTo_withStream_exceptionTest("0123\r\n", new MemoryStream(), -1);
     }
 
     [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
     public void ReadBulkTo_NegativeBufferSize_ExceptionThrown()
     {
-      readBulk_withStream_exceptionTest("012345\r\n",
+      readBulkTo_withStream_exceptionTest("012345\r\n",
         new MemoryStream(), 6, -1);
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
     public void ReadBulkTo_DataWithNoCrLf_ExceptionThrown()
     {
-      readBulk_withStream_exceptionTest("012345",
+      readBulkTo_withStream_exceptionTest("012345",
         new MemoryStream(), 6);
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
     public void ReadBulkTo_DataWithJustCr_ExceptionThrown()
     {
-      readBulk_withStream_exceptionTest("012345\r",
+      readBulkTo_withStream_exceptionTest("012345\r",
         new MemoryStream(), 6);
     }
 
     [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
     public void ReadBulkTo_DataWithJustLf_ExceptionThrown()
     {
-      readBulk_withStream_exceptionTest("012345\n",
+      readBulkTo_withStream_exceptionTest("012345\n",
         new MemoryStream(), 6);
+    }
+
+    [TestMethod, ExpectedException(typeof(MyException))]
+    public void ReadBulkTo_OutputStreamFailedMidway_ExceptionThrown()
+    {
+      var testStream = new TestExceptionStream(5, new MyException());
+      readBulkTo_withStream_exceptionTest("0123456789\r\n", testStream, 10);
+    }
+
+    // test that, if the stream supplied to ReadBulkTo threw an exception during
+    // Read/Write for whatever reason, all data is still properly read out of
+    // the socket (as to maintain proper stream position for next read)
+    [TestMethod]
+    public void ReadBulkTo_OutputStreamFailedMidway_ProtocolStillMaintained()
+    {
+      var testStream = new TestExceptionStream(5, new MyException());
+      var memStream = new MemoryStream();
+
+      string result = null;
+      var data = "0123456789";
+      var reader = createReader(data + "\r\n" + data + "\r\n");
+
+      try {
+        reader.ReadBulkTo(testStream, 10);
+        Assert.Fail("Expected MyException to be thrown.");
+      }
+      catch (MyException) {
+        reader.ReadBulkTo(memStream, 10);
+        result = Encoding.UTF8.GetString(memStream.ToArray());
+      }
+
+      Assert.IsNotNull(result);
+      Assert.AreEqual(data.Length, result.Length);
+      Assert.AreEqual(data, result);
     }
 
     [TestMethod]
@@ -586,7 +620,7 @@ namespace Sider.Tests
     }
 
 
-    private void readBulk_withStream_exceptionTest(string data, Stream s, int length,
+    private void readBulkTo_withStream_exceptionTest(string data, Stream s, int length,
       int? bufferSize = null)
     {
       var reader = createReader(data);

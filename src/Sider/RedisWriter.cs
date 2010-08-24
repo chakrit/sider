@@ -101,10 +101,9 @@ namespace Sider
           bytesLeft -= bytesRead;
         }
 
+        writeCrLf();
         wrapper.ThrowIfError();
       }
-
-      writeCrLf();
     }
 
 

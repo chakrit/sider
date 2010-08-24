@@ -182,15 +182,15 @@ namespace Sider
           wrapper.Write(buffer, 0, bytesRead);
         }
 
+        // eat up crlf
+        var b = _stream.ReadByte();
+        b = _stream.ReadByte();
+
         wrapper.ThrowIfError();
+
+        Assert.IsTrue(b == '\n',
+          () => new ResponseException("Expected CRLF, got '" + ((char)b) + "' instead."));
       }
-
-      // eat up crlf
-      var b = _stream.ReadByte();
-      b = _stream.ReadByte();
-
-      Assert.IsTrue(b == '\n',
-        () => new ResponseException("Expected CRLF, got '" + ((char)b) + "' instead."));
     }
   }
 }

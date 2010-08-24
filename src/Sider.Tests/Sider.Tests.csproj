@@ -48,10 +48,12 @@
     <Compile Include="..\..\SiderAssemblyInfo.cs">
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="MyException.cs" />
     <Compile Include="RedisClientTests.cs" />
     <Compile Include="RedisReaderTests.cs" />
     <Compile Include="RedisWriterTests.cs" />
     <Compile Include="SiderTestBase.cs" />
+    <Compile Include="TestExceptionStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sider\Sider.csproj">
