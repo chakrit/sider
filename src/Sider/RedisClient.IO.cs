@@ -295,10 +295,7 @@ namespace Sider
 
       }
       catch (Exception ex) {
-        if (!(ex is IOException ||
-          ex is ObjectDisposedException))
-          Dispose();
-
+        ensureClientState(ex);
         throw;
       }
     }
@@ -318,12 +315,21 @@ namespace Sider
 
       }
       catch (Exception ex) {
-        if (!(ex is IOException ||
-          ex is ObjectDisposedException))
-          Dispose();
-
+        ensureClientState(ex);
         throw;
       }
+    }
+
+    private void ensureClientState(Exception ex)
+    {
+      // TODO: Absorbing a generic IOException might be too dangerous.
+      //       Multibulk operations may still cause the reader/writer into
+      //       invalid states. e.g. First reads error, then absorbed, then
+      //       other required bulk read skipped (but client is not disposed
+      //       so user may issue more bulk commands and encounter parsing
+      //       exceptions)
+      if (!(ex is IOException || ex is ObjectDisposedException))
+        Dispose();
     }
   }
 }

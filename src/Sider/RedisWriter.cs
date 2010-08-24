@@ -16,14 +16,14 @@ namespace Sider
     private Stream _stream;
     private byte[] _buffer;
 
-    public RedisWriter(Stream stream, int _bufferSize = DefaultBufferSize)
+    public RedisWriter(Stream stream, int bufferSize = DefaultBufferSize)
     {
       Assert.ArgumentNotNull(() => stream);
-      Assert.ArgumentPositive(() => _bufferSize);
+      Assert.ArgumentPositive(() => bufferSize);
       Assert.ArgumentSatisfy(() => stream, s => s.CanWrite, "Stream must be writable.");
 
       _stream = stream;
-      _buffer = new byte[_bufferSize];
+      _buffer = new byte[bufferSize];
     }
 
 
@@ -84,21 +84,19 @@ namespace Sider
       var chunkSize = 0;
       var bytesRead = 0;
 
-      // absorb exceptions to maintain valid reader state
-      // rethrow when we've properly read out all the bytes
-      // TODO: This can probably be better functionally in a try/catch helper
-      //       method that accepts the entire block below as a parameter
+      // absorb user-supplied stream read exceptions
+      // to maintain valid writer state and then
+      // rethrow when we've properly written out all the garbled bytes
       // RedisReader.ReadBulkTo should looks about the same
-      using (var wrapper = new AbsorbingStreamWrapper(_stream)) {
+      using (var wrapper = new AbsorbingStreamWrapper(source)) {
         while (bytesLeft > 0) {
           chunkSize = bytesLeft > _buffer.Length ? _buffer.Length : bytesLeft;
-          bytesRead = source.Read(_buffer, 0, chunkSize);
+          bytesLeft -= bytesRead = wrapper.Read(_buffer, 0, chunkSize);
 
           Assert.IsTrue(bytesRead > 0,
             () => new InvalidOperationException("Stream does not contains enough data."));
 
-          wrapper.Write(_buffer, 0, bytesRead);
-          bytesLeft -= bytesRead;
+          _stream.Write(_buffer, 0, bytesRead);
         }
 
         writeCrLf();

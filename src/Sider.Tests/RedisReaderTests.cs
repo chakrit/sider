@@ -544,7 +544,7 @@ namespace Sider.Tests
     }
 
     [TestMethod, ExpectedException(typeof(MyException))]
-    public void ReadBulkTo_OutputStreamFailedMidway_ExceptionThrown()
+    public void ReadBulkTo_OutputStreamFailedMidway_ExceptionPreservedAndThrown()
     {
       var testStream = new TestExceptionStream(5, new MyException());
       readBulkTo_withStream_exceptionTest("0123456789\r\n", testStream, 10);
@@ -556,20 +556,20 @@ namespace Sider.Tests
     [TestMethod]
     public void ReadBulkTo_OutputStreamFailedMidway_ProtocolStillMaintained()
     {
-      var testStream = new TestExceptionStream(5, new MyException());
-      var memStream = new MemoryStream();
+      var errorStream = new TestExceptionStream(5, new MyException());
+      var validStream = new MemoryStream();
 
       string result = null;
       var data = "0123456789";
       var reader = createReader(data + "\r\n" + data + "\r\n");
 
       try {
-        reader.ReadBulkTo(testStream, 10);
+        reader.ReadBulkTo(errorStream, 10);
         Assert.Fail("Expected MyException to be thrown.");
       }
       catch (MyException) {
-        reader.ReadBulkTo(memStream, 10);
-        result = Encoding.UTF8.GetString(memStream.ToArray());
+        reader.ReadBulkTo(validStream, 10);
+        result = Encoding.UTF8.GetString(validStream.ToArray());
       }
 
       Assert.IsNotNull(result);

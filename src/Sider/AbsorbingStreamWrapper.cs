@@ -62,6 +62,13 @@ namespace Sider
       try { return _target.Read(buffer, offset, count); }
       catch (Exception ex) {
         _ex = ex;
+
+        // return a zero-ed out buffer incase of exception
+        if (count > buffer.Length) count = buffer.Length;
+
+        for (var i = 0; i < count; i++)
+          buffer[i] = 0x00;
+
         return count;
       }
     }

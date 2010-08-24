@@ -19,12 +19,19 @@ namespace Sider.Tests
       public byte[] Buffer { get; set; }
     }
 
-    private WriterInfo createWriter(int bufferSize = 1024)
+    private WriterInfo createWriter(int bufferSize = 1024,
+      int? writerBufferSize = null)
     {
       var buffer = new byte[bufferSize];
       var stream = new MemoryStream(buffer, true);
+      stream.SetLength(0);
+
+      var writer = writerBufferSize.HasValue ?
+        new RedisWriter(stream, writerBufferSize.Value) :
+        new RedisWriter(stream);
+
       return new WriterInfo {
-        Writer = new RedisWriter(stream),
+        Writer = writer,
         Stream = stream,
         Buffer = buffer
       };
@@ -234,7 +241,6 @@ namespace Sider.Tests
     public void WriteBulk_WithOffset_LargeBuffer_StreamContainsBufferWithCrLf()
     {
       var buffer = getRandomBuffer(RedisWriter.DefaultBufferSize * 4);
-
       writeBulk_writeTestCore(w => w.WriteBulk(buffer, 0, buffer.Length), buffer);
     }
 
@@ -256,6 +262,61 @@ namespace Sider.Tests
     public void WriteBulkFrom_NegativeCount_ExceptionThrown()
     {
       writeBulkFrom_exceptionTest(new MemoryStream(getRandomBuffer()), -1);
+    }
+
+    [TestMethod, ExpectedException(typeof(MyException))]
+    public void WriteBulkFrom_InputStreamFailedMidway_ExceptionPreservedAndThrown()
+    {
+      var buffer = getRandomBuffer(10);
+      var stream = new TestExceptionStream(new MemoryStream(buffer),
+        5, new MyException());
+
+      writeBulk_writeTestCore(w => w.WriteBulkFrom(stream, buffer.Length), buffer);
+    }
+
+    [TestMethod]
+    public void WriteBulkFrom_InputStreamFailedMidway_ProtocolStillMaintained()
+    {
+      var errorIdx = 4; // error at the 5th byte
+      var buffer = getRandomBuffer(10);
+      var validStream = new MemoryStream(buffer, false);
+      var errorStream = new TestExceptionStream(new MemoryStream(buffer, false),
+        errorIdx + 1, new MyException());
+
+      // create a writer with only 1 byte buffer size, so all the bytes before
+      // the error point is written through to the output stream
+      var pack = createWriter(writerBufferSize: 1);
+
+      // write twice
+      try {
+        pack.Writer.WriteBulkFrom(errorStream, buffer.Length);
+        Assert.Fail("Expected MyException to be thrown.");
+      }
+      catch (MyException) {
+        pack.Writer.WriteBulkFrom(validStream, buffer.Length);
+      }
+
+      pack.Stream.Flush();
+      Assert.AreEqual(pack.Stream.Length, 2 * (10 /*buffer*/ + 2 /*CRLF*/));
+
+      // check the series of bytes in the buffer before the error point
+      var bufferIdx = 0;
+      for (; bufferIdx < errorIdx; bufferIdx++)
+        Assert.AreEqual(buffer[bufferIdx], pack.Buffer[bufferIdx]);
+
+      // skip the rest of the buffer since the result is undefined
+      bufferIdx = 10;
+
+      // ensure, though, that the protocol is still maintained
+      Assert.AreEqual(pack.Buffer[bufferIdx++], 0x0D);
+      Assert.AreEqual(pack.Buffer[bufferIdx++], 0x0A);
+
+      // check the second written buffer, it should also be correct
+      for (; bufferIdx < 22; bufferIdx++)
+        Assert.AreEqual(pack.Buffer[bufferIdx], buffer[bufferIdx - 12]);
+
+      Assert.AreEqual(pack.Buffer[bufferIdx++], 0x0D);
+      Assert.AreEqual(pack.Buffer[bufferIdx++], 0x0A);
     }
 
     [TestMethod]

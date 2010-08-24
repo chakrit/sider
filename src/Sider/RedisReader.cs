@@ -170,10 +170,10 @@ namespace Sider
       var bytesLeft = bulkLength;
       var bytesRead = 0;
 
-      // absorb exceptions to maintain valid reader state
+      // absorb user-supplied stream write exceptions
+      // to maintain valid reader state and then
       // rethrow when we've properly read out all the bytes
-      // TODO: This can probably be better functionally in a try/catch helper
-      //       method that accepts the entire block below as a parameter
+      // RedisReader.WriteBulkFrom should looks about the same
       using (var wrapper = new AbsorbingStreamWrapper(target)) {
         while (bytesLeft > 0) {
           chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;

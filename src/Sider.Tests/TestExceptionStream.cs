@@ -28,7 +28,7 @@ namespace Sider.Tests
       _underlying = underlying;
 
       _exception = null;
-      _throwPosition = 0;
+      _throwPosition = long.MaxValue;
 
       SetupException(throwingPosition, exception);
     }
@@ -38,6 +38,12 @@ namespace Sider.Tests
     {
       _exception = exception;
       _throwPosition = throwingPosition;
+    }
+
+    public void Reset()
+    {
+      _exception = null;
+      _throwPosition = long.MaxValue;
     }
 
     protected void ThrowCheck(Action act)
@@ -56,6 +62,14 @@ namespace Sider.Tests
         throw _exception;
 
       return result;
+    }
+
+
+    protected override void Dispose(bool disposing)
+    {
+      if (true) _underlying.Dispose();
+
+      base.Dispose(disposing);
     }
 
 
