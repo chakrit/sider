@@ -16,8 +16,8 @@ namespace Sider
 
     public RedisReader(Stream stream)
     {
-      Assert.ArgumentNotNull(() => stream);
-      Assert.ArgumentSatisfy(() => stream, s => s.CanRead, "Stream must be readable.");
+      SAssert.ArgumentNotNull(() => stream);
+      SAssert.ArgumentSatisfy(() => stream, s => s.CanRead, "Stream must be readable.");
 
       // Use a wrapper to absorbs write exceptions since we don't have control
       // over the supplied Stream but should still maintains a valid reader
@@ -30,7 +30,7 @@ namespace Sider
     {
       var b = _stream.ReadByte();
 
-      Assert.IsTrue(Enum.IsDefined(typeof(ResponseType), b),
+      SAssert.IsTrue(Enum.IsDefined(typeof(ResponseType), b),
         () => new ResponseException("Invalid response data, expected a response type character"));
 
       return (ResponseType)b;
@@ -58,14 +58,14 @@ namespace Sider
         // digit to the end e.g. "99" + "7" = 99 * 10 + 7 = "997"
         num = (num * 10) + b - '0';
 
-        Assert.IsTrue(b >= '0' && b <= '9',
+        SAssert.IsTrue(b >= '0' && b <= '9',
           () => new ResponseException("Expecting a digit, found instead: " + (char)b));
       }
 
       // consume leftover LF
       b = _stream.ReadByte();
 
-      Assert.IsTrue(b == '\n',
+      SAssert.IsTrue(b == '\n',
         () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
 
       return negate ? -num : num;
@@ -89,13 +89,13 @@ namespace Sider
 
         num = (num * 10) + b - '0';
 
-        Assert.IsTrue(b >= '0' && b <= '9',
+        SAssert.IsTrue(b >= '0' && b <= '9',
           () => new ResponseException("Expected a digit, found instead: " + (char)b));
       }
 
       b = _stream.ReadByte();
 
-      Assert.IsTrue(b == '\n',
+      SAssert.IsTrue(b == '\n',
         () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
 
       return negate ? -num : num;
@@ -115,7 +115,7 @@ namespace Sider
       // consume leftover LF
       b = _stream.ReadByte();
 
-      Assert.IsTrue(b == '\n',
+      SAssert.IsTrue(b == '\n',
         () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
 
       return sb.ToString();
@@ -123,7 +123,7 @@ namespace Sider
 
     public byte[] ReadBulk(int length)
     {
-      Assert.ArgumentNonNegative(() => length);
+      SAssert.ArgumentNonNegative(() => length);
 
       var buffer = new byte[length];
       ReadBulk(buffer, 0, length);
@@ -133,20 +133,20 @@ namespace Sider
 
     public void ReadBulk(byte[] buffer, int offset, int bulkLength)
     {
-      Assert.ArgumentNotNull(() => buffer);
-      Assert.ArgumentNonNegative(() => bulkLength);
+      SAssert.ArgumentNotNull(() => buffer);
+      SAssert.ArgumentNonNegative(() => bulkLength);
 
       // special case for empty reads
       if (offset == 0 && bulkLength == 0) return;
 
-      Assert.ArgumentBetween(() => offset, 0, buffer.Length);
-      Assert.ArgumentSatisfy(() => offset, o => o + bulkLength <= buffer.Length,
+      SAssert.ArgumentBetween(() => offset, 0, buffer.Length);
+      SAssert.ArgumentSatisfy(() => offset, o => o + bulkLength <= buffer.Length,
         "Offset plus bulkLength is larger than the supplied buffer.");
 
       // read data from the stream, expect as much data as there's bulkLength
       var bytesRead = _stream.Read(buffer, 0, bulkLength);
 
-      Assert.IsTrue(bytesRead == bulkLength,
+      SAssert.IsTrue(bytesRead == bulkLength,
         () => new ResponseException("Expected " + bulkLength.ToString() +
           " bytes of bulk data, but only " + bytesRead.ToString() + " bytes are read."));
 
@@ -154,16 +154,16 @@ namespace Sider
       var b = _stream.ReadByte();
       b = _stream.ReadByte();
 
-      Assert.IsTrue(b == '\n',
+      SAssert.IsTrue(b == '\n',
         () => new ResponseException("Expected CRLF, found instead: " + (char)b));
     }
 
     public void ReadBulkTo(Stream target, int bulkLength,
       int bufferSize = DefaultBufferSize)
     {
-      Assert.ArgumentNotNull(() => target);
-      Assert.ArgumentNonNegative(() => bulkLength);
-      Assert.ArgumentPositive(() => bufferSize);
+      SAssert.ArgumentNotNull(() => target);
+      SAssert.ArgumentNonNegative(() => bulkLength);
+      SAssert.ArgumentPositive(() => bufferSize);
 
       var buffer = new byte[bufferSize];
       var chunkSize = 0;
@@ -188,7 +188,7 @@ namespace Sider
 
         wrapper.ThrowIfError();
 
-        Assert.IsTrue(b == '\n',
+        SAssert.IsTrue(b == '\n',
           () => new ResponseException("Expected CRLF, got '" + ((char)b) + "' instead."));
       }
     }

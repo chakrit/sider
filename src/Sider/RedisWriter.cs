@@ -18,9 +18,9 @@ namespace Sider
 
     public RedisWriter(Stream stream, int bufferSize = DefaultBufferSize)
     {
-      Assert.ArgumentNotNull(() => stream);
-      Assert.ArgumentPositive(() => bufferSize);
-      Assert.ArgumentSatisfy(() => stream, s => s.CanWrite, "Stream must be writable.");
+      SAssert.ArgumentNotNull(() => stream);
+      SAssert.ArgumentPositive(() => bufferSize);
+      SAssert.ArgumentSatisfy(() => stream, s => s.CanWrite, "Stream must be writable.");
 
       _stream = stream;
       _buffer = new byte[bufferSize];
@@ -29,7 +29,7 @@ namespace Sider
 
     public void WriteLine(string str)
     {
-      Assert.ArgumentNotNull(() => str);
+      SAssert.ArgumentNotNull(() => str);
 
       // TODO: Account for strings larger than the buffer
       var bytesWrote = Encoding.Default.GetBytes(str, 0, str.Length, _buffer, 0);
@@ -45,7 +45,7 @@ namespace Sider
 
     public void WriteTypeChar(ResponseType type)
     {
-      Assert.ArgumentSatisfy(() => type,
+      SAssert.ArgumentSatisfy(() => type,
         v => Enum.IsDefined(typeof(ResponseType), v), "Invalid type char.");
 
       _stream.WriteByte((byte)type);
@@ -54,21 +54,21 @@ namespace Sider
 
     public void WriteBulk(byte[] buffer)
     {
-      Assert.ArgumentNotNull(() => buffer);
+      SAssert.ArgumentNotNull(() => buffer);
 
       WriteBulk(buffer, 0, buffer.Length);
     }
 
     public void WriteBulk(byte[] buffer, int offset, int count)
     {
-      Assert.ArgumentNotNull(() => buffer);
+      SAssert.ArgumentNotNull(() => buffer);
 
       if (!(offset == 0 && count == 0)) {
-        Assert.ArgumentBetween(() => offset, 0, buffer.Length);
-        Assert.ArgumentBetween(() => count, 0, buffer.Length + 1);
+        SAssert.ArgumentBetween(() => offset, 0, buffer.Length);
+        SAssert.ArgumentBetween(() => count, 0, buffer.Length + 1);
       }
 
-      Assert.ArgumentSatisfy(() => offset, o => o + count <= buffer.Length,
+      SAssert.ArgumentSatisfy(() => offset, o => o + count <= buffer.Length,
         "Offset plus count is larger than the buffer.");
 
       _stream.Write(buffer, offset, count);
@@ -77,8 +77,8 @@ namespace Sider
 
     public void WriteBulkFrom(Stream source, int count)
     {
-      Assert.ArgumentNotNull(() => source);
-      Assert.ArgumentNonNegative(() => count);
+      SAssert.ArgumentNotNull(() => source);
+      SAssert.ArgumentNonNegative(() => count);
 
       var bytesLeft = count;
       var chunkSize = 0;
@@ -93,7 +93,7 @@ namespace Sider
           chunkSize = bytesLeft > _buffer.Length ? _buffer.Length : bytesLeft;
           bytesLeft -= bytesRead = wrapper.Read(_buffer, 0, chunkSize);
 
-          Assert.IsTrue(bytesRead > 0,
+          SAssert.IsTrue(bytesRead > 0,
             () => new InvalidOperationException("Stream does not contains enough data."));
 
           _stream.Write(_buffer, 0, bytesRead);

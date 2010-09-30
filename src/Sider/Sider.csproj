@@ -45,8 +45,8 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AbsorbingStreamWrapper.cs" />
-    <Compile Include="Assert.cs" />
-    <Compile Include="Assert.Response.cs" />
+    <Compile Include="SAssert.cs" />
+    <Compile Include="SAssert.Response.cs" />
     <Compile Include="IClientsPool.cs" />
     <Compile Include="IRedisClient.cs" />
     <Compile Include="RedisClient.API.cs" />

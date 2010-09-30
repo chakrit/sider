@@ -37,7 +37,7 @@ namespace Sider
       _writer = new RedisWriter(_stream);
     }
 
-    public RedisClient(Stream incoming, Stream outgoing)
+    internal RedisClient(Stream incoming, Stream outgoing)
     {
       _socket = null;
       _stream = null;
@@ -50,7 +50,7 @@ namespace Sider
     [Conditional("DEBUG")]
     private void ensureNotDisposed()
     {
-      Assert.IsTrue(!_disposed,
+      SAssert.IsTrue(!_disposed,
         () => new ObjectDisposedException(
           "RedisClient is disposed or is in an invalid state and is no longer usable."));
     }

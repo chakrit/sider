@@ -243,7 +243,7 @@ namespace Sider
 
         for (var i = 0; i < count; i++) {
           var type = r.ReadTypeChar();
-          Assert.ResponseType(ResponseType.Bulk, type);
+          SAssert.ResponseType(ResponseType.Bulk, type);
 
           var length = r.ReadNumberLine();
           if (length > -1)
@@ -265,13 +265,13 @@ namespace Sider
 
         for (var i = 0; i < count; i++) {
           var type = r.ReadTypeChar();
-          Assert.ResponseType(ResponseType.Bulk, type);
+          SAssert.ResponseType(ResponseType.Bulk, type);
 
           var length = r.ReadNumberLine();
           var key = decodeStr(r.ReadBulk(length));
 
           type = r.ReadTypeChar();
-          Assert.ResponseType(ResponseType.Bulk, type);
+          SAssert.ResponseType(ResponseType.Bulk, type);
 
           length = r.ReadNumberLine();
           var value = decodeStr(r.ReadBulk(length));
@@ -309,7 +309,7 @@ namespace Sider
         // TODO: Add logging
         // TODO: Add error-checking support to reads
         var type = _reader.ReadTypeChar();
-        Assert.ResponseType(expectedType, type);
+        SAssert.ResponseType(expectedType, type);
 
         return readFunc(_reader);
 

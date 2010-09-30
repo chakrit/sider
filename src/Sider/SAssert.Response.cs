@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Sider
 {
-  internal static partial class Assert
+  internal static partial class SAssert
   {
     [Conditional("DEBUG")]
     public static void ResponseType(ResponseType expected, ResponseType actual)

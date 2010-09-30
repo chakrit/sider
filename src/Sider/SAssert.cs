@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 namespace Sider
 {
   [DebuggerNonUserCode]
-  internal static partial class Assert
+  internal static partial class SAssert
   {
     [Conditional("DEBUG")]
     public static void ArgumentNotNull(Expression<Func<object>> expr)
