@@ -57,21 +57,22 @@ Internally, a .NET 40 `ThreadLocal<T>` is used.
 Both the client and the clients pool can be plugged into an IoC by using the respective
 `IRedisClient` and `IClientsPool` interface respectively.
 
-You can also fine-tune buffer sizes and timeouts to your liking by passing a
+You can also fine-tune buffer sizes to your liking by passing a
 `RedisSettings` instance like so:
 
     var settings = new RedisSettings(
     host: "192.168.192.111",
-    socketPollingInterval: 10000, // as per timeout value in redis.conf
+    port: 6379,
+    autoReconnectOnIdle: false,   // if no idle client disconnection
     readBufferSize: 256,          // optimize for small reads
-    writeBufferSize: 8192);       // optimize for heavy writes
+    writeBufferSize: 65536);       // optimize for heavy writes
 
     var pool = new ThreadwisePool(settings);
     var client = pool.GetClient();
 
     // or, pass directly to client
     client = new RedisClient(settings);
-        
+     
 ...
 
 # License

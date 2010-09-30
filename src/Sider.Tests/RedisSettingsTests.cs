@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Diagnostics;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -45,24 +44,6 @@ namespace Sider.Tests
         new RedisSettings(writeBufferSize: 0));
       Expect<ArgumentOutOfRangeException>(() =>
         new RedisSettings(writeBufferSize: int.MinValue));
-    }
-
-    [TestMethod]
-    public void Ctor_TooLowPollingInterval_ExceptionThrown()
-    {
-      Expect<ArgumentOutOfRangeException>(() =>
-        new RedisSettings(socketPollingInterval: 0));
-      Expect<ArgumentOutOfRangeException>(() =>
-        new RedisSettings(socketPollingInterval: int.MinValue));
-    }
-
-    [TestMethod]
-    public void Ctor_TooLowPollTimeout_ExceptionThrown()
-    {
-      Expect<ArgumentOutOfRangeException>(() =>
-        new RedisSettings(socketPollTimeout: 0));
-      Expect<ArgumentOutOfRangeException>(() =>
-        new RedisSettings(socketPollTimeout: int.MinValue));
     }
   }
 }

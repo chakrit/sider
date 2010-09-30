@@ -15,6 +15,7 @@ namespace Sider
     private RedisReader _reader;
     private RedisWriter _writer;
 
+    private DateTime _lastWriteTime;
     private bool _disposed;
 
 
@@ -45,15 +46,21 @@ namespace Sider
 
     public void Reset()
     {
+      Debug.WriteLine("RESET");
+
       _socket = new Socket(AddressFamily.InterNetwork,
         SocketType.Stream,
         ProtocolType.Tcp);
 
+      _socket.ReceiveBufferSize = _settings.ReadBufferSize;
+      _socket.SendBufferSize = _settings.WriteBufferSize;
       _socket.Connect(_settings.Host, _settings.Port);
-      _stream = new NetworkStream(_socket, FileAccess.ReadWrite);
 
-      _reader = new RedisReader(_stream);
-      _writer = new RedisWriter(_stream);
+      _stream = new NetworkStream(_socket, FileAccess.ReadWrite);
+      _reader = new RedisReader(_stream, _settings);
+      _writer = new RedisWriter(_stream, _settings);
+
+      _lastWriteTime = DateTime.Now;
     }
 
 
@@ -63,17 +70,6 @@ namespace Sider
       SAssert.IsTrue(!_disposed,
         () => new ObjectDisposedException(
           "RedisClient is disposed or is in an invalid state and is no longer usable."));
-    }
-
-    // check in case Redis dropped idle connections
-    private void ensureSocketWritable()
-    {
-      if (_socket == null)
-        return;
-
-      // reconnect if connection's dropped
-      if (!_socket.Poll(_settings.SocketPollTimeouot, SelectMode.SelectWrite))
-        Reset();
     }
 
 

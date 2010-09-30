@@ -287,7 +287,6 @@ namespace Sider
     private void writeCore(Action<RedisWriter> writeAction)
     {
       ensureNotDisposed();
-      ensureSocketWritable();
 
       try {
         // TODO: Add pipelining support by recording writes
@@ -296,8 +295,25 @@ namespace Sider
 
       }
       catch (Exception ex) {
+
         ensureClientState(ex);
-        throw;
+        if (_disposed)
+          throw;
+
+        // usually, this catch block is run because of
+        // idle connection timeouts from Redis side
+        if (!_settings.ReconnectOnIdle)
+          Dispose();
+
+        // try again one more time before giving up
+        try {
+          Reset();
+          writeAction(_writer);
+        }
+        catch (Exception ex_) {
+          ensureClientState(ex_);
+          throw;
+        }
       }
     }
 
@@ -313,7 +329,6 @@ namespace Sider
         SAssert.ResponseType(expectedType, type);
 
         return readFunc(_reader);
-
       }
       catch (Exception ex) {
         ensureClientState(ex);

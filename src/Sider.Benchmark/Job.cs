@@ -5,7 +5,7 @@ namespace Sider.Benchmark
 {
   public abstract class Job
   {
-    public RedisClient Client { get; set; }
+    public IRedisClient Client { get; set; }
     public abstract string Description { get; }
 
 

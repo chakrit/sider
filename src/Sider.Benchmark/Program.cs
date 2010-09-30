@@ -11,13 +11,19 @@ namespace Sider.Benchmark
     public static void Main(string[] args) { (new Program()).Run(); }
 
 
+    private RedisSettings _settings;
+    private IClientsPool _pool;
+
     public void Run()
     {
-      // configuration
-      var instances = 8;
-      var iterations = 2000;
+      // configure benchmark parameters here:
+      var instances = 4;
+      var iterations = 100;
 
       Func<Job> getJob = () => new GetToJob();
+
+      _settings = new RedisSettings(socketPollingInterval: 1, socketPollTimeout: 5000);
+      _pool = new RotatedPool(_settings, instances);
 
 
       while (true) {
@@ -74,7 +80,8 @@ namespace Sider.Benchmark
 
     private BenchmarkResult benchMark(Job job, int iterations)
     {
-      var client = job.Client = new RedisClient();
+      var client = job.Client =
+        _pool == null ? new RedisClient() : _pool.GetClient();
       var sw = new Stopwatch();
 
       // setop
@@ -91,7 +98,8 @@ namespace Sider.Benchmark
       job.Teardown();
       job.Client = null;
 
-      client.Dispose();
+      // dispose client if not managed by a pool
+      if (_pool == null) client.Dispose();
 
       return new BenchmarkResult {
         Job = job,
