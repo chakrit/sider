@@ -9,19 +9,19 @@ namespace Sider
   // http://code.google.com/p/redis/wiki/ProtocolSpecification
   public partial class RedisReader
   {
-    public const int DefaultBufferSize = 256;
-
-
     private Stream _stream;
+    private RedisSettings _settings;
 
-    public RedisReader(Stream stream)
+
+    public RedisReader(Stream stream) : this(stream, new RedisSettings()) { }
+
+    public RedisReader(Stream stream, RedisSettings settings)
     {
       SAssert.ArgumentNotNull(() => stream);
       SAssert.ArgumentSatisfy(() => stream, s => s.CanRead, "Stream must be readable.");
+      SAssert.ArgumentNotNull(() => settings);
 
-      // Use a wrapper to absorbs write exceptions since we don't have control
-      // over the supplied Stream but should still maintains a valid reader
-      // state. Note that the wrapper does not dispose underlying stream.
+      _settings = settings;
       _stream = stream;
     }
 
@@ -155,11 +155,15 @@ namespace Sider
       b = _stream.ReadByte();
 
       SAssert.IsTrue(b == '\n',
-        () => new ResponseException("Expected CRLF, found instead: " + (char)b));
+        () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
     }
 
-    public void ReadBulkTo(Stream target, int bulkLength,
-      int bufferSize = DefaultBufferSize)
+    public void ReadBulkTo(Stream target, int bulkLength)
+    {
+      ReadBulkTo(target, bulkLength, _settings.ReadBufferSize);
+    }
+
+    public void ReadBulkTo(Stream target, int bulkLength, int bufferSize)
     {
       SAssert.ArgumentNotNull(() => target);
       SAssert.ArgumentNonNegative(() => bulkLength);

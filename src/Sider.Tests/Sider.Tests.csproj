@@ -51,6 +51,7 @@
     <Compile Include="MyException.cs" />
     <Compile Include="RedisClientTests.cs" />
     <Compile Include="RedisReaderTests.cs" />
+    <Compile Include="RedisSettingsTests.cs" />
     <Compile Include="RedisWriterTests.cs" />
     <Compile Include="SiderTestBase.cs" />
     <Compile Include="TestExceptionStream.cs" />

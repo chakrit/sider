@@ -29,7 +29,7 @@ namespace Sider.Tests
 
     private RedisReader createReader(Stream s)
     {
-      return new RedisReader(s);
+      return new RedisReader(s, new RedisSettings());
     }
 
 
@@ -54,6 +54,12 @@ namespace Sider.Tests
 
         File.Delete(tempFile);
       }
+    }
+
+    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    public void Ctor_SettingsIsNull_ExceptionThrown()
+    {
+      new RedisReader(new MemoryStream(new byte[] { 0xFF }), null);
     }
 
 

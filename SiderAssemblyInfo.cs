@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-//[assembly: InternalsVisibleTo("Sider.Tests")]
+[assembly: InternalsVisibleTo("Sider.Tests")]
 
 #pragma warning disable 1607
 [assembly: AssemblyVersion("0.0.*")]

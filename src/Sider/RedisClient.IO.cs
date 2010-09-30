@@ -287,6 +287,7 @@ namespace Sider
     private void writeCore(Action<RedisWriter> writeAction)
     {
       ensureNotDisposed();
+      ensureSocketWritable();
 
       try {
         // TODO: Add pipelining support by recording writes

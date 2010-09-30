@@ -27,7 +27,7 @@ namespace Sider.Tests
       stream.SetLength(0);
 
       var writer = writerBufferSize.HasValue ?
-        new RedisWriter(stream, writerBufferSize.Value) :
+        new RedisWriter(stream, new RedisSettings(writeBufferSize: writerBufferSize.Value)) :
         new RedisWriter(stream);
 
       return new WriterInfo {
@@ -53,16 +53,10 @@ namespace Sider.Tests
       new RedisWriter(null);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
-    public void Ctor_LineBufferSizeIsZero_ExceptionThrown()
+    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    public void Ctor_SettingsIsNull_ExceptionThrown()
     {
-      new RedisWriter(new MemoryStream(), 0);
-    }
-
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
-    public void Ctor_LineBufferSizeIsNegative_ExceptionThrown()
-    {
-      new RedisWriter(new MemoryStream(), -1);
+      new RedisWriter(new MemoryStream(new byte[] { 0xFF }), null);
     }
 
     [TestMethod, ExpectedException(typeof(ArgumentException)), Conditional("DEBUG")]
@@ -171,7 +165,7 @@ namespace Sider.Tests
     [TestMethod]
     public void WriteBulk_LargeBuffer_BufferWithCrLfWrittenToStream()
     {
-      var bufferSize = RedisWriter.DefaultBufferSize * 4;
+      var bufferSize = RedisSettings.DefaultWriterBufferSize * 4;
       var writeBuffer = getRandomBuffer(bufferSize);
 
       writeBulk_writeTestCore(w => w.WriteBulk(writeBuffer), writeBuffer);
@@ -240,7 +234,7 @@ namespace Sider.Tests
     [TestMethod]
     public void WriteBulk_WithOffset_LargeBuffer_StreamContainsBufferWithCrLf()
     {
-      var buffer = getRandomBuffer(RedisWriter.DefaultBufferSize * 4);
+      var buffer = getRandomBuffer(RedisSettings.DefaultWriterBufferSize * 4);
       writeBulk_writeTestCore(w => w.WriteBulk(buffer, 0, buffer.Length), buffer);
     }
 
@@ -347,7 +341,7 @@ namespace Sider.Tests
     [TestMethod]
     public void WriteBulkFrom_LargeData_AllDataAndCrLfWrittenToStream()
     {
-      var buffer = getRandomBuffer(RedisWriter.DefaultBufferSize * 4);
+      var buffer = getRandomBuffer(RedisSettings.DefaultWriterBufferSize * 4);
       using (var ms = new MemoryStream(buffer))
         writeBulk_writeTestCore(w => w.WriteBulkFrom(ms, buffer.Length), buffer);
     }

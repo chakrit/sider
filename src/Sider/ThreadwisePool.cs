@@ -9,15 +9,18 @@ namespace Sider
     // TODO: WeakReference? does this scales-down?
     private ThreadLocal<IRedisClient> _clientRef;
 
+    private RedisSettings _settings;
 
-    private string _host;
-    private int _port;
 
-    public ThreadwisePool(string host = RedisClient.DefaultHost,
-      int port = RedisClient.DefaultPort)
+    public ThreadwisePool(string host = RedisSettings.DefaultHost,
+      int port = RedisSettings.DefaultPort) :
+      this(new RedisSettings(host: host, port: port)) { }
+
+    public ThreadwisePool(RedisSettings settings)
     {
-      _host = host;
-      _port = port;
+      SAssert.ArgumentNotNull(() => settings);
+
+      _settings = settings;
 
       _clientRef = new ThreadLocal<IRedisClient>(buildClient);
     }
@@ -37,7 +40,7 @@ namespace Sider
 
     private IRedisClient buildClient()
     {
-      return new RedisClient(_host, _port);
+      return new RedisClient(_settings);
     }
   }
 }

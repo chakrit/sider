@@ -7,23 +7,27 @@ namespace Sider
 {
   public class RedisWriter
   {
-    public const int DefaultBufferSize = 4096;
-
-
     public static byte[] CrLfBuffer = new byte[] { 0x0D, 0x0A };
 
 
     private Stream _stream;
     private byte[] _buffer;
 
-    public RedisWriter(Stream stream, int bufferSize = DefaultBufferSize)
+    private RedisSettings _settings;
+
+
+    public RedisWriter(Stream stream) : this(stream, new RedisSettings()) { }
+
+    public RedisWriter(Stream stream, RedisSettings settings)
     {
       SAssert.ArgumentNotNull(() => stream);
-      SAssert.ArgumentPositive(() => bufferSize);
       SAssert.ArgumentSatisfy(() => stream, s => s.CanWrite, "Stream must be writable.");
+      SAssert.ArgumentNotNull(() => settings);
+
+      _settings = settings;
 
       _stream = stream;
-      _buffer = new byte[bufferSize];
+      _buffer = new byte[_settings.WriteBufferSize];
     }
 
 

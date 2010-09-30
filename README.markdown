@@ -10,9 +10,9 @@ possible which results in:
 * Simple API that maps directly to the Redis commands reference.
 * Easy to use, no gigantic class hierarchies to setup. No confusing method names.
 * As fast as my limited networking skills will allow.
-* Supports direct-to-Redis streaming mode for GET/SET and a few other similar
-  commands to allow Redis to be used to store really really
-  large blobs (e.g. user-uploaded files) without buffering.
+* Supports reading from and writing data to user-supplied streams for GET/SET
+  and a few other similar commands to allow Redis to be used to store really
+  really large blobs (e.g. user-uploaded files) efficiently memory-wise.
 * Upcoming no-frill pipelining support.
 
 As of 24th July 2010, all basic commands have been implemented except for the
@@ -56,6 +56,23 @@ Internally, a .NET 40 `ThreadLocal<T>` is used.
 
 Both the client and the clients pool can be plugged into an IoC by using the respective
 `IRedisClient` and `IClientsPool` interface respectively.
+
+You can also fine-tune buffer sizes and timeouts to your liking by passing a
+`RedisSettings` instance like so:
+
+    var settings = new RedisSettings(
+    host: "192.168.192.111",
+    socketPollingInterval: 10000, // as per timeout value in redis.conf
+    readBufferSize: 256,          // optimize for small reads
+    writeBufferSize: 8192);       // optimize for heavy writes
+
+    var pool = new ThreadwisePool(settings);
+    var client = pool.GetClient();
+
+    // or, pass directly to client
+    client = new RedisClient(settings);
+        
+...
 
 # License
 

@@ -8,13 +8,10 @@ namespace Sider
 {
   public partial class RedisClient : IRedisClient
   {
-    public const string DefaultHost = "localhost";
-    public const int DefaultPort = 6379;
-
-
     private Socket _socket;
     private Stream _stream;
 
+    private RedisSettings _settings;
     private RedisReader _reader;
     private RedisWriter _writer;
 
@@ -23,20 +20,20 @@ namespace Sider
 
     public bool IsDisposed { get { return _disposed; } }
 
-    public RedisClient(string host = DefaultHost, int port = DefaultPort)
+    public RedisClient(
+      string host = RedisSettings.DefaultHost,
+      int port = RedisSettings.DefaultPort) :
+      this(new RedisSettings(host: host, port: port)) { }
+
+    public RedisClient(RedisSettings settings)
     {
-      _socket = new Socket(AddressFamily.InterNetwork,
-        SocketType.Stream,
-        ProtocolType.Tcp);
+      SAssert.ArgumentNotNull(() => settings);
 
-      _socket.Connect(host, port);
-
-      _stream = new NetworkStream(_socket, FileAccess.ReadWrite);
-
-      _reader = new RedisReader(_stream);
-      _writer = new RedisWriter(_stream);
+      _settings = settings;
+      Reset();
     }
 
+    // for testing only
     internal RedisClient(Stream incoming, Stream outgoing)
     {
       _socket = null;
@@ -46,6 +43,19 @@ namespace Sider
       _writer = new RedisWriter(outgoing);
     }
 
+    public void Reset()
+    {
+      _socket = new Socket(AddressFamily.InterNetwork,
+        SocketType.Stream,
+        ProtocolType.Tcp);
+
+      _socket.Connect(_settings.Host, _settings.Port);
+      _stream = new NetworkStream(_socket, FileAccess.ReadWrite);
+
+      _reader = new RedisReader(_stream);
+      _writer = new RedisWriter(_stream);
+    }
+
 
     [Conditional("DEBUG")]
     private void ensureNotDisposed()
@@ -53,6 +63,17 @@ namespace Sider
       SAssert.IsTrue(!_disposed,
         () => new ObjectDisposedException(
           "RedisClient is disposed or is in an invalid state and is no longer usable."));
+    }
+
+    // check in case Redis dropped idle connections
+    private void ensureSocketWritable()
+    {
+      if (_socket == null)
+        return;
+
+      // reconnect if connection's dropped
+      if (!_socket.Poll(_settings.SocketPollTimeouot, SelectMode.SelectWrite))
+        Reset();
     }
 
 

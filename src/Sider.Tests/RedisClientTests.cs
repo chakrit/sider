@@ -47,6 +47,28 @@ namespace Sider.Tests
     }
 
     [TestMethod]
+    public void Ctor_HostIsNullOrEmpty_ExceptionThrown()
+    {
+      Expect<ArgumentException>(() => new RedisClient(host: null));
+      Expect<ArgumentException>(() => new RedisClient(host: ""));
+    }
+
+    [TestMethod]
+    public void Ctor_PortOutOfRange_ExceptionThrown()
+    {
+      Expect<ArgumentOutOfRangeException>(() => new RedisClient(port: int.MinValue));
+      Expect<ArgumentOutOfRangeException>(() => new RedisClient(port: 0));
+      Expect<ArgumentOutOfRangeException>(() => new RedisClient(port: 65536));
+      Expect<ArgumentOutOfRangeException>(() => new RedisClient(port: int.MaxValue));
+    }
+
+    [TestMethod]
+    public void Ctor_SettingsIsNull_ExceptionThrown()
+    {
+      Expect<ArgumentNullException>(() => new RedisClient(settings: null));
+    }
+
+    [TestMethod]
     public void MostAPIMethods_AfterDispose_ShouldThrowException()
     {
       // MOST = try a few commands that behave differently since
