@@ -140,7 +140,7 @@ namespace Sider
     public bool Select(int dbIndex)
     {
       writeCmd("SELECT", dbIndex.ToString());
-      return readBool();
+      return readOk();
     }
 
     public bool Move(string key, int dbIndex)
