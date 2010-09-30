@@ -4,6 +4,7 @@ obj
 *.user
 *.cache
 *.Cache
+*.gpState
 TestResults
 build
 build.zip
