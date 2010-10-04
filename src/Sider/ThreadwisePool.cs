@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Threading;
 
 namespace Sider
@@ -8,21 +9,24 @@ namespace Sider
     // separate value for each thread... 
     // TODO: WeakReference? does this scales-down?
     private ThreadLocal<IRedisClient> _clientRef;
-
     private RedisSettings _settings;
+
+    private int? _db;
 
 
     public ThreadwisePool(string host = RedisSettings.DefaultHost,
-      int port = RedisSettings.DefaultPort) :
-      this(new RedisSettings(host: host, port: port)) { }
+      int port = RedisSettings.DefaultPort,
+      int? db = null) :
+      this(new RedisSettings(host: host, port: port), db) { }
 
-    public ThreadwisePool(RedisSettings settings)
+    public ThreadwisePool(RedisSettings settings, int? db = null)
     {
       SAssert.ArgumentNotNull(() => settings);
 
       _settings = settings;
-
       _clientRef = new ThreadLocal<IRedisClient>(buildClient);
+
+      _db = db;
     }
 
 
@@ -40,7 +44,13 @@ namespace Sider
 
     private IRedisClient buildClient()
     {
-      return new RedisClient(_settings);
+      var client = new RedisClient(_settings);
+
+      // TODO: Is there a better way than using a nullable here?
+      if (_db.HasValue)
+        client.Select(_db.Value);
+
+      return client;
     }
   }
 }
