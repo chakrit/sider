@@ -22,7 +22,7 @@ namespace Sider.Benchmark
 
       Func<Job> getJob = () => new GetToJob();
 
-      _settings = new RedisSettings(socketPollingInterval: 1, socketPollTimeout: 5000);
+      _settings = new RedisSettings();
       _pool = new RotatedPool(_settings, instances);
 
 

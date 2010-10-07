@@ -7,5 +7,5 @@ echo Building sider.all.zip...
 .\tools\7za.exe a -r sider.all.zip build\*.*
 
 echo Building NuSpec package...
-.\tools\NuPack.exe .\package.nuspec
+.\tools\NuPack.exe .\Sider.nuspec
 .\tools\7za.exe a -r sider.nupkg.zip sider.*.nupkg

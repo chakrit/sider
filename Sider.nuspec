@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>sider</id>
+    <id>Sider</id>
     <version>0.1</version>
     <description>
+      Sider on GitHub: http://github.com/chakrit/sider --
       SIDER : REDIS bindingts for C#/.NET 4.0 ...
       minimal, lightweight, easy to use, no fancy APIs. assumes knowledge of how Redis works.
     </description>
