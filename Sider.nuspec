@@ -13,6 +13,8 @@
       <author>Chakrit Wichian (http://chakrit.net/)</author>
     </authors>
   </metadata>
-  <files src="build\Sider.dll" target="lib" />
-  <files src="build\Sider.pdb" target="lib" />
+  <!-- Package file for use with http://nupackpackages.codeplex.com/ -->
+  <!-- To use it locally, uncomment these lines: -->
+  <!-- <files src="build\Sider.dll" target="lib" /> -->
+  <!-- <files src="build\Sider.pdb" target="lib" /> -->
 </package>
