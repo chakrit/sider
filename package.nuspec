@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>sider</id>
+    <version>0.1</version>
+    <description>
+      SIDER : REDIS bindingts for C#/.NET 4.0 ...
+      minimal, lightweight, easy to use, no fancy APIs. assumes knowledge of how Redis works.
+    </description>
+    <language>en-us</language>
+    <authors>
+      <author>Chakrit Wichian (http://chakrit.net/)</author>
+    </authors>
+  </metadata>
+  <files src="build\Sider.dll" target="lib" />
+  <files src="build\Sider.pdb" target="lib" />
+</package>

@@ -8,3 +8,6 @@ obj
 TestResults
 build
 build.zip
+*.nupkg
+sider.all.zip
+sider.nupkg.zip
