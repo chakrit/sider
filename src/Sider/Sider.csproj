@@ -45,6 +45,9 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AbsorbingStreamWrapper.cs" />
+    <Compile Include="RedisClient.IO.reads.cs" />
+    <Compile Include="RedisClient.util.cs" />
+    <Compile Include="RedisClient.IO.writes.cs" />
     <Compile Include="RedisSettings.cs" />
     <Compile Include="RotatedPool.cs" />
     <Compile Include="SAssert.cs" />
@@ -53,7 +56,7 @@
     <Compile Include="IRedisClient.cs" />
     <Compile Include="RedisClient.API.cs" />
     <Compile Include="RedisClient.cs" />
-    <Compile Include="RedisClient.IO.cs" />
+    <Compile Include="RedisClient.IO.core.cs" />
     <Compile Include="RedisReader.cs" />
     <Compile Include="RedisType.cs" />
     <Compile Include="RedisWriter.cs" />

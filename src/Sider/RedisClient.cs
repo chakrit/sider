@@ -54,6 +54,8 @@ namespace Sider
 
       _socket.ReceiveBufferSize = _settings.ReadBufferSize;
       _socket.SendBufferSize = _settings.WriteBufferSize;
+      _socket.NoDelay = true;
+
       _socket.Connect(_settings.Host, _settings.Port);
 
       _stream = new NetworkStream(_socket, FileAccess.ReadWrite);

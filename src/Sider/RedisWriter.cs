@@ -43,6 +43,7 @@ namespace Sider
 
     public void WriteLine(int num)
     {
+      // TODO: Optimize?
       WriteLine(num.ToString());
     }
 
