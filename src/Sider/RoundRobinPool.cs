@@ -2,13 +2,13 @@
 namespace Sider
 {
   // clients are rotated in a round-robin fashion,
-  // for for testing timeouts/connection handling
-  public class RotatedPool : IClientsPool
+  // for testing timeouts/connection handling
+  public class RoundRobinPool : IClientsPool
   {
     private IRedisClient[] _pool;
     private int _poolIdx;
 
-    public RotatedPool(RedisSettings settings, int count)
+    public RoundRobinPool(RedisSettings settings, int count)
     {
       _pool = new IRedisClient[count];
 

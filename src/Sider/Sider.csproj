@@ -49,9 +49,8 @@
     <Compile Include="RedisClient.util.cs" />
     <Compile Include="RedisClient.IO.writes.cs" />
     <Compile Include="RedisSettings.cs" />
-    <Compile Include="RotatedPool.cs" />
+    <Compile Include="RoundRobinPool.cs" />
     <Compile Include="SAssert.cs" />
-    <Compile Include="SAssert.Response.cs" />
     <Compile Include="IClientsPool.cs" />
     <Compile Include="IRedisClient.cs" />
     <Compile Include="RedisClient.API.cs" />

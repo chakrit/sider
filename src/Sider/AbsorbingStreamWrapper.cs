@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Sider
 {
-  public class AbsorbingStreamWrapper : Stream
+  internal class AbsorbingStreamWrapper : Stream
   {
     private Stream _target;
     private Exception _ex;

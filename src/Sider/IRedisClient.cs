@@ -61,7 +61,6 @@ namespace Sider
     string[] HVals(string key);
     long Incr(string key);
     long IncrBy(string key, long value);
-    bool IsDisposed { get; }
     string[] Keys(string pattern);
     DateTime LastSave();
     string LIndex(string key, int index);

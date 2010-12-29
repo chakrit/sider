@@ -20,10 +20,10 @@ namespace Sider.Benchmark
       var instances = 4;
       var iterations = 100;
 
-      Func<Job> getJob = () => new GetToJob();
+      Func<Job> getJob = () => new SetJob();
 
       _settings = new RedisSettings();
-      _pool = new RotatedPool(_settings, instances);
+      _pool = new RoundRobinPool(_settings, instances);
 
 
       while (true) {
