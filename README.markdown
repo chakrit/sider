@@ -72,6 +72,30 @@ You can also fine-tune buffer sizes to your liking by passing a
 
     // or, pass directly to client
     client = new RedisClient(settings);
+
+...
+
+# Pipeline
+
+Experimental pipelining support is in, simply call the Pipeline method to
+perform a pipelined call, with each result of the call returned inside a
+Tuple<> with same size as the number of calls or an IEnumerable<object> for a
+long pipelined sessions
+
+Example:
+
+    var result = client.Pipeline(c =>
+    {
+      c.Get("KEY1");
+      c.MGet("KEY2", "KEY3", "KEY4", "KEY5", "KEY6", "KEY7", "KEY8", "KEY9");
+      c.Keys("MY_VERY_VERY_VERY_VERY_LONG_*_KEY_PTTRNS");
+    });
+    
+    string getResult = result.Item1;
+    string[] mGetResults = result.Item2;
+    string[] keysResults = result.Item3;
+
+MULTI EXEC is coming right up... hopefully before January ends :)
      
 ...
 
