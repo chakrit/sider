@@ -77,25 +77,46 @@ You can also fine-tune buffer sizes to your liking by passing a
 
 # Pipeline
 
-Experimental pipelining support is in, simply call the Pipeline method to
+Experimental pipelining support is in, simply call the `Pipeline` method to
 perform a pipelined call, with each result of the call returned inside a
 Tuple<> with same size as the number of calls or an IEnumerable<object> for a
 long pipelined sessions
 
-Example:
+Example, for a fixed number of calls:
 
-    var result = client.Pipeline(c =>
-    {
-      c.Get("KEY1");
-      c.MGet("KEY2", "KEY3", "KEY4", "KEY5", "KEY6", "KEY7", "KEY8", "KEY9");
-      c.Keys("MY_VERY_VERY_VERY_VERY_LONG_*_KEY_PTTRNS");
-    });
+    // fixed number of calls < 8
+    // each delegate must call exactly 1 redis command (i.e. IRedisClient method)
+    var result = client.Pipeline(
+      c => c.Get("KEY1"),
+      c => c.MGet("KEY2", "KEY3", "KEY4", "KEY5", "KEY6", "KEY7", "KEY8", "KEY9"),
+      c => c.Keys("MY_VERY_VERY_VERY_VERY_LONG_*_KEY_PTTRNS"));
     
     string getResult = result.Item1;
     string[] mGetResults = result.Item2;
     string[] keysResults = result.Item3;
+    
+Example when doing more than 7 calls (the maximum size of a Tuple<>) or when
+you don't know the number of calls you'll be doing in advance (although, that
+situation should be very unlikely):
+    
+    // unlimited number of calls (don't abuse it though)
+    var result = client.Pipeline(c => {
+      c.Get("KEY1");
+      c.Get("KEY2");
+      c.Get("KEY3");
+      /* -snip- */
+      c.Get("KEY8");
+      c.Get("KEY9");
+      c.Get("KEY10");
+    });
+    
+    var resultArr = result.ToArray();
+    Trace.Assert(resultArr[0] == /* value from KEY1 */);
+    Trace.Assert(resultArr[1] == /* value from KEY2 */);
+    Trace.Assert(resultArr[2] == /* value from KEY3 */);
+    // ...
 
-MULTI EXEC is coming right up... hopefully before January ends :)
+MULTI EXEC is coming right up with a similar syntax... hopefully before January ends :)
      
 ...
 
