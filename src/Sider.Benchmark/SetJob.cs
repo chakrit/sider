@@ -31,7 +31,7 @@ namespace Sider.Benchmark
       Client.SetRaw(_key, _data);
     }
 
-    public override void Teardown()
+    public override void AfterBenchmark()
     {
       Client.Del(_key);
     }

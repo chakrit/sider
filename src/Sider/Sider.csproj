@@ -45,6 +45,15 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AbsorbingStreamWrapper.cs" />
+    <None Include="RedisClient.API.pipelines.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>RedisClient.API.pipelines1.cs</LastGenOutput>
+    </None>
+    <Compile Include="RedisClient.API.pipelines1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RedisClient.API.pipelines.tt</DependentUpon>
+    </Compile>
     <Compile Include="RedisClient.IO.reads.cs" />
     <Compile Include="RedisClient.util.cs" />
     <Compile Include="RedisClient.IO.writes.cs" />
@@ -63,6 +72,9 @@
     <Compile Include="ResponseType.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="ThreadwisePool.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

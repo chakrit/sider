@@ -1,19 +1,37 @@
 ﻿
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sider
 {
-  // TODO: Detect invalid client state and self-dispose or restart
-  //       e.g. when protocol errors occour
   public partial class RedisClient
   {
+    private bool _isPipelining;
+    private Queue<Func<RedisReader, object>> _readsQueue;
+
+
+    public IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls)
+    {
+      _readsQueue = _readsQueue ?? new Queue<Func<RedisReader, object>>();
+
+      // all writes executed immediately but reads are queued
+      _isPipelining = true;
+      pipelinedCalls(this);
+      _isPipelining = false;
+
+      // reads out all the return values
+      while (_readsQueue.Count > 0)
+        yield return _readsQueue.Dequeue()(_reader);
+    }
+
+
     private void writeCore(Action<RedisWriter> writeAction)
     {
       ensureNotDisposed();
 
       try {
-        // TODO: Add pipelining support by recording writes
         // TODO: Add logging
         writeAction(_writer);
 
@@ -49,19 +67,34 @@ namespace Sider
       ensureNotDisposed();
 
       try {
-        // TODO: Add pipelining support by recording reads
-        // TODO: Add logging
-        // TODO: Add error-checking support to reads
-        var type = _reader.ReadTypeChar();
-        SAssert.ResponseType(expectedType, type);
+        // queue up reads if pipelining, otherwise just reads immediately
+        if (!_isPipelining) {
+          // TODO: Add logging
+          // TODO: Add error-checking support to reads
+          var type = _reader.ReadTypeChar();
+          SAssert.ResponseType(expectedType, type);
 
-        return readFunc(_reader);
+          return readFunc(_reader);
+        }
+        else {
+          _readsQueue.Enqueue(r =>
+          {
+            var type = r.ReadTypeChar();
+            SAssert.ResponseType(expectedType, type);
+
+            return readFunc(r);
+          });
+
+          return default(T);
+        }
+
       }
       catch (Exception ex) {
         ensureClientState(ex);
         throw;
       }
     }
+
 
     private void ensureClientState(Exception ex)
     {

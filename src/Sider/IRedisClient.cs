@@ -7,9 +7,15 @@ namespace Sider
 {
   // see the redis commands reference for more info:
   // http://redis.io/commands
-  public interface IRedisClient : IDisposable
+
+  // TODO: Probably not a good idea to extend the already-largish IRedisClient
+  //       from IPipelinable... maybe use an extension method instead?
+  public interface IRedisClient : IPipelinable, IDisposable
   {
     bool IsDisposed { get; }
+
+    /*IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls);
+    IEnumerable<object> MultiExec(Action<IRedisClient> pipelinedCalls);*/
 
 
     // NOTE: Please see the RedisClient.API.cs file for a proper sorted listing

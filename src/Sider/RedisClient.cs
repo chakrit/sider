@@ -79,6 +79,12 @@ namespace Sider
     {
       if (_disposed) return;
 
+      // attempt to properly shutdown the connection by sending a QUIT first
+      try { Quit(); }
+      catch (Exception) {
+        // intentionally absorbed
+      }
+      
       _reader = null;
       _writer = null;
 

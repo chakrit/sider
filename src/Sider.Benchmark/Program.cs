@@ -17,10 +17,10 @@ namespace Sider.Benchmark
     public void Run()
     {
       // configure benchmark parameters here:
-      var instances = 4;
-      var iterations = 100;
+      var instances = 3;
+      var iterations = 20000;
 
-      Func<Job> getJob = () => new SetJob();
+      Func<Job> getJob = () => new PipelinedPingJob();
 
       _settings = new RedisSettings();
       _pool = new RoundRobinPool(_settings, instances);
@@ -86,16 +86,15 @@ namespace Sider.Benchmark
 
       // setop
       sw.Reset();
-      job.Setup();
+      job.BeforeBenchmark();
 
       // run the benchmark
       sw.Start();
-      for (var i = 0; i < iterations; i++)
-        job.RunOneIteration();
+      job.Run(iterations);
       sw.Stop();
 
       // cleanup
-      job.Teardown();
+      job.AfterBenchmark();
       job.Client = null;
 
       // dispose client if not managed by a pool

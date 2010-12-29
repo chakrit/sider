@@ -50,7 +50,9 @@
     <Compile Include="GetJob.cs" />
     <Compile Include="GetToJob.cs" />
     <Compile Include="Job.cs" />
+    <Compile Include="PartiallyPipelinedPingJob.cs" />
     <Compile Include="PingJob.cs" />
+    <Compile Include="PipelinedPingJob.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="SetJob.cs" />
   </ItemGroup>

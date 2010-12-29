@@ -1,0 +1,67 @@
+﻿<#@ template language="C#" hostspecific="true" #>
+<#
+  const int MinTuples = 2;
+  const int MaxTuples = 8;
+#>
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Sider
+{
+  public interface IPipelinable
+  {
+    IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls);
+
+<#    for (int i = MinTuples; i < MaxTuples; i++) {
+        var typeList = getTypeList(i);
+#>
+    Tuple<<#= typeList #>> Pipeline<<#= typeList #>>(
+<#      for (int j = 1; j < i; j++) { #>
+      Func<IRedisClient, T<#= j #>> call<#= j #>,
+<#      } #>
+      Func<IRedisClient, T<#= i #>> call<#= i #>);
+
+<#    } #>
+  }
+
+  public partial class RedisClient : IPipelinable
+  {
+<#    for (int i = MinTuples; i < MaxTuples; i++) {
+        var typeList = getTypeList(i);
+#>
+    public Tuple<<#= typeList #>> Pipeline<<#= typeList #>>(
+<#      for (int j = 1; j < i; j++) { #>
+      Func<IRedisClient, T<#= j #>> call<#= j #>,
+<#      } #>
+      Func<IRedisClient, T<#= i #>> call<#= i #>) {
+
+      var result = Pipeline(client =>
+      {
+<#      for (int j = 1; j <= i; j++) { #>
+        call<#= j #>(client);
+<#      } #>
+      }).ToArray();
+
+      return Tuple.Create(
+<#      for (int j = 1; j < i; j++) { #>
+        (T<#= j #>) result[<#= j - 1 #>],
+<#      } #>
+        (T<#= i #>) result[<#= i - 1 #>]);
+    }
+
+<#    } #>
+  }
+}
+
+<#+
+  string getTypeList(int count) 
+  {
+     var typeList = "";
+     for (int i = 1; i < count; i++)
+       typeList += "T" + i.ToString() + ", ";
+
+     return typeList += "T" + count.ToString();
+  }
+#>

@@ -9,11 +9,17 @@ namespace Sider.Benchmark
     public abstract string Description { get; }
 
 
-    public virtual void Setup() { }
+    public virtual void BeforeBenchmark() { }
 
-    public abstract void RunOneIteration();
+    public virtual void Run(int iterations)
+    {
+      for (var i = 0; i < iterations; i++)
+        RunOneIteration();
+    }
 
-    public virtual void Teardown() { }
+    public virtual void RunOneIteration() { }
+
+    public virtual void AfterBenchmark() { }
 
 
     [DebuggerStepThrough]
