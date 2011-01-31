@@ -2,18 +2,26 @@
 <package>
   <metadata>
     <id>Sider</id>
-    <version>0.1</version>
+    <version>0.2</version>
     <description>
-      Sider on GitHub: http://github.com/chakrit/sider --
-      SIDER : REDIS bindingts for C#/.NET 4.0 ...
-      minimal, lightweight, easy to use, no fancy APIs. assumes knowledge of how Redis works.
+SIDER : REDIS bindings for C#/.NET 4.0 --
+GitHub: http://github.com/chakrit/sider
+nuget.org: http://nuget.org/
+
+Redis client that sticks to the metal.
+Minimal, lightweight, easy to use, no fancy APIs, no gigantic class hierarchies.
+Assumes knowledge of how Redis works.
+
+Suggestions/fixes welcome, just mention @chakrit on twitter.
+
+Sider 0.2 works with Redis 2.2.
     </description>
     <language>en-us</language>
     <authors>
       <author>Chakrit Wichian (http://chakrit.net/)</author>
     </authors>
   </metadata>
-  <!-- Package file for use with http://nupackpackages.codeplex.com/ -->
+  <!-- Package file for use with http://nuget.org/ -->
   <!-- To use it locally, uncomment these lines: -->
   <!-- <files src="build\Sider.dll" target="lib" /> -->
   <!-- <files src="build\Sider.pdb" target="lib" /> -->

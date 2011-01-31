@@ -4,26 +4,25 @@ SIDER : REDIS bindings for C#
 Inspired by migueldeicaza's first stab at the problem (I used some of his
 algorithm) and ServiceStack.Redis (to take it a lot further).
 
-This is a REDIS bindings for C# 4.0 that try to **stick to the metal** as much as
-possible which results in:
+This is a REDIS 2.2 bindings for C# 4.0 that try to **stick to the metal**
+as much as possible which results in:
 
-* Simple API that maps directly to the Redis commands reference.
-* Easy to use, no gigantic class hierarchies to setup. No confusing method names.
+* Simple API that maps closely to the Redis commands reference.
+* Easy to use, no gigantic class hierarchies to setup. No confusing naming
+  convention that obfuscates the real command being sent to Redis.
 * As fast as my limited networking skills will allow.
 * Supports reading from and writing data to user-supplied streams for GET/SET
-  and a few other similar commands to allow Redis to be used to store really
-  really large blobs (e.g. user-uploaded files) efficiently memory-wise.
-* Upcoming no-frill pipelining support.
+  and other similar commands to allow Redis to be used to store really
+  really large blobs (e.g. user-uploaded files) without huge buffers.
+* Delegate-based pipelining support.
 
 As of 24th July 2010, all basic commands have been implemented except for the
 following:
 
-* Blocking commands `BLPOP`, `BLPUSH` and the likes. - Needs a few more tests
-  with varying Socket configurations.
-* Extra options for some commands - e.g. `WITHSCORES` and `AGGREGATE`
-* Transaction and pipelining support. - Sider has been designed from the ground
-  up to make it easy to pipeline and do transactions, the foundation work is
-  already there. I just need a bit more time to finalize and streamline the API.
+* Extra options for some commands - e.g. `WITHSCORES`, `AGGREGATE` and the likes.
+* Better transaction support - Right now you can use `MULTI`, `EXEC` and 
+  `DISCARD` inside the `.Pipeline` method which should be enough for most
+  cases.
 
 Other than that, it's solid and somewhat fault-tolerant. I'm using this myself
 in production code as well, so expect fast fixes should there be any problems.
@@ -32,13 +31,13 @@ in production code as well, so expect fast fixes should there be any problems.
 
 Here's how to use the lib:
 
+    // connects to redis
     var client = new RedisClient(); // default host:port
-    client = new RedisClient("localhost", 6379); // custom
+    client = new RedisClient("localhost", 6379); // custom host/port
 
     // redis commands are methods of the RedisClient class
     client.Set("HELLO", "World");
     var result = client.Get("HELLO");
-
     // result == "World";
 
     client.Dispose() // disconnect
@@ -52,35 +51,40 @@ the `ThreadwisePool` like this:
     var client = pool.GetClient();
     var result = client.Get("HELLO") == "WORLD";
 
-Internally, a .NET 40 `ThreadLocal<T>` is used.
-
-Both the client and the clients pool can be plugged into an IoC by using the respective
+Internally, a .NET 40 `ThreadLocal<T>` is used. Both the client and the clients pool can be plugged into an IoC by using the respective
 `IRedisClient` and `IClientsPool` interface respectively.
 
-You can also fine-tune buffer sizes to your liking by passing a
-`RedisSettings` instance like so:
+# PIPELINE
 
-    var settings = new RedisSettings(
-    host: "192.168.192.111",
-    port: 6379,
-    autoReconnectOnIdle: false,   // if no idle client disconnection
-    readBufferSize: 256,          // optimize for small reads
-    writeBufferSize: 65536);       // optimize for heavy writes
+To perform multiple pipelined calls, wrap your commands in a `.Pipeline` call:
 
-    var pool = new ThreadwisePool(settings);
-    var client = pool.GetClient();
+    // issue ~ 2k commands in one go
+    var result = client.Pipeline(c =>
+    {
+      for (var i = 0; i < 1000; i++)
+        c.Set("HELLO" + i.ToString(), "WORLD" + i.ToString());
 
-    // or, pass directly to client
-    client = new RedisClient(settings);
+      for (var i = 999; i >= 0; i--)
+        c.Get("HELLO" + i.ToString()
+    });
 
-...
+    // parse results
+    var resultArr = result.ToArray();
+    for (var i = 0; i < 1000; i++)          // SET results
+      Debug.Assert((bool)resultArr[i]); 
 
-# Pipeline
+    for (var i = 999; i >= 0; i--) {        // GET results
+      Debug.Assert(resultArr[i] is string);
+      Debug.Assert("WORLD" + i.ToString() == (string)resultArr[i]);
+    }
 
-Experimental pipelining support is in, simply call the `Pipeline` method to
-perform a pipelined call, with each result of the call returned inside a
-Tuple<> with same size as the number of calls or an IEnumerable<object> for a
-long pipelined sessions
+Results are returned as an `IEnumerable<object>` with as many elements as
+the number of calls you've made with each object having the same type as the
+corresponding pipelined call.
+
+If you only need a fixed number of calls which you can determine at compile-time
+then you can use the extension method version of `.Pipeline` to help you with
+type-casting.
 
 Example, for a fixed number of calls:
 
@@ -94,10 +98,10 @@ Example, for a fixed number of calls:
     string getResult = result.Item1;
     string[] mGetResults = result.Item2;
     string[] keysResults = result.Item3;
+
+The returned value of these extension methods is a strongly-typed `Tuple<>`.
     
-Example when doing more than 7 calls (the maximum size of a Tuple<>) or when
-you don't know the number of calls you'll be doing in advance (although, that
-situation should be very unlikely):
+Example when doing more than 7 calls:
     
     // unlimited number of calls (don't abuse it though)
     var result = client.Pipeline(c => {
@@ -116,11 +120,31 @@ situation should be very unlikely):
     Trace.Assert(resultArr[2] == /* value from KEY3 */);
     // ...
 
-MULTI EXEC is coming right up with a similar syntax... hopefully before January ends :)
-     
+Note that pipeline results are not lazy as is the case with many `IEnumerable`
+implementation -- All commands will be executed immediately as soon as you
+finish the `.Pipeline` call.
+
+# CONFIGS
+
+You can fine-tune buffer sizes to your liking by passing a
+`RedisSettings` instance like so:
+
+    var settings = new RedisSettings(
+    host: "192.168.192.111",
+    port: 6379,
+    autoReconnectOnIdle: false,   // if no idle client disconnection
+    readBufferSize: 256,          // optimize for small reads
+    writeBufferSize: 65536);      // optimize for heavy writes
+
+    var pool = new ThreadwisePool(settings);
+    var client = pool.GetClient();
+
+    // or, pass directly to client
+    client = new RedisClient(settings);
+
 ...
 
-# License
+# LICENSE
 
 Copyright (c) 2010, Chakrit Wichian.
 All rights reserved.
