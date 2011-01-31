@@ -55,7 +55,7 @@ namespace Sider
           // try again one more time before giving up -- havn't encountered
           // any issues so far with re-issuing writes since failed writes
           // usually means the data remains untouched on the redis side.
-          if (_settings.ReissueWriteOnIdle)
+          if (_settings.ReissueWriteOnReconnect)
             writeAction(_writer);
         }
         catch (Exception ex_) {
@@ -76,7 +76,7 @@ namespace Sider
           // TODO: Add logging
           // TODO: Add error-checking support to reads
           var type = _reader.ReadTypeChar();
-          SAssert.ResponseType(expectedType, type);
+          SAssert.ResponseType(expectedType, type, _reader);
 
           return readFunc(_reader);
         }
@@ -84,7 +84,7 @@ namespace Sider
           _readsQueue.Enqueue(r =>
           {
             var type = r.ReadTypeChar();
-            SAssert.ResponseType(expectedType, type);
+            SAssert.ResponseType(expectedType, type, r);
 
             return readFunc(r);
           });

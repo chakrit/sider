@@ -64,11 +64,26 @@ namespace Sider
 
 
     [Conditional("DEBUG")]
-    public static void ResponseType(ResponseType expected, ResponseType actual)
+    public static void ResponseType(ResponseType expected, ResponseType actual,
+      RedisReader reader = null)
     {
+      // if we're not expecting an error reply but did got one, read out the msg
+      // assuming that the caller just read in the type character
+      if (reader != null &&
+        actual == Sider.ResponseType.Error &&
+        expected != Sider.ResponseType.Error) {
+
+        var errMsg = reader.ReadStatusLine();
+        errMsg = "Expecting a `{0}` reply while received error from Redis: {1}"
+          .F(expected, errMsg);
+
+        throw new ResponseException(errMsg);
+      }
+
+      // otherwise its an error on the calling code side, not from redis.
       if (expected != actual)
         throw new ResponseException(
-          "Expected a `{0}` reply, got instead `{1}` reply.".F(expected, actual));
+          "Expecting a `{0}` reply, got instead `{1}` reply.".F(expected, actual));
     }
 
 

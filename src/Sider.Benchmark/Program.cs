@@ -17,8 +17,8 @@ namespace Sider.Benchmark
     public void Run()
     {
       // configure benchmark parameters here:
-      var instances = 3;
-      var iterations = 10;
+      var instances = 7;
+      var iterations = 500;
 
       Func<Job> getJob = () => new MultiplePipelinedResultTypeJob();
 

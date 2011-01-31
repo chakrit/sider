@@ -11,9 +11,18 @@ namespace Sider
 
 
     // TODO: use a shared/reusable buffer?
-    private static byte[] encodeStr(string s)
+    private ArraySegment<byte> encodeStr(string s)
     {
-      return Encoding.UTF8.GetBytes(s);
+      var bytesNeeded = Encoding.UTF8.GetByteCount(s);
+      if (bytesNeeded <= _stringBuffer.Length) {
+        var bytesWrote = Encoding.UTF8
+          .GetBytes(s, 0, s.Length, _stringBuffer, 0);
+
+        return new ArraySegment<byte>(_stringBuffer, 0, bytesWrote);
+      }
+
+      var buffer = Encoding.UTF8.GetBytes(s);
+      return new ArraySegment<byte>(buffer, 0, buffer.Length);
     }
 
     private static string decodeStr(byte[] raw)

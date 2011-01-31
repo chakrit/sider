@@ -170,11 +170,11 @@ namespace Sider
       // TODO: Should really re-use string buffers.
       //  because writeCmditem maybe called in large loops such as 
       //  while using MSET or MGET
-      var buffer = encodeStr(data);
+      var arr = encodeStr(data);
 
       w.WriteTypeChar(ResponseType.Bulk);
-      w.WriteLine(buffer.Length);
-      w.WriteBulk(buffer);
+      w.WriteLine(arr.Count);
+      w.WriteBulk(arr.Array, arr.Offset, arr.Count);
     }
 
     private void writeCmdItem(RedisWriter w, Stream source, int count)

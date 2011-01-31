@@ -15,6 +15,8 @@ namespace Sider
     private RedisReader _reader;
     private RedisWriter _writer;
 
+    private byte[] _stringBuffer;
+
     private DateTime _lastWriteTime;
     private bool _disposed;
 
@@ -30,6 +32,7 @@ namespace Sider
     {
       SAssert.ArgumentNotNull(() => settings);
 
+      _stringBuffer = new byte[settings.StringBufferSize];
       _settings = settings;
       Reset();
     }

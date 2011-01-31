@@ -27,34 +27,34 @@ namespace Sider.Benchmark
       Debug.WriteLine(InstanceNumber.ToString() + ": BeforeBenchmark");
     }
 
-    public override void RunOneIteration()
+    public override void Run(int iterations)
     {
       Debug.WriteLine(InstanceNumber.ToString() + ": RunOneIteration");
 
       var result = Client.Pipeline(c =>
       {
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < iterations; i++)
           c.Set(_strKey + i.ToString(), "WORLD" + i.ToString());
 
         c.Set(_numKey, "0");
-        for (var i = 1; i < 100; i++)
+        for (var i = 1; i < iterations; i++)
           c.Incr(_numKey);
 
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < iterations; i++)
           c.Get(_strKey + i.ToString());
       });
 
       var arr = result.ToArray();
-      for (var i = 0; i < 100; i++) // verify 100 SETs
+      for (var i = 0; i < iterations; i++) // verify 100 SETs
         Assert(arr[i] is bool && (bool)arr[i]);
 
-      Assert(arr[100] is bool && (bool)arr[100]); // verify num=0 SET
-      for (var i = 1; i < 100; i++) // verify INCRs
-        Assert(arr[i + 100] is long && (long)arr[i + 100] == i);
+      Assert(arr[iterations] is bool && (bool)arr[iterations]); // verify num=0 SET
+      for (var i = 1; i < iterations; i++) // verify INCRs
+        Assert(arr[i + iterations] is long && (long)arr[i + iterations] == i);
 
-      for (var i = 0; i < 100; i++) // verify GETs
-        Assert(arr[i + 200] is string &&
-          (string)arr[i + 200] == "WORLD" + i.ToString());
+      for (var i = 0; i < iterations; i++) // verify GETs
+        Assert(arr[i + 2 * iterations] is string &&
+          (string)arr[i + 2 * iterations] == "WORLD" + i.ToString());
     }
 
     public override void AfterBenchmark()
