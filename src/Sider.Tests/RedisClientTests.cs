@@ -77,14 +77,12 @@ namespace Sider.Tests
       Action<Action<IRedisClient>> test = clientCallback =>
       {
         // no need to fill in data because the exception
-        // should be thrown wether there is data or not
+        // should be thrown whether there is data or not
         var client = createClient().Client;
         client.Dispose();
 
-        try { clientCallback(client); }
-        catch (ObjectDisposedException) { return; }
-
-        Assert.Fail("Expected exception, none thrown.");
+        Expect<ObjectDisposedException>(
+          () => clientCallback(client));
       };
 
       test(c => c.Ping());

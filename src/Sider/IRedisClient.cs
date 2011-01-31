@@ -1,21 +1,17 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Sider
 {
   // see the redis commands reference for more info:
   // http://redis.io/commands
 
-  // TODO: Probably not a good idea to extend the already-largish IRedisClient
-  //       from IPipelinable... maybe use an extension method instead?
-  public interface IRedisClient : IPipelinable, IDisposable
+  public interface IRedisClient : IDisposable
   {
     bool IsDisposed { get; }
 
-    /*IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls);
-    IEnumerable<object> MultiExec(Action<IRedisClient> pipelinedCalls);*/
+    IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls);
 
 
     // NOTE: Please see the RedisClient.API.cs file for a proper sorted listing
@@ -26,6 +22,9 @@ namespace Sider
     bool Auth(string password);
     bool BgRewriteAOF();
     bool BgSave();
+    System.Collections.Generic.KeyValuePair<string, string>? BLPop(int timeout, params string[] keys);
+    System.Collections.Generic.KeyValuePair<string, string>? BRPop(int timeout, params string[] keys);
+    string BRPopLPush(string src, string dest, int timeout);
     System.Collections.Generic.KeyValuePair<string, string>[] ConfigGet(string param);
     bool ConfigResetStat();
     bool ConfigSet(string param, string value);
@@ -35,6 +34,7 @@ namespace Sider
     long Decr(string key);
     long DecrBy(string key, long value);
     int Del(params string[] keys);
+    void Dispose();
     string Echo(string msg);
     bool Exists(string key);
     bool Expire(string key, TimeSpan span);

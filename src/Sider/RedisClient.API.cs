@@ -10,6 +10,13 @@ namespace Sider
   // http://redis.io/commands
   public partial class RedisClient : IRedisClient
   {
+    public IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls)
+    {
+      // force-materialize the result to remove unwanted lazy-enumeration effect
+      return pipelineCore(pipelinedCalls).ToArray();
+    }
+
+
     #region Server
 
     public bool BgRewriteAOF()
@@ -499,6 +506,29 @@ namespace Sider
 
     // TODO: Implement blocking commands
     //   BLPOP, BRPOP, BRPOPLPUSH
+
+    // a slight variation from Redis doc since params array must be last
+    public KeyValuePair<string, string>? BLPop(int timeout, params string[] keys)
+    {
+      writeCmd("BLPOP", keys, timeout.ToString());
+      return readKeyValue();
+    }
+
+    public KeyValuePair<string, string>? BRPop(int timeout, params string[] keys)
+    {
+      writeCmd("BRPOP", keys, timeout.ToString());
+      return readKeyValue();
+    }
+
+    public string BRPopLPush(string src, string dest, int timeout)
+    {
+      writeCmd("BRPOPLPUSH", src, dest, timeout.ToString());
+
+      // NOTE: There is inconsistency in redis protocol v < 2.2 which
+      //   returns a Multi-Bulk nil when the timeout occurs instead of a
+      //   bulk-nil, this should be fixed in 2.2 so I'm leaving this as-is
+      return readBulk();
+    }
 
     public string LIndex(string key, int index)
     {

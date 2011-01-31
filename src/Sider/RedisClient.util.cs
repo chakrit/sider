@@ -6,8 +6,7 @@ namespace Sider
 {
   public partial class RedisClient
   {
-    // 1st Jan 1970
-    public const long UnixEpochL = 621355968000000000L;
+    public const long UnixEpochL = 621355968000000000L; // 1st Jan 1970
     public static readonly DateTime UnixEpoch = new DateTime(UnixEpochL);
 
 

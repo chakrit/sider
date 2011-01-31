@@ -43,11 +43,6 @@ namespace Sider.Benchmark
       Client.GetTo(_key, _stream);
     }
 
-    public override void Run(int iterations)
-    {
-      throw new System.NotImplementedException();
-    }
-
     public override void AfterBenchmark()
     {
       _stream.Dispose();

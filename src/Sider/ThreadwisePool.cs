@@ -6,7 +6,6 @@ namespace Sider
   public class ThreadwisePool : IClientsPool
   {
     // separate value for each thread... 
-    // TODO: WeakReference? does this scales-down?
     private ThreadLocal<IRedisClient> _clientRef;
     private RedisSettings _settings;
 

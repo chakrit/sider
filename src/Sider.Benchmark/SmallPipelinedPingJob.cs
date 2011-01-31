@@ -1,7 +1,7 @@
 ﻿
 namespace Sider.Benchmark
 {
-  public class PartiallyPipelinedPingJob : Job
+  public class SmallPipelinedPingJob : Job
   {
     public override string Description
     {

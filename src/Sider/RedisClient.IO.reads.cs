@@ -71,6 +71,9 @@ namespace Sider
       return readCore(ResponseType.MultiBulk, r =>
       {
         var count = r.ReadNumberLine();
+        if (count == -1)
+          return null;
+
         var result = new string[count];
 
         for (var i = 0; i < count; i++) {
@@ -88,11 +91,39 @@ namespace Sider
       });
     }
 
+    private KeyValuePair<string, string>? readKeyValue()
+    {
+      return readCore(ResponseType.MultiBulk, r =>
+      {
+        var count = r.ReadNumberLine();
+        if (count == -1)
+          return (KeyValuePair<string, string>?)null;
+
+        // read key
+        var type = r.ReadTypeChar();
+        SAssert.ResponseType(ResponseType.Bulk, type);
+
+        var length = r.ReadNumberLine();
+        var key = decodeStr(r.ReadBulk(length));
+
+        // read value
+        SAssert.ResponseType(ResponseType.Bulk, type = r.ReadTypeChar());
+
+        length = r.ReadNumberLine();
+        var value = decodeStr(r.ReadBulk(length));
+
+        return new KeyValuePair<string, string>(key, value);
+      });
+    }
+
     private KeyValuePair<string, string>[] readKeyValues()
     {
       return readCore(ResponseType.MultiBulk, r =>
       {
         var count = r.ReadNumberLine();
+        if (count == -1)
+          return null;
+
         var result = new KeyValuePair<string, string>[count];
 
         for (var i = 0; i < count; i++) {

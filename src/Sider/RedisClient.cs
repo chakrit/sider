@@ -84,7 +84,7 @@ namespace Sider
       catch (Exception) {
         // intentionally absorbed
       }
-      
+
       _reader = null;
       _writer = null;
 

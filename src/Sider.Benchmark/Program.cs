@@ -18,11 +18,14 @@ namespace Sider.Benchmark
     {
       // configure benchmark parameters here:
       var instances = 3;
-      var iterations = 20000;
+      var iterations = 10;
 
-      Func<Job> getJob = () => new PipelinedPingJob();
+      Func<Job> getJob = () => new MultiplePipelinedResultTypeJob();
 
-      _settings = new RedisSettings();
+      _settings = new RedisSettings(
+      reconnectOnIdle: false,
+      reissueWriteOnIdle: false);
+
       _pool = new RoundRobinPool(_settings, instances);
 
 

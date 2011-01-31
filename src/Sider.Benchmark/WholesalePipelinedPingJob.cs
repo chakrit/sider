@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Sider.Benchmark
 {
-  public class PipelinedPingJob : Job
+  public class WholesalePipelinedPingJob : Job
   {
     public override string Description
     {
@@ -14,6 +14,7 @@ namespace Sider.Benchmark
 
     public override void Run(int iterations)
     {
+      // does all iteration in one go
       var result = Client.Pipeline(c =>
       {
         for (int i = 0; i < iterations; i++)

@@ -5,8 +5,19 @@ namespace Sider.Benchmark
 {
   public abstract class Job
   {
-    public IRedisClient Client { get; set; }
+    // for jobs which could interfere each other when run in parallel
+    private static int _instanceCount = 0;
+
+
+    public int InstanceNumber { get; private set; }
     public abstract string Description { get; }
+
+    public IRedisClient Client { get; set; }
+
+    public Job()
+    {
+      InstanceNumber = _instanceCount++;
+    }
 
 
     public virtual void BeforeBenchmark() { }

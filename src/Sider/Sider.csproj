@@ -45,14 +45,14 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AbsorbingStreamWrapper.cs" />
-    <None Include="RedisClient.API.pipelines.tt">
+    <None Include="RedisClientPipeliningExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>RedisClient.API.pipelines1.cs</LastGenOutput>
+      <LastGenOutput>RedisClientPipeliningExtensions.cs</LastGenOutput>
     </None>
-    <Compile Include="RedisClient.API.pipelines1.cs">
+    <Compile Include="RedisClientPipeliningExtensions.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>RedisClient.API.pipelines.tt</DependentUpon>
+      <DependentUpon>RedisClientPipeliningExtensions.tt</DependentUpon>
     </Compile>
     <Compile Include="RedisClient.IO.reads.cs" />
     <Compile Include="RedisClient.util.cs" />

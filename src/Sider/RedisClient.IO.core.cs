@@ -1,8 +1,7 @@
 ﻿
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 
 namespace Sider
 {
@@ -12,7 +11,7 @@ namespace Sider
     private Queue<Func<RedisReader, object>> _readsQueue;
 
 
-    public IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls)
+    private IEnumerable<object> pipelineCore(Action<IRedisClient> pipelinedCalls)
     {
       _readsQueue = _readsQueue ?? new Queue<Func<RedisReader, object>>();
 
@@ -26,7 +25,6 @@ namespace Sider
         yield return _readsQueue.Dequeue()(_reader);
     }
 
-
     private void writeCore(Action<RedisWriter> writeAction)
     {
       ensureNotDisposed();
@@ -38,28 +36,34 @@ namespace Sider
       }
       catch (Exception ex) {
 
-        ensureClientState(ex);
+        validateClientState(ex);
         if (_disposed)
           throw;
 
-        // usually, this catch block is run because of
-        // idle connection timeouts from Redis side
-        if (!_settings.ReconnectOnIdle)
+        // at this point, error was not due to invalid client state
+        // usually, this catch block is run because of idle connection
+        // timeouts from Redis side
+        if (!_settings.ReconnectOnIdle) {
           Dispose();
+          return;
+        }
 
-        // try again one more time before giving up
-        // TODO: havn't encountered any issues with re-issuing commands since
-        //   failed writes usually means the data remains untouched on the
-        //   redis side but there should be a settings to prevent this.
         try {
+          // _settings.ReconnectOnIdle == true
           Reset();
-          writeAction(_writer);
+
+          // try again one more time before giving up -- havn't encountered
+          // any issues so far with re-issuing writes since failed writes
+          // usually means the data remains untouched on the redis side.
+          if (_settings.ReissueWriteOnIdle)
+            writeAction(_writer);
         }
         catch (Exception ex_) {
-          ensureClientState(ex_);
+          validateClientState(ex_);
           throw;
         }
-      }
+
+      } // catch
     }
 
     private T readCore<T>(ResponseType expectedType, Func<RedisReader, T> readFunc)
@@ -90,13 +94,13 @@ namespace Sider
 
       }
       catch (Exception ex) {
-        ensureClientState(ex);
+        validateClientState(ex);
         throw;
       }
     }
 
 
-    private void ensureClientState(Exception ex)
+    private void validateClientState(Exception ex)
     {
       // TODO: Absorbing a generic IOException might be too dangerous.
       //       Multibulk operations may still cause the reader/writer into

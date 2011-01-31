@@ -79,6 +79,16 @@ namespace Sider
       });
     }
 
+    private void writeCmd(string command, string[] multiArgs, string appendArg)
+    {
+      writeCore(w =>
+      {
+        writeCmdStart(w, command, multiArgs.Length);
+        Array.ForEach(multiArgs, ma => writeCmdItem(w, ma));
+        writeCmdItem(w, appendArg);
+      });
+    }
+
     private void writeCmd(string command, string arg0, string[] multiArgs)
     {
       writeCore(w =>

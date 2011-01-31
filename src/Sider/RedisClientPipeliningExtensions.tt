@@ -10,37 +10,22 @@ using System.Linq;
 
 namespace Sider
 {
-  public interface IPipelinable
-  {
-    IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls);
-
-<#    for (int i = MinTuples; i < MaxTuples; i++) {
-        var typeList = getTypeList(i);
-#>
-    Tuple<<#= typeList #>> Pipeline<<#= typeList #>>(
-<#      for (int j = 1; j < i; j++) { #>
-      Func<IRedisClient, T<#= j #>> call<#= j #>,
-<#      } #>
-      Func<IRedisClient, T<#= i #>> call<#= i #>);
-
-<#    } #>
-  }
-
-  public partial class RedisClient : IPipelinable
+  public static class RedisClientPipeliningExtensions
   {
 <#    for (int i = MinTuples; i < MaxTuples; i++) {
         var typeList = getTypeList(i);
 #>
-    public Tuple<<#= typeList #>> Pipeline<<#= typeList #>>(
+    public static Tuple<<#= typeList #>> Pipeline<<#= typeList #>>(
+      this IRedisClient client,
 <#      for (int j = 1; j < i; j++) { #>
       Func<IRedisClient, T<#= j #>> call<#= j #>,
 <#      } #>
       Func<IRedisClient, T<#= i #>> call<#= i #>) {
 
-      var result = Pipeline(client =>
+      var result = client.Pipeline(c =>
       {
 <#      for (int j = 1; j <= i; j++) { #>
-        call<#= j #>(client);
+        call<#= j #>(c);
 <#      } #>
       }).ToArray();
 
