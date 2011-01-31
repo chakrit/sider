@@ -4,6 +4,28 @@ SIDER : REDIS bindings for C#
 Inspired by migueldeicaza's first stab at the problem (I used some of his
 algorithm) and ServiceStack.Redis (to take it a lot further).
 
+# INSTALLATION
+
+The quickest route to getting started with Redis using Sider is via
+[NuGet](http://nuget.org). Create a new console application and then open the
+Package Manager Console (View -> Other Windows -> Package Manager Console) and
+type in:
+
+    install-package sider
+
+Then in your `Program.cs` file, test it out with:
+
+    var client = new RedisClient();
+    client.Set("HELLOOO", "WORLD!!!!");
+    Console.WriteLine(client.Get("HELLOOO"));
+
+    Console.ReadKey();
+
+If Redis 2.2 is running on the default host/port and everything is working
+properly, you should see the string `"WORLD!!!!"` printed to your console.
+
+# ABOUT
+
 This is a REDIS 2.2 bindings for C# 4.0 that try to **stick to the metal**
 as much as possible which results in:
 
@@ -16,7 +38,7 @@ as much as possible which results in:
   really large blobs (e.g. user-uploaded files) without huge buffers.
 * Delegate-based pipelining support.
 
-As of 24th July 2010, all basic commands have been implemented except for the
+As of February 1st, 2011, all basic commands have been implemented except for the
 following:
 
 * Extra options for some commands - e.g. `WITHSCORES`, `AGGREGATE` and the likes.
