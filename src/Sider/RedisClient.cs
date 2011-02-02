@@ -18,6 +18,7 @@ namespace Sider
     private byte[] _stringBuffer;
 
     private DateTime _lastWriteTime;
+    private bool _disposing;
     private bool _disposed;
 
 
@@ -31,6 +32,8 @@ namespace Sider
     public RedisClient(RedisSettings settings)
     {
       SAssert.ArgumentNotNull(() => settings);
+
+      _disposing = _disposed = false;
 
       _stringBuffer = new byte[settings.StringBufferSize];
       _settings = settings;
@@ -80,7 +83,8 @@ namespace Sider
 
     public void Dispose()
     {
-      if (_disposed) return;
+      if (_disposed || _disposing) return;
+      _disposing = true;
 
       // attempt to properly shutdown the connection by sending a QUIT first
       try { Quit(); }

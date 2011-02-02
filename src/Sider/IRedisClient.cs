@@ -34,7 +34,6 @@ namespace Sider
     long Decr(string key);
     long DecrBy(string key, long value);
     int Del(params string[] keys);
-    void Dispose();
     string Echo(string msg);
     bool Exists(string key);
     bool Expire(string key, TimeSpan span);

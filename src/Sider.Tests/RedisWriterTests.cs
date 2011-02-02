@@ -30,6 +30,9 @@ namespace Sider.Tests
         new RedisWriter(stream, new RedisSettings(writeBufferSize: writerBufferSize.Value)) :
         new RedisWriter(stream);
 
+      // for testing purpose, we don't need to keep flushing all the time
+      writer.AutoFlush = true;
+
       return new WriterInfo {
         Writer = writer,
         Stream = stream,
@@ -341,7 +344,7 @@ namespace Sider.Tests
     [TestMethod]
     public void WriteBulkFrom_LargeData_AllDataAndCrLfWrittenToStream()
     {
-      var buffer = getRandomBuffer(RedisSettings.DefaultWriterBufferSize * 4);
+      var buffer = getRandomBuffer(RedisSettings.DefaultWriterBufferSize);
       using (var ms = new MemoryStream(buffer))
         writeBulk_writeTestCore(w => w.WriteBulkFrom(ms, buffer.Length), buffer);
     }

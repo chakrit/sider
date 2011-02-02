@@ -18,7 +18,9 @@ namespace Sider
       // all writes executed immediately but reads are queued
       _isPipelining = true;
       pipelinedCalls(this);
+      _writer.Flush();
       _isPipelining = false;
+
 
       // reads out all the return values
       while (_readsQueue.Count > 0)
@@ -32,6 +34,10 @@ namespace Sider
       try {
         // TODO: Add logging
         writeAction(_writer);
+
+        // delay flushes when piplining
+        if (!_isPipelining)
+          _writer.Flush();
 
       }
       catch (Exception ex) {
