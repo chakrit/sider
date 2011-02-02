@@ -49,6 +49,7 @@
     <Compile Include="BenchmarkResult.cs" />
     <Compile Include="GetJob.cs" />
     <Compile Include="GetToJob.cs" />
+    <Compile Include="IncrJob.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="MultiplePipelinedResultTypeJob.cs" />
     <Compile Include="SmallPipelinedPingJob.cs" />

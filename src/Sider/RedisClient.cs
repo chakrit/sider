@@ -61,7 +61,7 @@ namespace Sider
 
       _socket.Connect(_settings.Host, _settings.Port);
 
-      _stream = new NetworkStream(_socket, FileAccess.ReadWrite);
+      _stream = new NetworkStream(_socket, FileAccess.ReadWrite, true);
       _reader = new RedisReader(_stream, _settings);
       _writer = new RedisWriter(_stream, _settings);
 

@@ -17,67 +17,73 @@ namespace Sider.Benchmark
     public void Run()
     {
       // configure benchmark parameters here:
-      var instances = 7;
-      var iterations = 500;
+      const int Instances = 3;
+      const int Iterations = 10000;
+      const bool QuietMode = true; // turn to false to make it wait for key inputs
 
-      Func<Job> getJob = () => new MultiplePipelinedResultTypeJob();
+      Func<Job> getJob = () => new IncrJob();
 
       _settings = new RedisSettings(
       reconnectOnIdle: false,
       reissueWriteOnIdle: false);
 
-      _pool = new RoundRobinPool(_settings, instances);
+      _pool = new RoundRobinPool(_settings, Instances);
 
 
-      while (true) {
+      do {
 
         // setup
         var options = TaskCreationOptions.LongRunning;
 
         var tasks = Enumerable
-          .Range(0, instances)
+          .Range(0, Instances)
           .Select(n => getJob())
           .Select(job => new Task<BenchmarkResult>(
-            () => benchMark(job, iterations), options))
+            () => benchMark(job, Iterations), options))
           .ToArray();
 
-        Console.WriteLine("{0} instances of `{1}` each doing {2} iterations.",
-          tasks.Count(),
-          getJob().Description,
-          iterations);
+        if (!QuietMode) {
+          Console.WriteLine("{0} instances of `{1}` each doing {2} iterations.",
+            tasks.Count(),
+            getJob().Description,
+            Iterations);
 
-        Console.WriteLine("Hit any key to start.");
-        Console.ReadKey();
+          Console.WriteLine("Hit any key to start.");
+          Console.ReadKey();
+        }
 
         // starting
-        if (instances == 1)
+        if (Instances == 1)
           tasks.First().RunSynchronously();
         else
           Array.ForEach(tasks, t => t.Start());
 
         Task.WaitAll(tasks);
-        Console.WriteLine("All done.");
 
         // report time taken
-        var results = tasks.Select(t => t.Result);
+        if (!QuietMode) {
+          Console.WriteLine("All done.");
 
-        foreach (var result in results) {
-          Console.WriteLine("{0} : {1}ms",
-            result.Job.Description,
-            result.MillisecondsTaken);
+          var results = tasks.Select(t => t.Result);
+
+          foreach (var result in results) {
+            Console.WriteLine("{0} : {1}ms",
+              result.Job.Description,
+              result.MillisecondsTaken);
+          }
+
+          var avg = results.Average(r => r.MillisecondsTaken);
+          var max = results.Max(r => r.MillisecondsTaken);
+          var min = results.Min(r => r.MillisecondsTaken);
+
+          Console.WriteLine("Maximum : {0}ms", max);
+          Console.WriteLine("Minimum : {0}ms", min);
+          Console.WriteLine("Average : {0}ms", avg);
+
+          Console.ReadKey();
         }
 
-        var avg = results.Average(r => r.MillisecondsTaken);
-        var max = results.Max(r => r.MillisecondsTaken);
-        var min = results.Min(r => r.MillisecondsTaken);
-
-        Console.WriteLine("Maximum : {0}ms", max);
-        Console.WriteLine("Minimum : {0}ms", min);
-        Console.WriteLine("Average : {0}ms", avg);
-
-        Console.ReadKey();
-
-      }
+      } while (!QuietMode); // don't repeat in quietmode
     }
 
 
