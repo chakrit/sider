@@ -61,8 +61,10 @@ namespace Sider
           // try again one more time before giving up -- havn't encountered
           // any issues so far with re-issuing writes since failed writes
           // usually means the data remains untouched on the redis side.
-          if (_settings.ReissueWriteOnReconnect)
+          if (_settings.ReissueWriteOnReconnect) {
             writeAction(_writer);
+            _writer.Flush();
+          }
         }
         catch (Exception ex_) {
           validateClientState(ex_);
