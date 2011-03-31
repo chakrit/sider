@@ -6,6 +6,7 @@ obj
 *.Cache
 *.gpState
 TestResults
+TestResult.*
 build
 build.zip
 *.nupkg

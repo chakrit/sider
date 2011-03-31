@@ -1,17 +1,14 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace Sider.Tests
 {
-  [TestClass]
   public class RedisReaderTests : SiderTestBase
   {
     public const int ReadBulkTestTimeout = 5000;
@@ -33,21 +30,19 @@ namespace Sider.Tests
     }
 
 
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void Ctor_StreamIsNull_ExceptionThrown()
     {
-      new RedisReader(null);
+      Assert.Throws<ArgumentNullException>(() => new RedisReader(null));
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentException)), Conditional("DEBUG")]
+    [Test]
     public void Ctor_StreamUnreadble_ExceptionThrown()
     {
       var tempFile = Path.GetTempFileName();
       var fs = File.OpenWrite(tempFile);
 
-      try {
-        new RedisReader(fs);
-      }
+      try { Assert.Throws<ArgumentException>(() => new RedisReader(fs)); }
       finally {
         fs.Close();
         fs.Dispose();
@@ -56,15 +51,16 @@ namespace Sider.Tests
       }
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void Ctor_SettingsIsNull_ExceptionThrown()
     {
-      new RedisReader(new MemoryStream(new byte[] { 0xFF }), null);
+      Assert.Throws<ArgumentNullException>(() =>
+        new RedisReader(new MemoryStream(new byte[] { 0xFF }), null));
     }
 
 
     #region ReadTypeChar
-    [TestMethod]
+    [Test]
     public void ReadTypeChar_AllTypeChars_CorrectTypeReturned()
     {
       var typeChars = Enum
@@ -77,98 +73,104 @@ namespace Sider.Tests
       var reader = createReader(data);
 
       foreach (var t in typeChars)
-        Assert.AreEqual((ResponseType)t, reader.ReadTypeChar());
+        Assert.That(reader.ReadTypeChar(), Is.EqualTo((ResponseType)t));
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadTypeChar_InvalidData_ExceptionThrown()
     {
-      var reader = createReader("RANDOM_JUNK");
-      reader.ReadTypeChar();
+      Assert.Throws<ResponseException>(() =>
+      {
+        var reader = createReader("RANDOM_JUNK");
+        reader.ReadTypeChar();
+      });
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadTypeChar_EmptyData_ExceptionThrown()
     {
-      var reader = createReader("");
-      reader.ReadTypeChar();
+      Assert.Throws<ResponseException>(() =>
+      {
+        var reader = createReader("");
+        reader.ReadTypeChar();
+      });
     }
     #endregion
 
     #region ReadNumberLine
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadNumberLine_EmptyData_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("");
+      readNumberLine_exceptionTest<ResponseException>("");
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadNumberLine_JustCrLf_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("\r\n");
+      readNumberLine_exceptionTest<ResponseException>("\r\n");
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadNumberLine_ZeroWithNoCrLf_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("0");
+      readNumberLine_exceptionTest<ResponseException>("0");
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadNumberLine_ZeroWithCrButNoLf_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("0\r");
+      readNumberLine_exceptionTest<ResponseException>("0\r");
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadNumberLine_ZeroWithLfButNoCr_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("0\n");
+      readNumberLine_exceptionTest<ResponseException>("0\n");
     }
 
-    [TestMethod]
+    [Test]
     public void ReadNumberLine_LineWithZero_ZeroReturned()
     {
       var reader = createReader("0\r\n");
       var num = reader.ReadNumberLine();
 
-      Assert.AreEqual(0, num);
+      Assert.That(num, Is.EqualTo(0));
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadNumberLine_GarbledData_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("SDOIJFOEIWJF\r\n");
+      readNumberLine_exceptionTest<ResponseException>("SDOIJFOEIWJF\r\n");
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadNumberLine_SomeGarbledDigit_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("123G456\r\n");
+      readNumberLine_exceptionTest<ResponseException>("123G456\r\n");
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadNumberLine_NegativeNumWithSomeGarbledDigit_ExceptionThrown()
     {
-      readNumberLine_exceptionTest("-123G456\r\n");
+      readNumberLine_exceptionTest<ResponseException>("-123G456\r\n");
     }
 
-    [TestMethod]
+    [Test]
     public void ReadNumberLine_LineWithNegativeZero_ZeroReturned()
     {
       var reader = createReader("-0\r\n");
       var num = reader.ReadNumberLine();
 
-      Assert.AreEqual(0, num);
+      Assert.That(num, Is.EqualTo(0));
     }
 
-    [TestMethod]
+    [Test]
     public void ReadNumberLine_LineWithSingleDigit_DigitReturned()
     {
       readNumberLine_parsingTest(Enumerable.Range(0, 10));
     }
 
-    [TestMethod]
+    [Test]
     public void ReadNumberLine_PositiveNumbers_CorrectNumberReturned()
     {
       readNumberLine_parsingTest(Enumerable
@@ -176,7 +178,7 @@ namespace Sider.Tests
         .Where(n => n % 7 == 0));
     }
 
-    [TestMethod]
+    [Test]
     public void ReadNumberLine_NegativeNubmers_CorrectNumberReturned()
     {
       readNumberLine_parsingTest(Enumerable
@@ -186,10 +188,14 @@ namespace Sider.Tests
     }
 
 
-    private void readNumberLine_exceptionTest(string data)
+    private void readNumberLine_exceptionTest<TException>(string data)
+      where TException : Exception
     {
-      var reader = createReader(data);
-      reader.ReadNumberLine(); // expected exception
+      Assert.Throws<TException>(() =>
+      {
+        var reader = createReader(data);
+        reader.ReadNumberLine(); // expected exception
+      });
     }
 
     private void readNumberLine_parsingTest(IEnumerable<int> nums)
@@ -201,51 +207,51 @@ namespace Sider.Tests
       // parse each line as numbers, they should correspond to
       // the input sequence (in exactly the same ordering)
       foreach (var num in nums)
-        Assert.AreEqual(num, reader.ReadNumberLine());
+        Assert.That(reader.ReadNumberLine(), Is.EqualTo(num));
     }
     #endregion
 
     #region ReadStatusLine
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadStatusLine_EmptyData_ExceptionThrown()
     {
-      readStatusLine_exceptionTest("");
+      readStatusLine_exceptionTest<ResponseException>("");
     }
 
-    [TestMethod]
+    [Test]
     public void ReadStatusLine_JustCrLf_EmptyStringReturned()
     {
       var reader = createReader("\r\n");
       var str = reader.ReadStatusLine();
 
-      Assert.AreEqual("", str);
+      Assert.That(str, Is.Empty);
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadStatusLine_OneCharWithNoCrLf_ExceptionThrown()
     {
-      readStatusLine_exceptionTest("X");
+      readStatusLine_exceptionTest<ResponseException>("X");
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadStatusLine_OneCharWithJustCr_ExceptionThrown()
     {
-      readStatusLine_exceptionTest("X\r");
+      readStatusLine_exceptionTest<ResponseException>("X\r");
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadStatusLine_OneCharWithJustLf_ExceptionThrown()
     {
-      readStatusLine_exceptionTest("X\n");
+      readStatusLine_exceptionTest<ResponseException>("X\n");
     }
 
-    [TestMethod]
+    [Test]
     public void ReadStatusLine_OneCharWithCrLf_OneCharReturned()
     {
       readStatusLine_parsingTest("X");
     }
 
-    [TestMethod]
+    [Test]
     public void ReadStatusLine_IncreasinglyLargerString_CorrectStringReturned()
     {
       var chars = "abcdefghijklmnopqrstuvwxyz" +
@@ -259,10 +265,14 @@ namespace Sider.Tests
     }
 
 
-    private void readStatusLine_exceptionTest(string data)
+    private void readStatusLine_exceptionTest<TException>(string data)
+      where TException : Exception
     {
-      var reader = createReader(data);
-      reader.ReadStatusLine();
+      Assert.Throws<TException>(() =>
+      {
+        var reader = createReader(data);
+        reader.ReadStatusLine();
+      });
     }
 
     private void readStatusLine_parsingTest(params string[] testStr)
@@ -271,48 +281,48 @@ namespace Sider.Tests
       var reader = createReader(data);
 
       foreach (var line in testStr) {
-        Assert.AreEqual(line, reader.ReadStatusLine());
+        Assert.That(reader.ReadStatusLine(), Is.EqualTo(line));
       }
     }
     #endregion
 
     #region ReadBulk
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulk_LengthIsNegative_ExceptionThrown()
     {
-      readBulk_exceptionTest("", -1);
+      readBulk_exceptionTest<ArgumentOutOfRangeException>("", -1);
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_ZeroLengthData_EmptyBufferReturned()
     {
       var reader = createReader("\r\n");
       var buffer = reader.ReadBulk(0);
 
-      Assert.AreEqual(0, buffer.Length);
+      Assert.That(buffer.Length, Is.EqualTo(0));
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_LengthIsPositive_BufferWithSameLengthReturned()
     {
       var reader = createReader("0123456789\r\n");
       var buffer = reader.ReadBulk(10);
 
-      Assert.AreEqual(10, buffer.Length);
+      Assert.That(buffer.Length, Is.EqualTo(10));
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_LengthIsPositiveAndDataIsEnough_CorrectDataReturned()
     {
       var testStr = "0123456789abcdefghijklmnopqrstuvwxyz";
       var reader = createReader(testStr + "\r\n");
       var buffer = reader.ReadBulk(testStr.Length);
 
-      Assert.AreEqual(testStr.Length, buffer.Length);
-      Assert.AreEqual(testStr, Encoding.Default.GetString(buffer));
+      Assert.That(buffer.Length, Is.EqualTo(testStr.Length));
+      Assert.That(Encoding.Default.GetString(buffer), Is.EqualTo(testStr));
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_NonStringData_CorrectDataReturned()
     {
       var data = new byte[] { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F };
@@ -321,18 +331,17 @@ namespace Sider.Tests
       var reader = createReader(data.Concat(crlf).ToArray());
       var buffer = reader.ReadBulk(data.Length);
 
-      Assert.AreEqual(data.Length, buffer.Length);
-      CollectionAssert.AreEquivalent(data, buffer);
+      Assert.That(buffer.Length, Is.EqualTo(data.Length));
+      Assert.That(buffer, Is.EquivalentTo(data));
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
-    [Timeout(ReadBulkTestTimeout)]
+    [Test, Timeout(ReadBulkTestTimeout)]
     public void ReadBulk_LengthIsPositiveButNotEnoughData_ExceptionThrown()
     {
-      readBulk_exceptionTest("012345/r/n", 99);
+      readBulk_exceptionTest<ResponseException>("012345/r/n", 99);
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_ReallyLargeData_CorrectDataReturned()
     {
       var data = new byte[4096];
@@ -342,11 +351,11 @@ namespace Sider.Tests
       var reader = createReader(data.Concat(crlf).ToArray());
       var buffer = reader.ReadBulk(data.Length);
 
-      Assert.AreEqual(data.Length, buffer.Length);
-      CollectionAssert.AreEquivalent(data, buffer);
+      Assert.That(buffer.Length, Is.EqualTo(data.Length));
+      Assert.That(buffer, Is.EquivalentTo(data));
     }
 
-    [TestMethod, Timeout(ReadBulkTestTimeout), Ignore()]
+    [Test, Timeout(ReadBulkTestTimeout), Ignore]
     // TODO: Implement a Stream wrapper that does controllable chunking
     //       The method implemented in this test is not good enough
     public void ReadBulk_LargeDataWithIntermittentStream_CorrectDataReturned()
@@ -383,9 +392,7 @@ namespace Sider.Tests
           // "write" the last chunk with CRLF
           memStream.SetLength(stream.Length + Increment + 2);
         }
-        catch (Exception ex) {
-          TestContext.WriteLine(ex.ToString());
-        }
+        catch (Exception ex) { Log(ex.ToString()); }
       });
 
       // ensure the reader waits for all the data to arrives before returning
@@ -395,14 +402,14 @@ namespace Sider.Tests
       var buffer = reader.ReadBulk(data.Length);
       thread.Join();
 
-      Assert.AreEqual(data.Length, buffer.Length);
-      CollectionAssert.AreEquivalent(data, buffer);
+      Assert.That(buffer.Length, Is.EqualTo(data.Length));
+      Assert.That(buffer, Is.EquivalentTo(data));
 
       // cleanup
       stream.Dispose();
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_DataWithLotsOfCrLf_CorrectDataReturned()
     {
       var data = new byte[] {
@@ -415,49 +422,52 @@ namespace Sider.Tests
       var reader = createReader(data.Concat(crlf).ToArray());
       reader.ReadBulk(buffer, 0, data.Length);
 
-      CollectionAssert.AreEquivalent(data, buffer);
+      Assert.That(buffer, Is.EquivalentTo(data));
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulk_DataWithoutCrlf_ExceptionThrown()
     {
-      readBulk_exceptionTest("asdf", 4);
+      readBulk_exceptionTest<ResponseException>("asdf", 4);
     }
 
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulk_WithBuffer_NegativeOffset_ExceptionThrown()
     {
-      readBulk_withBuffer_exceptionTest("asdf", -1, 4);
+      readBulk_withBuffer_exceptionTest<ArgumentOutOfRangeException>("asdf", -1, 4);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulk_WithBuffer_TooLargeOffset_ExceptionThrown()
     {
-      readBulk_withBuffer_exceptionTest("asdf", 99, 4);
+      readBulk_withBuffer_exceptionTest<ArgumentOutOfRangeException>("asdf", 99, 4);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulk_WithBuffer_TooLargeBulkLength_ExceptionThrown()
     {
-      readBulk_withBuffer_exceptionTest("0123456\r\n", 0, 999);
+      readBulk_withBuffer_exceptionTest<ArgumentException>("0123456\r\n", 0, 999);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulk_WithBuffer_LengthIsNegative_ExceptionThrown()
     {
-      readBulk_withBuffer_exceptionTest("asdf", 0, -1);
+      readBulk_withBuffer_exceptionTest<ArgumentOutOfRangeException>("asdf", 0, -1);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulk_WithBuffer_BufferIsNull_ExceptionThrown()
     {
-      byte[] buffer = null;
-      var reader = createReader("asdf");
-      reader.ReadBulk(buffer, 0, 4);
+      Assert.Throws<ArgumentNullException>(() =>
+      {
+        byte[] buffer = null;
+        var reader = createReader("asdf");
+        reader.ReadBulk(buffer, 0, 4);
+      });
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_WithBuffer_OffsetAndLengthIsZero_EmptyBufferReturned()
     {
       var buffer = new byte[0];
@@ -466,7 +476,7 @@ namespace Sider.Tests
       reader.ReadBulk(buffer, 0, 0);
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_WithBuffer_LengthIsPositiveAndDataIsEnough_CorrectDataReturned()
     {
       var testStr = "012345";
@@ -475,11 +485,10 @@ namespace Sider.Tests
 
       reader.ReadBulk(buffer, 0, 6);
 
-      Assert.AreEqual(testStr,
-        Encoding.Default.GetString(buffer));
+      Assert.That(Encoding.Default.GetString(buffer), Is.EqualTo(testStr));
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulk_WithBuffer_ReallyLargeData_CorrectDataReturned()
     {
       var data = new byte[4096];
@@ -489,77 +498,86 @@ namespace Sider.Tests
       var reader = createReader(data.Concat(crlf).ToArray());
       var buffer = reader.ReadBulk(data.Length);
 
-      Assert.AreEqual(data.Length, buffer.Length);
-      CollectionAssert.AreEquivalent(data, buffer);
+      Assert.That(buffer, Is.EquivalentTo(data));
     }
 
 
-    private void readBulk_exceptionTest(string data, int length)
+    private void readBulk_exceptionTest<TException>(string data, int length)
+      where TException : Exception
     {
-      var reader = createReader(data);
-      reader.ReadBulk(length);
+      Assert.Throws<TException>(() =>
+      {
+        var reader = createReader(data);
+        reader.ReadBulk(length);
+      });
     }
 
-    private void readBulk_withBuffer_exceptionTest(string data, int offset, int length)
+    private void readBulk_withBuffer_exceptionTest<TException>(string data, int offset, int length)
+      where TException : Exception
     {
-      var buffer = new byte[data.Length];
-      var reader = createReader(data);
-      reader.ReadBulk(buffer, offset, length);
+      Assert.Throws<TException>(() =>
+      {
+        var buffer = new byte[data.Length];
+        var reader = createReader(data);
+        reader.ReadBulk(buffer, offset, length);
+      });
     }
     #endregion
 
     #region ReadBulkTo
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulkTo_StreamIsNull_ExceptionThrown()
     {
-      readBulkTo_withStream_exceptionTest("0123\r\n", null, 4);
+      readBulkTo_withStream_exceptionTest<ArgumentNullException>(
+        "0123\r\n", null, 4);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulkTo_LengthIsNegative_ExceptionThrown()
     {
-      readBulkTo_withStream_exceptionTest("0123\r\n", new MemoryStream(), -1);
+      readBulkTo_withStream_exceptionTest<ArgumentOutOfRangeException>(
+        "0123\r\n", new MemoryStream(), -1);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulkTo_NegativeBufferSize_ExceptionThrown()
     {
-      readBulkTo_withStream_exceptionTest("012345\r\n",
-        new MemoryStream(), 6, -1);
+      readBulkTo_withStream_exceptionTest<ArgumentOutOfRangeException>(
+        "012345\r\n", new MemoryStream(), 6, -1);
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulkTo_DataWithNoCrLf_ExceptionThrown()
     {
-      readBulkTo_withStream_exceptionTest("012345",
-        new MemoryStream(), 6);
+      readBulkTo_withStream_exceptionTest<ResponseException>(
+        "012345", new MemoryStream(), 6);
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulkTo_DataWithJustCr_ExceptionThrown()
     {
-      readBulkTo_withStream_exceptionTest("012345\r",
-        new MemoryStream(), 6);
+      readBulkTo_withStream_exceptionTest<ResponseException>(
+        "012345\r", new MemoryStream(), 6);
     }
 
-    [TestMethod, ExpectedException(typeof(ResponseException)), Conditional("DEBUG")]
+    [Test]
     public void ReadBulkTo_DataWithJustLf_ExceptionThrown()
     {
-      readBulkTo_withStream_exceptionTest("012345\n",
+      readBulkTo_withStream_exceptionTest<ResponseException>("012345\n",
         new MemoryStream(), 6);
     }
 
-    [TestMethod, ExpectedException(typeof(MyException))]
+    [Test]
     public void ReadBulkTo_OutputStreamFailedMidway_ExceptionPreservedAndThrown()
     {
       var testStream = new TestExceptionStream(5, new MyException());
-      readBulkTo_withStream_exceptionTest("0123456789\r\n", testStream, 10);
+      readBulkTo_withStream_exceptionTest<MyException>("0123456789\r\n", testStream, 10);
     }
 
     // test that, if the stream supplied to ReadBulkTo threw an exception during
     // Read/Write for whatever reason, all data is still properly read out of
     // the socket (as to maintain proper stream position for next read)
-    [TestMethod]
+    [Test]
     public void ReadBulkTo_OutputStreamFailedMidway_ProtocolStillMaintained()
     {
       var errorStream = new TestExceptionStream(5, new MyException());
@@ -578,12 +596,11 @@ namespace Sider.Tests
         result = Encoding.UTF8.GetString(validStream.ToArray());
       }
 
-      Assert.IsNotNull(result);
-      Assert.AreEqual(data.Length, result.Length);
-      Assert.AreEqual(data, result);
+      Assert.That(result, Is.Not.Null);
+      Assert.That(result, Is.EquivalentTo(data));
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulkTo_LengthIsZero_StreamContainsJustCrLf()
     {
       var reader = createReader("\r\n");
@@ -591,11 +608,11 @@ namespace Sider.Tests
 
       reader.ReadBulkTo(ms, 0);
 
-      Assert.AreEqual(0, ms.Length);
+      Assert.That(ms.Length, Is.EqualTo(0));
       ms.Dispose();
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulkTo_LengthIsPositive_StreamContainsDataWithSameLength()
     {
       var reader = createReader("012345\r\n");
@@ -603,11 +620,11 @@ namespace Sider.Tests
 
       reader.ReadBulkTo(ms, 6);
 
-      Assert.AreEqual(6, ms.Length);
+      Assert.That(ms.Length, Is.EqualTo(6));
       ms.Dispose();
     }
 
-    [TestMethod]
+    [Test]
     public void ReadBulkTo_ValidArgs_StreamContainsCorrectData()
     {
       var testStr = "012345";
@@ -616,24 +633,28 @@ namespace Sider.Tests
       var ms = new MemoryStream();
       reader.ReadBulkTo(ms, testStr.Length);
 
-      Assert.AreEqual(testStr.Length, ms.Length);
+      Assert.That(ms.Length, Is.EqualTo(testStr.Length));
 
       ms.Seek(0, SeekOrigin.Begin);
       var sr = new StreamReader(ms);
       var resultStr = sr.ReadToEnd();
 
-      Assert.AreEqual(testStr, resultStr);
+      Assert.That(resultStr, Is.EqualTo(testStr));
     }
 
 
-    private void readBulkTo_withStream_exceptionTest(string data, Stream s, int length,
+    private void readBulkTo_withStream_exceptionTest<TException>(string data, Stream s, int length,
       int? bufferSize = null)
+      where TException : Exception
     {
-      var reader = createReader(data);
-      if (bufferSize.HasValue)
-        reader.ReadBulkTo(s, length, bufferSize.Value);
-      else
-        reader.ReadBulkTo(s, length);
+      Assert.Throws<TException>(() =>
+      {
+        var reader = createReader(data);
+        if (bufferSize.HasValue)
+          reader.ReadBulkTo(s, length, bufferSize.Value);
+        else
+          reader.ReadBulkTo(s, length);
+      });
     }
     #endregion
   }

@@ -1,15 +1,13 @@
 ﻿
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace Sider.Tests
 {
-  [TestClass]
+  [TestFixture]
   public class RedisWriterTests
   {
     public struct WriterInfo
@@ -50,44 +48,46 @@ namespace Sider.Tests
 
 
     #region Ctor
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void Ctor_StreamIsNull_ExceptionThrown()
     {
-      new RedisWriter(null);
+      Assert.Throws<ArgumentNullException>(() => new RedisWriter(null));
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void Ctor_SettingsIsNull_ExceptionThrown()
     {
-      new RedisWriter(new MemoryStream(new byte[] { 0xFF }), null);
+      Assert.Throws<ArgumentNullException>(() =>
+        new RedisWriter(new MemoryStream(new byte[] { 0xFF }), null));
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentException)), Conditional("DEBUG")]
+    [Test]
     public void Ctor_StreamIsNotWritable_ExceptionThrown()
     {
-      new RedisWriter(new MemoryStream(new byte[16], false));
+      Assert.Throws<ArgumentException>(() =>
+        new RedisWriter(new MemoryStream(new byte[16], false)));
     }
     #endregion
 
     #region WriteLine
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void WriteLine_NullString_ExceptionThrown()
     {
-      createWriter().Writer.WriteLine(null);
+      Assert.Throws<ArgumentNullException>(() =>
+        createWriter().Writer.WriteLine(null));
     }
 
-    [TestMethod]
+    [Test]
     public void WriteLine_EmptyString_CrLfWrittenToStream()
     {
       var pack = createWriter();
-
       pack.Writer.WriteLine("");
 
-      Assert.AreEqual(0x0D, pack.Buffer[0]);
-      Assert.AreEqual(0x0A, pack.Buffer[1]);
+      Assert.That(pack.Buffer[0], Is.EqualTo(0x0D));
+      Assert.That(pack.Buffer[1], Is.EqualTo(0X0A));
     }
 
-    [TestMethod]
+    [Test]
     public void WriteLine_SimpleString_StringWithCrLfWrittenToStream()
     {
       var testStr = "test";
@@ -96,10 +96,10 @@ namespace Sider.Tests
       pack.Writer.WriteLine(testStr);
 
       var str = Encoding.Default.GetString(pack.Buffer, 0, 6);
-      Assert.AreEqual(testStr + "\r\n", str);
+      Assert.That(str, Is.EqualTo(testStr + "\r\n"));
     }
 
-    [TestMethod]
+    [Test]
     public void WriteLine_WithNumber_SimpleNumbers_NumberStringWithCrLfWrittenToStream()
     {
       var testNum = 123;
@@ -108,12 +108,12 @@ namespace Sider.Tests
       pack.Writer.WriteLine(testNum);
 
       var resultStr = Encoding.Default.GetString(pack.Buffer, 0, 3);
-      Assert.AreEqual(testNum.ToString(), resultStr);
+      Assert.That(resultStr, Is.EqualTo(testNum.ToString()));
     }
     #endregion
 
     #region WriteTypeChar
-    [TestMethod]
+    [Test]
     public void WriteTypeChar_NormalValues_CorrectTypeCharWrittenToStream()
     {
       var type = typeof(ResponseType);
@@ -128,44 +128,45 @@ namespace Sider.Tests
         pack.Writer.WriteTypeChar(value);
 
         var b = (ResponseType)pack.Buffer[bufferIdx++];
-        Assert.AreEqual(value, b);
+        Assert.That(b, Is.EqualTo(value));
       }
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentException)), Conditional("DEBUG")]
+    [Test]
     public void WriteTypeChar_InvalidChar_ExceptionThrown()
     {
       var pack = createWriter();
-      pack.Writer.WriteTypeChar((ResponseType)777);
+      Assert.Throws<ArgumentException>(() =>
+        pack.Writer.WriteTypeChar((ResponseType)777));
     }
     #endregion
 
     #region WriteBulk
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulk_NullBuffer_ExceptionThrown()
     {
-      createWriter().Writer.WriteBulk((byte[])null);
+      Assert.Throws<ArgumentNullException>(() =>
+        createWriter().Writer.WriteBulk((byte[])null));
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulk_EmptyBuffer_CrLfWrittenToStream()
     {
       var pack = createWriter();
       pack.Writer.WriteBulk(new byte[] { });
 
-      Assert.AreEqual(0x0D, pack.Buffer[0]);
-      Assert.AreEqual(0x0A, pack.Buffer[1]);
+      Assert.That(pack.Buffer[0], Is.EqualTo(0x0D));
+      Assert.That(pack.Buffer[1], Is.EqualTo(0x0A));
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulk_SmallBuffer_BufferWithCrLfWrittenToStream()
     {
       var writeBuffer = getRandomBuffer(16);
-
       writeBulk_writeTestCore(w => w.WriteBulk(writeBuffer), writeBuffer);
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulk_LargeBuffer_BufferWithCrLfWrittenToStream()
     {
       var bufferSize = RedisSettings.DefaultWriterBufferSize * 4;
@@ -175,57 +176,62 @@ namespace Sider.Tests
     }
 
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulk_WithOffset_NegativeOffset_ExceptionThrown()
     {
-      writeBulk_withOffset_exceptionTest(getRandomBuffer(), -1, 16);
+      writeBulk_withOffset_exceptionTest<ArgumentOutOfRangeException>(
+        getRandomBuffer(), -1, 16);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulk_WithOffset_NegativeCount_ExceptionThrown()
     {
-      writeBulk_withOffset_exceptionTest(getRandomBuffer(), 0, -1);
+      writeBulk_withOffset_exceptionTest<ArgumentOutOfRangeException>(
+        getRandomBuffer(), 0, -1);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulk_WithOffset_TooLargeOffset_ExceptionThrown()
     {
-      writeBulk_withOffset_exceptionTest(getRandomBuffer(10), 10, 0);
+      writeBulk_withOffset_exceptionTest<ArgumentOutOfRangeException>(
+        getRandomBuffer(10), 10, 0);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulk_WithOffset_TooLargeCount_ExceptionThrown()
     {
-      writeBulk_withOffset_exceptionTest(getRandomBuffer(10), 0, 11);
+      writeBulk_withOffset_exceptionTest<ArgumentOutOfRangeException>(
+        getRandomBuffer(10), 0, 11);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulk_WithOffset_OffsetPlusCountOverflowTheBuffer_ExceptionThrown()
     {
-      writeBulk_withOffset_exceptionTest(getRandomBuffer(10), 7, 7);
+      writeBulk_withOffset_exceptionTest<ArgumentException>(
+        getRandomBuffer(10), 7, 7);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulk_WithOffset_BufferIsNull_ExceptionThrown()
     {
-      writeBulk_withOffset_exceptionTest(null, 0, 0);
+      writeBulk_withOffset_exceptionTest<ArgumentNullException>(null, 0, 0);
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulk_WithOffset_ZeroOffsetAndZeroCount_CrLfWrittenToStream()
     {
       var buffer = new byte[0];
       writeBulk_writeTestCore(w => w.WriteBulk(buffer, 0, 0), buffer);
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulk_WithOffset_SmallBuffer_StreamContainsBufferWithCrLf()
     {
       var buffer = getRandomBuffer(16);
       writeBulk_writeTestCore(w => w.WriteBulk(buffer, 0, buffer.Length), buffer);
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulk_WithOffset_NonZeroOffsetWithSmallBuffer_StreamContainsPartialBufferWithCrLf()
     {
       var buffer = getRandomBuffer(16);
@@ -234,7 +240,7 @@ namespace Sider.Tests
       writeBulk_writeTestCore(w => w.WriteBulk(buffer, 9, 16 - 9), expected);
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulk_WithOffset_LargeBuffer_StreamContainsBufferWithCrLf()
     {
       var buffer = getRandomBuffer(RedisSettings.DefaultWriterBufferSize * 4);
@@ -242,36 +248,41 @@ namespace Sider.Tests
     }
 
 
-    private void writeBulk_withOffset_exceptionTest(byte[] buffer, int offset, int count)
+    private void writeBulk_withOffset_exceptionTest<TException>(byte[] buffer, int offset,
+      int count)
+      where TException : Exception
     {
-      createWriter().Writer.WriteBulk(buffer, offset, count);
+      Assert.Throws<TException>(() =>
+        createWriter().Writer.WriteBulk(buffer, offset, count));
     }
     #endregion
 
     #region WriteBulkFrom
-    [TestMethod, ExpectedException(typeof(ArgumentNullException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulkFrom_NullStream_ExceptionThrown()
     {
-      writeBulkFrom_exceptionTest(null, 0);
+      writeBulkFrom_exceptionTest<ArgumentNullException>(null, 0);
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulkFrom_NegativeCount_ExceptionThrown()
     {
-      writeBulkFrom_exceptionTest(new MemoryStream(getRandomBuffer()), -1);
+      writeBulkFrom_exceptionTest<ArgumentOutOfRangeException>(
+        new MemoryStream(getRandomBuffer()), -1);
     }
 
-    [TestMethod, ExpectedException(typeof(MyException))]
+    [Test]
     public void WriteBulkFrom_InputStreamFailedMidway_ExceptionPreservedAndThrown()
     {
       var buffer = getRandomBuffer(10);
       var stream = new TestExceptionStream(new MemoryStream(buffer),
         5, new MyException());
 
-      writeBulk_writeTestCore(w => w.WriteBulkFrom(stream, buffer.Length), buffer);
+      Assert.Throws<MyException>(() =>
+        writeBulk_writeTestCore(w => w.WriteBulkFrom(stream, buffer.Length), buffer));
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulkFrom_InputStreamFailedMidway_ProtocolStillMaintained()
     {
       var errorIdx = 4; // error at the 5th byte
@@ -294,36 +305,37 @@ namespace Sider.Tests
       }
 
       pack.Stream.Flush();
-      Assert.AreEqual(pack.Stream.Length, 2 * (10 /*buffer*/ + 2 /*CRLF*/));
+      Assert.That(pack.Stream.Length, Is.EqualTo(
+        2 * (10 /*buffer*/ + 2 /*CRLF*/)));
 
       // check the series of bytes in the buffer before the error point
       var bufferIdx = 0;
       for (; bufferIdx < errorIdx; bufferIdx++)
-        Assert.AreEqual(buffer[bufferIdx], pack.Buffer[bufferIdx]);
+        Assert.That(buffer[bufferIdx], Is.EqualTo(pack.Buffer[bufferIdx]));
 
       // skip the rest of the buffer since the result is undefined
       bufferIdx = 10;
 
       // ensure, though, that the protocol is still maintained
-      Assert.AreEqual(pack.Buffer[bufferIdx++], 0x0D);
-      Assert.AreEqual(pack.Buffer[bufferIdx++], 0x0A);
+      Assert.That(pack.Buffer[bufferIdx++], Is.EqualTo(0x0D));
+      Assert.That(pack.Buffer[bufferIdx++], Is.EqualTo(0x0A));
 
       // check the second written buffer, it should also be correct
       for (; bufferIdx < 22; bufferIdx++)
-        Assert.AreEqual(pack.Buffer[bufferIdx], buffer[bufferIdx - 12]);
+        Assert.That(buffer[bufferIdx - 12], Is.EqualTo(pack.Buffer[bufferIdx]));
 
-      Assert.AreEqual(pack.Buffer[bufferIdx++], 0x0D);
-      Assert.AreEqual(pack.Buffer[bufferIdx++], 0x0A);
+      Assert.That(pack.Buffer[bufferIdx++], Is.EqualTo(0x0D));
+      Assert.That(pack.Buffer[bufferIdx++], Is.EqualTo(0x0A));
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulkFrom_ZeroCount_CrLfWrittenToStream()
     {
       using (var ms = new MemoryStream(getRandomBuffer()))
         writeBulk_writeTestCore(w => w.WriteBulkFrom(ms, 0), new byte[0]);
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulkFrom_SmallData_InputStreamDataWithCrLfWrittenToStream()
     {
       var buffer = getRandomBuffer(16);
@@ -331,17 +343,17 @@ namespace Sider.Tests
         writeBulk_writeTestCore(w => w.WriteBulkFrom(ms, buffer.Length), buffer);
     }
 
-    [TestMethod, ExpectedException(typeof(InvalidOperationException)), Conditional("DEBUG")]
+    [Test]
     public void WriteBulkFrom_CountLargerThanAvailableInStream_ExceptionThrown()
     {
       var buffer = getRandomBuffer(16);
       using (var ms = new MemoryStream()) {
         ms.Write(buffer, 0, buffer.Length);
-        writeBulkFrom_exceptionTest(ms, 99);
+        writeBulkFrom_exceptionTest<InvalidOperationException>(ms, 99);
       }
     }
 
-    [TestMethod]
+    [Test]
     public void WriteBulkFrom_LargeData_AllDataAndCrLfWrittenToStream()
     {
       var buffer = getRandomBuffer(RedisSettings.DefaultWriterBufferSize);
@@ -350,9 +362,11 @@ namespace Sider.Tests
     }
 
 
-    private void writeBulkFrom_exceptionTest(Stream s, int count)
+    private void writeBulkFrom_exceptionTest<TException>(Stream s, int count)
+      where TException : Exception
     {
-      createWriter().Writer.WriteBulkFrom(s, count);
+      Assert.Throws<TException>(() =>
+        createWriter().Writer.WriteBulkFrom(s, count));
     }
     #endregion
 
@@ -360,15 +374,13 @@ namespace Sider.Tests
     private void writeBulk_writeTestCore(Action<RedisWriter> writeCore, byte[] expectedBuffer)
     {
       var pack = createWriter(expectedBuffer.Length + 2);
-
       writeCore(pack.Writer);
 
-      var bufferIdx = 0;
-      for (; bufferIdx < expectedBuffer.Length; bufferIdx++)
-        Assert.AreEqual(expectedBuffer[bufferIdx], pack.Buffer[bufferIdx]);
+      Assert.That(pack.Buffer.Take(expectedBuffer.Length),
+        Is.EquivalentTo(expectedBuffer));
 
-      Assert.AreEqual(0x0D, pack.Buffer[bufferIdx++]);
-      Assert.AreEqual(0x0A, pack.Buffer[bufferIdx++]);
+      Assert.That(pack.Buffer[expectedBuffer.Length], Is.EqualTo(0x0D));
+      Assert.That(pack.Buffer[expectedBuffer.Length + 1], Is.EqualTo(0x0A));
     }
   }
 }

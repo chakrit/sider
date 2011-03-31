@@ -1,12 +1,10 @@
 ﻿
 using System;
 using System.IO;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace Sider.Tests
 {
-  [TestClass]
   public class RedisClientTests : SiderTestBase
   {
     public struct ClientInfo
@@ -30,45 +28,47 @@ namespace Sider.Tests
     }
 
 
-    [TestMethod]
+    [Test]
     public void IsDisposed_JustCreated_ShouldEqualsFalse()
     {
       var client = createClient();
-      Assert.IsFalse(client.Client.IsDisposed);
+      Assert.That(client.Client.IsDisposed, Is.False);
     }
 
-    [TestMethod]
+    [Test]
     public void IsDisposed_AfterDispose_ShouldEqualsTrue()
     {
       var client = createClient();
 
       client.Client.Dispose();
-      Assert.IsTrue(client.Client.IsDisposed);
+      Assert.That(client.Client.IsDisposed, Is.True);
     }
 
-    [TestMethod]
+    [Test]
     public void Ctor_HostIsNullOrEmpty_ExceptionThrown()
     {
-      Expect<ArgumentException>(() => new RedisClient(host: null));
-      Expect<ArgumentException>(() => new RedisClient(host: ""));
+      Assert.Throws<ArgumentException>(() => new RedisClient(host: null));
+      Assert.Throws<ArgumentException>(() => new RedisClient(host: ""));
     }
 
-    [TestMethod]
+    [Test]
     public void Ctor_PortOutOfRange_ExceptionThrown()
     {
-      Expect<ArgumentOutOfRangeException>(() => new RedisClient(port: int.MinValue));
-      Expect<ArgumentOutOfRangeException>(() => new RedisClient(port: 0));
-      Expect<ArgumentOutOfRangeException>(() => new RedisClient(port: 65536));
-      Expect<ArgumentOutOfRangeException>(() => new RedisClient(port: int.MaxValue));
+      Assert.Throws<ArgumentOutOfRangeException>(() => new RedisClient(port: 0));
+      Assert.Throws<ArgumentOutOfRangeException>(() => new RedisClient(port: 65536));
+      Assert.Throws<ArgumentOutOfRangeException>(
+        () => new RedisClient(port: int.MinValue));
+      Assert.Throws<ArgumentOutOfRangeException>(
+        () => new RedisClient(port: int.MaxValue));
     }
 
-    [TestMethod]
+    [Test]
     public void Ctor_SettingsIsNull_ExceptionThrown()
     {
-      Expect<ArgumentNullException>(() => new RedisClient(settings: null));
+      Assert.Throws<ArgumentNullException>(() => new RedisClient(settings: null));
     }
 
-    [TestMethod]
+    [Test]
     public void MostAPIMethods_AfterDispose_ShouldThrowException()
     {
       // MOST = try a few commands that behave differently since
@@ -81,7 +81,7 @@ namespace Sider.Tests
         var client = createClient().Client;
         client.Dispose();
 
-        Expect<ObjectDisposedException>(
+        Assert.Throws<ObjectDisposedException>(
           () => clientCallback(client));
       };
 
@@ -95,7 +95,5 @@ namespace Sider.Tests
       test(c => c.Incr("ASADF"));
       test(c => c.MGet("SDF", "ASD"));
     }
-
-
   }
 }

@@ -1,26 +1,21 @@
 ﻿
 using System;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace Sider.Tests
 {
-  public class SiderTestBase
+  [TestFixture]
+  public abstract class SiderTestBase
   {
-    public TestContext TestContext { get; set; }
-
-
-    protected void Expect<T>(Action throwAct)
-      where T : Exception
+    protected TestContext TestContext
     {
-      try {
-        throwAct();
-        Assert.Fail("Expecting exception of type `{0}` but none thrown."
-          .F(typeof(T).Name));
-      }
-      catch (T) {
-        return;
-      }
+      get { return TestContext.CurrentContext; }
+    }
+
+
+    public void Log(string message)
+    {
+      Console.WriteLine(message);
     }
   }
 }
