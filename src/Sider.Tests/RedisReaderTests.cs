@@ -362,35 +362,42 @@ namespace Sider.Tests
     {
       // write data in small increments from another thread
       // make sure total data size is large enough so the read will have to block
-      const int Increment = 1024;
-      const int RepeatCount = 10;
+      const int TotalSize = 1024 * 10;
+      const int ReadChunkSize = 1024;
 
-      var data = new byte[Increment * RepeatCount];
-      var dataBuffer = new byte[data.Length + 2 /* for CRLF */];
+      var data = new byte[TotalSize];
+      var responseBuffer = new byte[data.Length + 2 /* for CRLF */];
 
       (new Random()).NextBytes(data);
-      Buffer.BlockCopy(data, 0, dataBuffer, 0, data.Length);
+      Buffer.BlockCopy(data, 0, responseBuffer, 0, data.Length);
 
       // end with CRLF
-      dataBuffer[dataBuffer.Length - 2] = 0x0D;
-      dataBuffer[dataBuffer.Length - 1] = 0x0A;
+      responseBuffer[responseBuffer.Length - 2] = 0x0D;
+      responseBuffer[responseBuffer.Length - 1] = 0x0A;
 
       // prepare a stream based on fixed memory, to simulate chunked response
-      var memStream = Stream.Synchronized(new MemoryStream(dataBuffer));
-      memStream.SetLength(0);
+      var responseStream = Stream.Synchronized(new MemoryStream(responseBuffer));
+      var intermittentStream = Stream.Synchronized(new MemoryStream());
+      intermittentStream.SetLength(0);
 
-      var stream = new BufferedStream(memStream);
-
+      var stream = new BufferedStream(intermittentStream);
       var thread = new Thread(() =>
       {
         try {
           // simulate "incoming" data by extending the memStream length
-          for (var i = 0; i < (RepeatCount - 1); i++) {
-            memStream.SetLength(stream.Length + Increment);
+          var tempBuffer = new byte[ReadChunkSize];
+          var bytesLeft = TotalSize + 2;
+
+          // delay start
+          Thread.Sleep(1000);
+
+          while (bytesLeft > 0) {
+            var bytesRead = responseStream.Read(tempBuffer, 0, ReadChunkSize);
+            intermittentStream.Write(tempBuffer, 0, bytesRead);
+
+            bytesLeft -= bytesRead;
             Thread.Sleep(100);
           }
-          // "write" the last chunk with CRLF
-          memStream.SetLength(stream.Length + Increment + 2);
         }
         catch (Exception ex) { Log(ex.ToString()); }
       });
