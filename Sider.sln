@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sider.GUI", "src\Sider.GUI\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sider.Benchmark", "src\Sider.Benchmark\Sider.Benchmark.csproj", "{CB628BC0-81E1-4676-AEE2-306FC686BBCB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sider.Samples", "src\Sider.Samples\Sider.Samples.csproj", "{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,21 @@ Global
 		{CB628BC0-81E1-4676-AEE2-306FC686BBCB}.Release|Mixed Platforms.Build.0 = Release|x86
 		{CB628BC0-81E1-4676-AEE2-306FC686BBCB}.Release|x86.ActiveCfg = Release|x86
 		{CB628BC0-81E1-4676-AEE2-306FC686BBCB}.Release|x86.Build.0 = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Debug|x86.ActiveCfg = Debug|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Debug|x86.Build.0 = Debug|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Package|Any CPU.ActiveCfg = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Package|Mixed Platforms.ActiveCfg = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Package|Mixed Platforms.Build.0 = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Package|x86.ActiveCfg = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Package|x86.Build.0 = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Release|Any CPU.ActiveCfg = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Release|Mixed Platforms.Build.0 = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Release|x86.ActiveCfg = Release|x86
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -100,5 +117,6 @@ Global
 		{F0E53E17-3112-4B16-8717-3D5D220C4FD9} = {E6D78299-6A6B-4815-AD64-1F6A64FD30EE}
 		{65A68D5D-9C38-4AF6-A8D9-4D789735BC23} = {E6D78299-6A6B-4815-AD64-1F6A64FD30EE}
 		{CB628BC0-81E1-4676-AEE2-306FC686BBCB} = {E6D78299-6A6B-4815-AD64-1F6A64FD30EE}
+		{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33} = {E6D78299-6A6B-4815-AD64-1F6A64FD30EE}
 	EndGlobalSection
 EndGlobal
