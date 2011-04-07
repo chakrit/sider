@@ -48,6 +48,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Sample.cs" />
+    <Compile Include="StreamingSample.cs" />
     <Compile Include="ThreadPoolSample.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -10,7 +10,12 @@ namespace Sider.Samples
     public abstract void Run();
 
 
-    protected void Log(string str)
+    protected string ReadLine()
+    {
+      return Console.ReadLine();
+    }
+
+    protected void WriteLine(string str)
     {
       Console.WriteLine(str);
     }

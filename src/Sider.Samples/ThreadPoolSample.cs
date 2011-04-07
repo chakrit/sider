@@ -30,7 +30,7 @@ namespace Sider.Samples
         mainClient.Del(key);
 
       // increment keys from multiple thread
-      Log("Incrementing keys: " + string.Join(", ", keys));
+      WriteLine("Incrementing keys: " + string.Join(", ", keys));
       Task.WaitAll(Enumerable
         .Range(0, 1000)
         .Select(n => Task.Factory.StartNew(() =>
@@ -38,7 +38,7 @@ namespace Sider.Samples
           // obtain a key to increment
           string key;
           if (!keysBag.TryTake(out key))
-            Log("ERROR");
+            WriteLine("ERROR");
 
           // obtain an IRedisClient from the pool
           // and use it to INCR a key
@@ -47,9 +47,9 @@ namespace Sider.Samples
         .ToArray());
 
       // log result
-      Log("Result (should be equal):");
+      WriteLine("Result (should be equal):");
       foreach (var key in keys)
-        Log(key + " : " + mainClient.Get(key));
+        WriteLine(key + " : " + mainClient.Get(key));
     }
   }
 }
