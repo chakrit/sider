@@ -146,7 +146,60 @@ Note that pipeline results are not lazy as is the case with many `IEnumerable`
 implementation -- All commands will be executed immediately as soon as you
 finish the `.Pipeline` call.
 
-# CONFIGS
+# BINARY DATA / STREAMING
+
+Right now raw binary data / streaming is supported for `Get\Set` and
+`HGet\HSet` pairs via `GetTo\SetFrom\GetRaw\SetRaw` and
+`HGetTo\HSetFrom\HGetRaw\HSetRaw` commands as I assumed that you will want
+to work with raw data only when you really have large values. **Although I *am*
+working on a way to provide more types other
+than `string`** which you may find in other branches of this repository. The next
+version, possibly at 0.5 will support a really wide range of values.
+
+Four commands support streaming mode for working with large binary data such as
+image caches with minimal bufferring: `GetTo`, `SetFrom`, `HGetTo` and
+`HSetFrom`.
+
+Instead of a normal string, these four commands accepts `System.IO.Stream` so
+you can send and receive data to and from `FileStream`, `NetworkStream` or
+ASP.NET `OutputStream` with ease:
+
+    var client = new RedisClient();
+
+    // load file content straight into redis
+    var filename = @"C:\temp\really_really_large_file.txt";
+    using (var fs = File.OpenRead(filename)) {
+      client.SetFrom("really_large_file", fs, (int)file.Length);
+      fs.Close();
+    }
+
+    // writes out the content of a key to a file
+    using (var fs = File.OpenWrite(filename)) {
+      var bytesWrote = client.GetTo("really_large_file", fs);
+      Console.WriteLine("Written {0} bytes of key `{1}`'s content.",
+        bytesWrote, filename);
+    }
+
+These commands should be used with care, however. As they may allows external
+exceptions into the core of Sider which may produce unexpected results.
+
+Additionally, another four commands are there for working with raw `byte[]`
+buffers: `GetRaw`, `SetRaw`, `HGetRaw` and `HSetRaw` like so:
+
+    // create random buffer
+    var temp = new byte[4096];
+    (new Random()).NextBytes(temp);
+
+    // work with
+    client.SetRaw("random", temp);
+
+    var result = client.GetRaw("random");
+    for (var i = 0; i < result.Length; i++)
+      Trace.Assert(result[i] == temp[i]);
+
+...
+ 
+# CONFIGURATION
 
 You can fine-tune buffer sizes to your liking by passing a
 `RedisSettings` instance like so:
@@ -165,6 +218,12 @@ You can fine-tune buffer sizes to your liking by passing a
     client = new RedisClient(settings);
 
 ...
+
+# SUPPORT / CONTRIBUTE
+
+Just shoot me an email at `service @ chakrit . net` (without the spaces) or if
+you use twitter, feel free to mention [@chakrit](http://twitter.com/chakrit) for
+help.
 
 # LICENSE
 
