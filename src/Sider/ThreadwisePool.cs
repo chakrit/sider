@@ -40,6 +40,7 @@ namespace Sider
       return client;
     }
 
+
     private IRedisClient buildClient()
     {
       var client = new RedisClient(_settings);
