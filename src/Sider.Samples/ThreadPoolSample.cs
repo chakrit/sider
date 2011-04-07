@@ -1,9 +1,7 @@
 ﻿
-using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sider.Samples
 {
@@ -17,6 +15,7 @@ namespace Sider.Samples
     public override void Run()
     {
       var pool = new ThreadwisePool();
+      var mainClient = pool.GetClient();
 
       // setup a bag of keys to randomly increments
       var keys = new[] { "counter1", "counter2", "counter3", "counter4" };
@@ -25,6 +24,10 @@ namespace Sider.Samples
       for (var i = 0; i < 250; i++)
         foreach (var key in keys)
           keysBag.Add(key);
+
+      // ensure key is empty
+      foreach (var key in keys)
+        mainClient.Del(key);
 
       // increment keys from multiple thread
       Log("Incrementing keys: " + string.Join(", ", keys));
@@ -44,10 +47,9 @@ namespace Sider.Samples
         .ToArray());
 
       // log result
-      var client = pool.GetClient();
       Log("Result (should be equal):");
       foreach (var key in keys)
-        Log(key + " : " + client.Get(key));
+        Log(key + " : " + mainClient.Get(key));
     }
   }
 }
