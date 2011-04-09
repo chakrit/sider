@@ -5,6 +5,10 @@ namespace Sider
 {
   public class ThreadwisePool : IClientsPool
   {
+    // TODO: LRU pruning since in peak time lots of clients will be built
+    //   and dangling eating up memory, maybe we should change the _clientRef
+    //   to ThreadLocal<WeakReference>
+
     // separate value for each thread... 
     private ThreadLocal<IRedisClient> _clientRef;
     private RedisSettings _settings;

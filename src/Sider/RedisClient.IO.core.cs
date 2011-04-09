@@ -103,12 +103,17 @@ namespace Sider
       }
       catch (Exception ex) {
         validateClientState(ex);
+
+        // TODO: Happens in high load environment Redis would disconnect
+        //   a client right after we've written the command to the stream
+        //   and thus readFunc(T) would then strangely fail
+        //   the solution is to reconnect/reissue commands transactionally
         throw;
       }
     }
 
 
-    private void validateClientState(Exception ex)
+    private bool validateClientState(Exception ex)
     {
       // TODO: Absorbing a generic IOException might be too dangerous.
       //       Multibulk operations may still cause the reader/writer into
@@ -118,6 +123,8 @@ namespace Sider
       //       exceptions)
       if (!(ex is IOException || ex is ObjectDisposedException))
         Dispose();
+
+      return _disposed;
     }
   }
 }
