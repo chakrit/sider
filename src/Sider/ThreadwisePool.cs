@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Threading;
 
 namespace Sider
@@ -10,7 +11,7 @@ namespace Sider
     //   to ThreadLocal<WeakReference>
 
     // separate value for each thread... 
-    private ThreadLocal<IRedisClient> _clientRef;
+    private ThreadLocal<WeakReference> _threadRef;
     private RedisSettings _settings;
 
     private int? _db;
@@ -26,7 +27,7 @@ namespace Sider
       SAssert.ArgumentNotNull(() => settings);
 
       _settings = settings;
-      _clientRef = new ThreadLocal<IRedisClient>(buildClient);
+      _threadRef = new ThreadLocal<WeakReference>(buildClientInReference);
 
       _db = db;
     }
@@ -35,15 +36,23 @@ namespace Sider
     public IRedisClient GetClient()
     {
       // gets thread-local value
-      var client = _clientRef.Value;
+      var weakRef = _threadRef.Value;
+      var client = (IRedisClient)weakRef.Target;
 
       // rebuild the client if it's disposed
-      if (client.IsDisposed)
-        client = _clientRef.Value = buildClient();
+      if (client == null || client.IsDisposed) {
+        client = buildClient();
+        _threadRef.Value = new WeakReference(client);
+      }
 
       return client;
     }
 
+
+    private WeakReference buildClientInReference()
+    {
+      return new WeakReference(buildClient());
+    }
 
     private IRedisClient buildClient()
     {
