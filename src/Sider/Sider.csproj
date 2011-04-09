@@ -45,6 +45,8 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AbsorbingStreamWrapper.cs" />
+    <Compile Include="BufferTranslator.cs" />
+    <Compile Include="TranslatorBase.cs" />
     <None Include="RedisClientPipeliningExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>RedisClientPipeliningExtensions.cs</LastGenOutput>

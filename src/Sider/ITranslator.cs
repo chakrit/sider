@@ -7,9 +7,10 @@ namespace Sider
   {
     T Read(RedisSettings settings, Stream src, int length);
 
-    int GetBytesNeeded(RedisSettings settings);
-    void Write(byte[] buffer, int offset, int count);
+    void ResetWrite(T obj);
+    void Cleanup();
 
-    void Reset();
+    int GetBytesNeeded(RedisSettings settings);
+    int Write(byte[] buffer, int offset, int count);
   }
 }
