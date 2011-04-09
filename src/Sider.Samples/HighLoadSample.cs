@@ -13,7 +13,7 @@ namespace Sider.Samples
   {
     public const int MaxClients = 300;
     public const int ClientsStepping = 2;
-    public const int SteppingDelay = 1500;
+    public const int SteppingDelay = 2000;
 
     public const double DyingProb = 0.01;
     public const int ClientLifetime = 10000;
@@ -45,8 +45,9 @@ namespace Sider.Samples
         .ToObservable()
         .ObserveOn(Scheduler.NewThread)
         .SubscribeOn(Scheduler.CurrentThread)
+        .Sample(TimeSpan.FromMilliseconds(PingStatInterval / PingStatWindow))
         .BufferWithTime(TimeSpan.FromMilliseconds(PingStatInterval))
-        .Select(times => times.Reverse().Take(PingStatWindow).Average())
+        .Select(times => times.Average())
         .Subscribe(logPingTime);
 
       // begin spawing clients
@@ -61,8 +62,9 @@ namespace Sider.Samples
         Thread.Sleep(SteppingDelay);
       }
 
-      WriteLine("Please restart the app to stop.");
-      ReadLine();
+      // stall
+      WriteLine("Spawned all clients. To stop, close this application.");
+      Thread.Sleep(Timeout.Infinite);
     }
 
 
