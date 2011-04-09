@@ -7,6 +7,10 @@ namespace Sider.Samples
 {
   public class ThreadPoolSample : Sample
   {
+    public const int TotalTasks = 100000;
+    public const int TotalKeys = 10;
+
+
     public override string Name
     {
       get { return "Thread pool usage."; }
@@ -18,10 +22,14 @@ namespace Sider.Samples
       var mainClient = pool.GetClient();
 
       // setup a bag of keys to randomly increments
-      var keys = new[] { "counter1", "counter2", "counter3", "counter4" };
+      var keys = Enumerable
+        .Range(0, TotalKeys)
+        .Select(k => "counter" + k.ToString())
+        .ToArray();
       var keysBag = new ConcurrentBag<string>();
 
-      for (var i = 0; i < 250; i++)
+      var keySets = TotalTasks / TotalKeys;
+      for (var i = 0; i < keySets; i++)
         foreach (var key in keys)
           keysBag.Add(key);
 
@@ -32,7 +40,7 @@ namespace Sider.Samples
       // increment keys from multiple thread
       WriteLine("Incrementing keys: " + string.Join(", ", keys));
       Task.WaitAll(Enumerable
-        .Range(0, 1000)
+        .Range(0, TotalTasks)
         .Select(n => Task.Factory.StartNew(() =>
         {
           // obtain a key to increment
