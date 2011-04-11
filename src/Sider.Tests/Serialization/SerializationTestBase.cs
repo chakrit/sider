@@ -1,12 +1,11 @@
 ﻿
-using System;
 using System.IO;
 using NUnit.Framework;
 
 namespace Sider.Tests.Serialization
 {
   public abstract class SerializationTestBase<TSerializer, TOut> : SiderTestBase
-    where TSerializer : ISerializer<TOut>, new()
+    where TSerializer : ISerializer<TOut>
   {
     protected Stream TempStream { get; private set; }
     protected byte[] TempBuffer { get; private set; }
@@ -15,13 +14,16 @@ namespace Sider.Tests.Serialization
     protected RedisSettings Settings { get; private set; }
 
 
+    protected abstract TSerializer BuildSerializer();
+
+
     [TestFixtureSetUp]
     public void FixtureSetup() { Settings = new RedisSettings(); }
 
     [SetUp]
     public void Setup()
     {
-      Serializer = new TSerializer();
+      Serializer = BuildSerializer();
       TempStream = new MemoryStream();
       TempBuffer = new byte[1024];
     }
@@ -41,22 +43,11 @@ namespace Sider.Tests.Serialization
 
     protected TOut SerializationRoundtrip(TOut obj)
     {
-      Serializer.ResetWrite(obj);
+      var bytesNeeded = Serializer.GetBytesNeeded(obj);
 
-      // perform writes
-      var totalBytes = Serializer.GetBytesNeeded(Settings);
-      var bytesLeft = totalBytes;
-      while (bytesLeft > 0) {
-        var chunkSize = Math.Min(bytesLeft, TempBuffer.Length);
-        var bytesWrote = Serializer.Write(TempBuffer, 0, chunkSize);
-
-        bytesLeft -= bytesWrote;
-        TempStream.Write(TempBuffer, 0, bytesWrote);
-      }
-
-      // read out obj
+      Serializer.Write(obj, TempStream, bytesNeeded);
       RewindStream();
-      return Serializer.Read(Settings, TempStream, totalBytes);
+      return (TOut)Serializer.Read(TempStream, bytesNeeded);
     }
 
   }

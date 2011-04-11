@@ -1,5 +1,4 @@
 ﻿
-using System;
 using System.IO;
 using System.Text;
 
@@ -8,47 +7,43 @@ namespace Sider
   public class StringSerializer : SerializerBase<string>
   {
     private Encoding _encoding;
-    private int _bytesNeeded;
+    private byte[] _buffer;
 
-    private byte[] _tempBuffer;
-    private int _tempOffset;
-    private int _bytesLeft;
 
     public StringSerializer() : this(Encoding.UTF8) { }
 
-    public StringSerializer(Encoding enc) { _encoding = enc; }
+    public StringSerializer(Encoding enc,
+      int bufferSize = RedisSettings.DefaultStringBufferSize)
+    {
+      SAssert.ArgumentNotNull(() => enc);
+      SAssert.ArgumentPositive(() => bufferSize);
+
+      _encoding = enc;
+      _buffer = new byte[bufferSize];
+    }
 
 
-    public override string Read(RedisSettings settings, Stream src, int length)
+    public override string Read(Stream src, int length)
     {
       return _encoding.GetString(ReadBytes(src, length));
     }
 
-
-    public override int GetBytesNeeded(RedisSettings settings)
+    public override int GetBytesNeeded(string obj)
     {
-      return _bytesNeeded = _encoding.GetByteCount(Object);
+      return _encoding.GetByteCount(obj);
     }
 
-    public override int Write(byte[] buffer, int offset, int count)
+    public override void Write(string obj, Stream dest, int bytesNeeded)
     {
-      if (_tempBuffer == null) {
-        if (_bytesNeeded <= count)
-          return _encoding.GetBytes(Object, 0, Object.Length, buffer, offset);
-
-        // _bytesNeeded > count --> needs to allocate a tempoary buffer
-        _tempBuffer = new byte[_bytesNeeded];
-        _encoding.GetBytes(Object, 0, Object.Length, _tempBuffer, 0);
-        _bytesLeft = _bytesNeeded;
+      if (bytesNeeded > _buffer.Length) {
+        // allocate a new temporary buffer, if the buffer is not large enough
+        var buffer = _encoding.GetBytes(obj);
+        dest.Write(buffer, 0, buffer.Length);
       }
-
-      // in _tempBuffer mode
-      var chunkSize = Math.Min(count, _bytesLeft);
-      Buffer.BlockCopy(_tempBuffer, _bytesNeeded - _bytesLeft,
-        buffer, offset, chunkSize);
-
-      _bytesLeft -= chunkSize;
-      return chunkSize;
+      else {
+        var bytesTotal = _encoding.GetBytes(obj, 0, obj.Length, _buffer, 0);
+        dest.Write(_buffer, 0, bytesTotal);
+      }
     }
   }
 }

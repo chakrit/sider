@@ -3,14 +3,17 @@ using System.IO;
 
 namespace Sider
 {
-  public interface ISerializer<T>
+  public interface ISerializer
   {
-    T Read(RedisSettings settings, Stream src, int length);
+  }
 
-    void ResetWrite(T obj);
-    void Cleanup();
+  public interface ISerializer<T> : ISerializer
+  {
+    RedisSettings Settings { get; }
 
-    int GetBytesNeeded(RedisSettings settings);
-    int Write(byte[] buffer, int offset, int count);
+    T Read(Stream src, int length);
+
+    int GetBytesNeeded(T obj);
+    void Write(T obj, Stream dest, int bytesNeeded);
   }
 }

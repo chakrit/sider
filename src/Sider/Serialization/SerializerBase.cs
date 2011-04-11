@@ -6,17 +6,16 @@ namespace Sider
 {
   public abstract class SerializerBase<T> : ISerializer<T>
   {
-    protected T Object { get; private set; }
+    public RedisSettings Settings { get; private set; }
+
+    public SerializerBase() : this(null) { /* doesn't use settings */ }
+    public SerializerBase(RedisSettings settings) { Settings = settings; }
 
 
-    public abstract T Read(RedisSettings settings, Stream src, int length);
+    public abstract T Read(Stream src, int length);
 
-
-    public virtual void ResetWrite(T obj) { Object = obj; }
-    public virtual void Cleanup() { Object = default(T); /* null */ }
-
-    public abstract int GetBytesNeeded(RedisSettings settings);
-    public abstract int Write(byte[] buffer, int offset, int count);
+    public abstract int GetBytesNeeded(T obj);
+    public abstract void Write(T obj, Stream dest, int bytesNeeded);
 
 
     protected byte[] ReadBytes(Stream src, int length)

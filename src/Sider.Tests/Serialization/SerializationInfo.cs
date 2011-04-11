@@ -1,10 +1,9 @@
 ﻿
-using System;
 using System.IO;
 
 namespace Sider.Tests.Serialization
 {
-  public class SerializationInfo<T>
+  public class SerializationInfo<T> where T : ISerializer
   {
     public T Serializer { get; set; }
     public object Object { get; set; }
@@ -14,9 +13,9 @@ namespace Sider.Tests.Serialization
 
     public RedisSettings Settings { get; set; }
 
-    public SerializationInfo()
+    public SerializationInfo(T serializer)
     {
-      Serializer = Activator.CreateInstance<T>();
+      Serializer = serializer;
       Object = new TestObj("Hello", 2, "World", 3);
 
       TempStream = new MemoryStream();

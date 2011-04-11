@@ -6,29 +6,37 @@ namespace Sider.Serialization
 {
   public class ObjectSerializer : SerializerBase<object>
   {
-    private BinaryFormatter _formatter = new BinaryFormatter();
-    private MemoryStream _mem = new MemoryStream();
+    private BinaryFormatter _formatter;
+    private MemoryStream _mem;
 
-
-    public override object Read(RedisSettings settings, Stream src, int length)
+    public ObjectSerializer(int bufferSize = RedisSettings.DefaultStringBufferSize)
     {
-      return _formatter.Deserialize(new LimitingStream(src, length));
+      SAssert.ArgumentPositive(() => bufferSize);
+
+      _formatter = new BinaryFormatter();
+      _mem = new MemoryStream(bufferSize);
     }
 
 
-    public override int GetBytesNeeded(RedisSettings settings)
+    public override object Read(Stream src, int length)
     {
-      // TODO: Could switch on a type-specific serializer which might be faster
+      using (var limiter = new LimitingStream(src, length))
+        return _formatter.Deserialize(limiter);
+    }
+
+
+    public override int GetBytesNeeded(object obj)
+    {
       _mem.SetLength(0);
-      _formatter.Serialize(_mem, Object);
+      _formatter.Serialize(_mem, obj);
 
       _mem.Seek(0, SeekOrigin.Begin);
       return (int)_mem.Length;
     }
 
-    public override int Write(byte[] buffer, int offset, int count)
+    public override void Write(object obj, Stream dest, int bytesNeeded)
     {
-      return _mem.Read(buffer, offset, count);
+      _mem.CopyTo(dest);
     }
   }
 }

@@ -6,6 +6,12 @@ namespace Sider.Tests.Serialization
 {
   public class ObjectSerializerTests : SerializationTestBase<ObjectSerializer, object>
   {
+    protected override ObjectSerializer BuildSerializer()
+    {
+      return new ObjectSerializer();
+    }
+
+
     [Test]
     public void WriteReadRoundtrip_Class_GotEquivalentObject()
     {
@@ -31,13 +37,6 @@ namespace Sider.Tests.Serialization
       var result = SerializationRoundtrip(obj);
 
       Assert.That(result, Is.EqualTo(obj));
-    }
-
-    [Test]
-    public void WriteReadRoundtrip_Null_GotNullWithoutException()
-    {
-      var result = SerializationRoundtrip(null);
-      Assert.That(result, Is.Null);
     }
   }
 }

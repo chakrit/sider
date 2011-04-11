@@ -1,21 +1,24 @@
 ﻿
+using System.IO;
+
 namespace Sider
 {
   public class BufferSerializer : SerializerBase<byte[]>
   {
-    public override byte[] Read(RedisSettings settings, System.IO.Stream src, int length)
+    public override byte[] Read(Stream src, int length)
     {
-      throw new System.NotImplementedException();
+      return ReadBytes(src, length);
     }
 
-    public override int GetBytesNeeded(RedisSettings settings)
+
+    public override int GetBytesNeeded(byte[] obj)
     {
-      throw new System.NotImplementedException();
+      return obj.Length;
     }
 
-    public override int Write(byte[] buffer, int offset, int count)
+    public override void Write(byte[] obj, Stream dest, int bytesNeeded)
     {
-      throw new System.NotImplementedException();
+      dest.Write(obj, 0, obj.Length);
     }
   }
 }
