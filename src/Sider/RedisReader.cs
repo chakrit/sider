@@ -179,6 +179,14 @@ namespace Sider
       SAssert.IsTrue(b == '\n',
         () => new ResponseException("Expected CRLF, got '" + ((char)b) + "' instead."));
     }
+
+    public T ReadSerializedBulk<T>(ISerializer<T> serializer, int bulkLength)
+    {
+      SAssert.ArgumentNotNull(() => serializer);
+      SAssert.ArgumentNonNegative(() => bulkLength);
+
+      return serializer.Read(_stream, bulkLength);
+    }
   }
 }
 

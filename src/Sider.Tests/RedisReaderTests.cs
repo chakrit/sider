@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Moq;
 using NUnit.Framework;
 
 namespace Sider.Tests
@@ -637,6 +638,64 @@ namespace Sider.Tests
           reader.ReadBulkTo(s, length);
       });
     }
+    #endregion
+
+    #region ReadSerializedBulk
+
+    [Test]
+    public void ReadSerailizedBulk_SerializerIsNull_ExceptionThrown()
+    {
+      Assert.Throws<ArgumentNullException>(() =>
+        createReader("hello").ReadSerializedBulk<string>(null, 99));
+    }
+
+    [Test]
+    public void ReadSerializedBulk_BulkLengthIsNegative_ExceptionThrown()
+    {
+      Assert.Throws<ArgumentOutOfRangeException>(() => createReader("hello")
+        .ReadSerializedBulk<string>(new Mock<ISerializer<string>>().Object, -1));
+    }
+
+    [Test]
+    public void ReadSerializedBulk_ValidSerializer_SerializerReadCalled()
+    {
+      var testStr = "hello"; // should be about 5-8 bytes
+      var mock = new Mock<ISerializer<string>>();
+      mock.SetupAllProperties();
+      mock.Setup(s => s.Read(It.IsAny<Stream>(), 5));
+
+      createReader(testStr).ReadSerializedBulk<string>(mock.Object, 5);
+      mock.VerifyAll();
+    }
+
+    [Test]
+    public void ReadSerializedBulk_ValidSerializer_SerializerResultReturned()
+    {
+      var expectedValue = "hello";
+      var mock = new Mock<ISerializer<string>>();
+      mock.SetupAllProperties();
+      mock.Setup(s => s.Read(It.IsAny<Stream>(), 5))
+        .Returns(expectedValue);
+
+      var result = createReader("not hello").ReadSerializedBulk(mock.Object, 5);
+      Assert.That(result, Is.EqualTo(expectedValue));
+    }
+
+    [Test]
+    public void ReadSerializedBulk_StringData_DataPassedToSerializer()
+    {
+      var buffer = new byte[] { 0x0B, 0x0E, 0x0E, 0x0F };
+      var mock = new Mock<ISerializer<string>>();
+      mock.Setup(m => m.Read(It.Is<Stream>(s =>
+        s.ReadByte() == 0x0B &&
+        s.ReadByte() == 0x0E &&
+        s.ReadByte() == 0x0E &&
+        s.ReadByte() == 0x0F), 4));
+
+      createReader(buffer).ReadSerializedBulk(mock.Object, 4);
+      mock.VerifyAll();
+    }
+
     #endregion
   }
 }
