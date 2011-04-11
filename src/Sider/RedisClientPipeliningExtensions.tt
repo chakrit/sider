@@ -16,12 +16,12 @@ namespace Sider
 <#    for (int i = MinTuples; i < MaxTuples; i++) {
         var typeList = getTypeList(i);
 #>
-    public static Tuple<<#= typeList #>> Pipeline<<#= typeList #>>(
-      this IRedisClient client,
+    public static Tuple<<#= typeList #>> Pipeline<TClient, <#= typeList #>>(
+      this IRedisClient<TClient> client,
 <#      for (int j = 1; j < i; j++) { #>
-      Func<IRedisClient, T<#= j #>> call<#= j #>,
+      Func<IRedisClient<TClient>, T<#= j #>> call<#= j #>,
 <#      } #>
-      Func<IRedisClient, T<#= i #>> call<#= i #>) {
+      Func<IRedisClient<TClient>, T<#= i #>> call<#= i #>) {
 
       var result = client.Pipeline(c =>
       {

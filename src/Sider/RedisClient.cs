@@ -6,12 +6,28 @@ using System.Net.Sockets;
 
 namespace Sider
 {
-  public partial class RedisClient : IRedisClient
+  public class RedisClient : RedisClient<string>
   {
+    public RedisClient(
+      string host = RedisSettings.DefaultHost,
+      int port = RedisSettings.DefaultPort) :
+      base(host, port) { }
+
+    internal RedisClient(Stream incoming, Stream outgoing) :
+      base(incoming, outgoing) { }
+
+    public RedisClient(RedisSettings settings) : base(settings) { }
+  }
+
+  public partial class RedisClient<T> : IRedisClient<T>
+  {
+    // TODO: Provide a way to safely set ISerizlier<T> 
+    //  (e.g. should not be settable while piplining)
+    private RedisSettings _settings;
+    private ISerializer<T> _serializer;
+
     private Socket _socket;
     private Stream _stream;
-
-    private RedisSettings _settings;
     private RedisReader _reader;
     private RedisWriter _writer;
 

@@ -1,10 +1,8 @@
 ﻿
-using System;
-
 namespace Sider
 {
-  public interface IClientsPool
+  public interface IClientsPool<T>
   {
-    IRedisClient GetClient();
+    IRedisClient<T> GetClient();
   }
 }

@@ -66,7 +66,7 @@ namespace Sider
       b = _stream.ReadByte();
 
       SAssert.IsTrue(b == '\n',
-        () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
+        () => new ResponseException("Expecting LF, found instead: " + (char)b));
 
       return negate ? -num : num;
     }
@@ -96,7 +96,7 @@ namespace Sider
       b = _stream.ReadByte();
 
       SAssert.IsTrue(b == '\n',
-        () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
+        () => new ResponseException("Expecting LF, found instead: " + (char)b));
 
       return negate ? -num : num;
     }
@@ -116,7 +116,7 @@ namespace Sider
       b = _stream.ReadByte();
 
       SAssert.IsTrue(b == '\n',
-        () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
+        () => new ResponseException("Expecting LF, found instead: " + (char)b));
 
       return sb.ToString();
     }
@@ -145,17 +145,11 @@ namespace Sider
 
       // read data from the stream, expect as much data as there's bulkLength
       var bytesRead = _stream.Read(buffer, 0, bulkLength);
-
       SAssert.IsTrue(bytesRead == bulkLength,
         () => new ResponseException("Expected " + bulkLength.ToString() +
           " bytes of bulk data, but only " + bytesRead.ToString() + " bytes are read."));
 
-      // read out CRLF
-      var b = _stream.ReadByte();
-      b = _stream.ReadByte();
-
-      SAssert.IsTrue(b == '\n',
-        () => new ResponseException("Expecting CRLF, found instead: " + (char)b));
+      readCrLf();
     }
 
     public void ReadBulkTo(Stream target, int bulkLength)
@@ -172,12 +166,7 @@ namespace Sider
       using (var limiter = new LimitingStream(_stream, bulkLength))
         limiter.CopyTo(target);
 
-      // eat up crlf
-      var b = _stream.ReadByte();
-      b = _stream.ReadByte();
-
-      SAssert.IsTrue(b == '\n',
-        () => new ResponseException("Expected CRLF, got '" + ((char)b) + "' instead."));
+      readCrLf();
     }
 
     public T ReadSerializedBulk<T>(ISerializer<T> serializer, int bulkLength)
@@ -185,7 +174,22 @@ namespace Sider
       SAssert.ArgumentNotNull(() => serializer);
       SAssert.ArgumentNonNegative(() => bulkLength);
 
-      return serializer.Read(_stream, bulkLength);
+      var result = serializer.Read(_stream, bulkLength);
+      readCrLf();
+
+      return result;
+    }
+
+
+    private void readCrLf()
+    {
+      var cr = (byte)_stream.ReadByte();
+      var lf = (byte)_stream.ReadByte();
+
+      SAssert.IsTrue(cr == '\r',
+        () => new ResponseException("Expecting a CR, got instead: " + (char)cr));
+      SAssert.IsTrue(lf == '\n',
+        () => new ResponseException("Expecting a LF, got instead: " + (char)lf));
     }
   }
 }

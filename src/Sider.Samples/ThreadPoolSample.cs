@@ -18,7 +18,7 @@ namespace Sider.Samples
 
     public override void Run()
     {
-      var pool = new ThreadwisePool();
+      var pool = new ThreadwisePool<string>();
       var mainClient = pool.GetClient();
 
       // setup a bag of keys to randomly increments

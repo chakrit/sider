@@ -12,7 +12,7 @@ namespace Sider.Benchmark
     public int InstanceNumber { get; private set; }
     public abstract string Description { get; }
 
-    public IRedisClient Client { get; set; }
+    public IRedisClient<string> Client { get; set; }
 
     public Job()
     {

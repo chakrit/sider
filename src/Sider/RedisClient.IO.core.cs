@@ -5,13 +5,13 @@ using System.IO;
 
 namespace Sider
 {
-  public partial class RedisClient
+  public partial class RedisClient<T>
   {
     private bool _isPipelining;
     private Queue<Func<RedisReader, object>> _readsQueue;
 
 
-    private IEnumerable<object> pipelineCore(Action<IRedisClient> pipelinedCalls)
+    private IEnumerable<object> pipelineCore(Action<IRedisClient<T>> pipelinedCalls)
     {
       _readsQueue = _readsQueue ?? new Queue<Func<RedisReader, object>>();
 
@@ -26,6 +26,19 @@ namespace Sider
       while (_readsQueue.Count > 0)
         yield return _readsQueue.Dequeue()(_reader);
     }
+
+
+    private void execute(Action action)
+    {
+      // TODO: Add try/catch SocketException/Reset here for handling ReconnectOnIdle
+      action();
+    }
+
+    private TOut execute<TOut>(Func<TOut> func)
+    {
+      return func();
+    }
+
 
     private void writeCore(Action<RedisWriter> writeAction)
     {

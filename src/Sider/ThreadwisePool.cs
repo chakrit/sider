@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Sider
 {
-  public class ThreadwisePool : IClientsPool
+  public class ThreadwisePool<T> : IClientsPool<T>
   {
     // TODO: LRU pruning since in peak time lots of clients will be built
     //   and dangling eating up memory, maybe we should change the _clientRef
@@ -33,11 +33,11 @@ namespace Sider
     }
 
 
-    public IRedisClient GetClient()
+    public IRedisClient<T> GetClient()
     {
       // gets thread-local value
       var weakRef = _threadRef.Value;
-      var client = (IRedisClient)weakRef.Target;
+      var client = (IRedisClient<T>)weakRef.Target;
 
       // rebuild the client if it's disposed
       if (client == null || client.IsDisposed) {
@@ -54,9 +54,9 @@ namespace Sider
       return new WeakReference(buildClient());
     }
 
-    private IRedisClient buildClient()
+    private IRedisClient<T> buildClient()
     {
-      var client = new RedisClient(_settings);
+      var client = new RedisClient<T>(_settings);
 
       // TODO: Is there a better way than using a nullable here?
       if (_db.HasValue)

@@ -8,9 +8,9 @@ namespace Sider
 {
   // see the redis commands reference for more info:
   // http://redis.io/commands
-  public partial class RedisClient : IRedisClient
+  public partial class RedisClient<T> : IRedisClient<T>
   {
-    public IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls)
+    public IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls)
     {
       // force-materialize the result to remove unwanted lazy-enumeration effect
       return pipelineCore(pipelinedCalls).ToArray();
@@ -21,82 +21,121 @@ namespace Sider
 
     public bool BgRewriteAOF()
     {
-      writeCmd("BGREWRITEAOF");
-      return readStatus("Background append only file rewriting started");
+      return execute(() =>
+      {
+        writeCmd("BGREWRITEAOF");
+        return readStatus("Background append only file rewriting started");
+      });
     }
 
     public bool BgSave()
     {
-      writeCmd("BGSAVE");
-      return readStatus("Background saving started");
+      return execute(() =>
+      {
+        writeCmd("BGSAVE");
+        return readStatus("Background saving started");
+      });
     }
 
     public KeyValuePair<string, string>[] ConfigGet(string param)
     {
-      writeCmd("CONFIG", "GET", param);
-      return readKeyValues();
+      return execute(() =>
+      {
+        writeStrCmd("CONFIG", "GET", param);
+        return readStringKeyValues();
+      });
     }
 
     public bool ConfigSet(string param, string value)
     {
-      writeCmd("CONFIG", "SET", param, value);
-      return readOk();
+      return execute(() =>
+      {
+        writeStrCmd("CONFIG", "SET", param, value);
+        return readOk();
+      });
     }
 
     public bool ConfigResetStat()
     {
-      writeCmd("CONFIG", "RESETSTAT");
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("CONFIG", "RESETSTAT");
+        return readOk();
+      });
     }
 
     public int DbSize()
     {
-      writeCmd("DBSIZE");
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("DBSIZE");
+        return readInt();
+      });
     }
 
     public string DebugObject(string key)
     {
-      writeCmd("DEBUG", "OBJECT", key);
-      return readStatus();
+      return execute(() =>
+      {
+        writeStrCmd("DEBUG", "OBJECT", key);
+        return readStatus();
+      });
     }
 
     public void DebugSegfault()
     {
-      writeCmd("DEBUG", "SEGFAULT");
-      Dispose();
+      execute(() =>
+      {
+        writeCmd("DEBUG", "SEGFAULT");
+        Dispose();
+      });
     }
 
     public bool FlushAll()
     {
-      writeCmd("FLUSHALL");
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("FLUSHALL");
+        return readBool();
+      });
     }
 
     public bool FlushDb()
     {
-      writeCmd("FLUSHDB");
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("FLUSHDB");
+        return readOk();
+      });
     }
 
     public DateTime LastSave()
     {
-      writeCmd("LASTSAVE");
-      return readCore(ResponseType.Integer, r =>
-        parseDateTime(r.ReadNumberLine64()));
+      return execute(() =>
+      {
+        writeCmd("LASTSAVE");
+        return readCore(ResponseType.Integer, r =>
+          parseDateTime(r.ReadNumberLine64()));
+      });
     }
 
     public bool Save()
     {
-      writeCmd("SAVE");
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SAVE");
+        return readOk();
+      });
     }
 
     public void Shutdown()
     {
-      writeCmd("SHUTDOWN");
-      // TODO: Docs says error is possible but how to produce it?
-      Dispose();
+      execute(() =>
+      {
+        writeCmd("SHUTDOWN");
+        // TODO: Docs says error is possible but how to produce it?
+        Dispose();
+      });
     }
 
     // NOTE: INFO, MONITOR, SLAVEOF, SYNC ... these commands are not implemented
@@ -109,32 +148,47 @@ namespace Sider
 
     public bool Auth(string password)
     {
-      writeCmd("AUTH", password);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("AUTH", password);
+        return readOk();
+      });
     }
 
     public string Echo(string msg)
     {
-      writeCmd("ECHO", msg);
-      return readBulk();
+      return execute(() =>
+      {
+        writeCmd("ECHO", msg);
+        return readStrBulk();
+      });
     }
 
     public bool Ping()
     {
-      writeCmd("PING");
-      return readStatus("PONG");
+      return execute(() =>
+      {
+        writeCmd("PING");
+        return readStatus("PONG");
+      });
     }
 
     public void Quit()
     {
-      writeCmd("QUIT");
-      Dispose();
+      execute(() =>
+      {
+        writeCmd("QUIT");
+        Dispose();
+      });
     }
 
     public bool Select(int dbIndex)
     {
-      writeCmd("SELECT", dbIndex.ToString());
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SELECT", dbIndex.ToString());
+        return readOk();
+      });
     }
 
     #endregion
@@ -152,245 +206,352 @@ namespace Sider
 
     public int Del(params string[] keys)
     {
-      writeCmd("DEL", keys);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("DEL", keys);
+        return readInt();
+      });
     }
 
     public bool Exists(string key)
     {
-      writeCmd("EXISTS", key);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("EXISTS", key);
+        return readBool();
+      });
     }
 
     public bool Expire(string key, TimeSpan span)
     {
-      writeCmd("EXPIRE", key, formatTimeSpan(span));
-      return readBool();
+      return execute(() =>
+      {
+        writeStrCmd("EXPIRE", key, formatTimeSpan(span));
+        return readBool();
+      });
     }
 
     public bool ExpireAt(string key, DateTime time)
     {
-      writeCmd("EXPIREAT", key, formatDateTime(time));
-      return readBool();
+      return execute(() =>
+      {
+        writeStrCmd("EXPIREAT", key, formatDateTime(time));
+        return readBool();
+      });
     }
 
     public string[] Keys(string pattern)
     {
-      writeCmd("KEYS", pattern);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("KEYS", pattern);
+        return readStrMultiBulk();
+      });
     }
 
     public bool Move(string key, int dbIndex)
     {
-      writeCmd("MOVE", key, dbIndex.ToString());
-      return readBool();
+      return execute(() =>
+      {
+        writeStrCmd("MOVE", key, dbIndex.ToString());
+        return readBool();
+      });
     }
 
     public bool Persist(string key)
     {
-      writeCmd("PERSIST", key);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("PERSIST", key);
+        return readBool();
+      });
     }
 
     public string RandomKey()
     {
-      writeCmd("RANDOMKEY");
-      return readBulk();
+      return execute(() =>
+      {
+        writeCmd("RANDOMKEY");
+        return readStrBulk();
+      });
     }
 
     public bool Rename(string oldKey, string newKey)
     {
-      writeCmd("RENAME", oldKey, newKey);
-      return readOk();
+      return execute(() =>
+      {
+        writeStrCmd("RENAME", oldKey, newKey);
+        return readOk();
+      });
     }
 
     public bool RenameNX(string oldKey, string newKey)
     {
-      writeCmd("RENAMENX", oldKey, newKey);
-      return readBool();
+      return execute(() =>
+      {
+        writeStrCmd("RENAMENX", oldKey, newKey);
+        return readBool();
+      });
     }
 
     // TODO: Implement SORT complex arguments
 
     public TimeSpan TTL(string key)
     {
-      writeCmd("TTL", key);
-      return readCore(ResponseType.Integer,
-        r => TimeSpan.FromSeconds(r.ReadNumberLine64()));
+      return execute(() =>
+      {
+        writeCmd("TTL", key);
+        return readCore(ResponseType.Integer,
+          r => TimeSpan.FromSeconds(r.ReadNumberLine64()));
+      });
     }
 
     public RedisType Type(string key)
     {
-      writeCmd("TYPE", key);
-      return readCore(ResponseType.SingleLine, r =>
-        RedisTypes.Parse(r.ReadStatusLine()));
+      return execute(() =>
+      {
+        writeCmd("TYPE", key);
+        return readCore(ResponseType.SingleLine, r =>
+          RedisTypes.Parse(r.ReadStatusLine()));
+      });
     }
 
     #endregion
 
     #region Strings
 
-    public int Append(string key, string value)
+    public int Append(string key, T value)
     {
-      writeCmd("APPEND", key, value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("APPEND", key, value);
+        return readInt();
+      });
     }
 
     public long Decr(string key)
     {
-      writeCmd("DECR", key);
-      return readInt64();
+      return execute(() =>
+      {
+        writeCmd("DECR", key);
+        return readInt64();
+      });
     }
 
     public long DecrBy(string key, long value)
     {
-      writeCmd("DECRBY", key, value.ToString());
-      return readInt64();
+      return execute(() =>
+      {
+        writeStrCmd("DECRBY", key, value.ToString());
+        return readInt64();
+      });
     }
 
-    public string Get(string key)
+    public T Get(string key)
     {
-      writeCmd("GET", key);
-      return readBulk();
+      return execute(() =>
+      {
+        writeCmd("GET", key);
+        return readBulk();
+      });
     }
 
     public byte[] GetRaw(string key)
     {
-      writeCmd("GET", key);
-      return readBulkRaw();
+      return execute(() =>
+      {
+        writeCmd("GET", key);
+        return readBulkRaw();
+      });
     }
 
     public int GetTo(string key, Stream target)
     {
-      writeCmd("GET", key);
-      return readBulkTo(target);
+      return execute(() =>
+      {
+        writeCmd("GET", key);
+        return readBulkTo(target);
+      });
     }
 
     public int GetBit(string key, int offset)
     {
-      writeCmd("GETBIT", key, offset.ToString());
-      return readInt();
+      return execute(() =>
+      {
+        writeStrCmd("GETBIT", key, offset.ToString());
+        return readInt();
+      });
     }
 
-    public string GetRange(string key, int start, int end)
+    public T GetRange(string key, int start, int end)
     {
-      writeCmd("GETRANGE", key, start.ToString(), end.ToString());
-      return readBulk();
+      return execute(() =>
+      {
+        writeStrCmd("GETRANGE", key, start.ToString(), end.ToString());
+        return readBulk();
+      });
     }
 
     public byte[] GetRangeRaw(string key, int start, int end)
     {
-      writeCmd("GETRANGE", key, start.ToString(), end.ToString());
-      return readBulkRaw();
+      return execute(() =>
+      {
+        writeStrCmd("GETRANGE", key, start.ToString(), end.ToString());
+        return readBulkRaw();
+      });
     }
 
     public int GetRangeTo(string key, int start, int end, Stream source)
     {
-      writeCmd("GETRANGE", key, start.ToString(), end.ToString());
-      return readBulkTo(source);
+      return execute(() =>
+      {
+        writeStrCmd("GETRANGE", key, start.ToString(), end.ToString());
+        return readBulkTo(source);
+      });
     }
 
-    [Obsolete("This command has been renamed to GETRANGE as of Redis 2.0")]
-    public string Substr(string key, int start, int end)
+    public T GetSet(string key, T value)
     {
-      writeCmd("SUBSTR", key, start.ToString(), end.ToString());
-      return readBulk();
-    }
-
-    public string GetSet(string key, string value)
-    {
-      writeCmd("GETSET", key, value);
-      return readBulk();
+      return execute(() =>
+      {
+        writeCmd("GETSET", key, value);
+        return readBulk();
+      });
     }
 
     public long Incr(string key)
     {
-      writeCmd("INCR", key);
-      return readInt64();
+      return execute(() =>
+      {
+        writeCmd("INCR", key);
+        return readInt64();
+      });
     }
 
     public long IncrBy(string key, long value)
     {
-      writeCmd("INCRBY", key, value.ToString());
-      return readInt64();
+      return execute(() =>
+      {
+        writeStrCmd("INCRBY", key, value.ToString());
+        return readInt64();
+      });
     }
 
-    public string[] MGet(params string[] keys)
+    public T[] MGet(params string[] keys)
     {
-      writeCmd("MGET", keys);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("MGET", keys);
+        return readMultiBulk();
+      });
     }
 
-    public bool MSet(IEnumerable<KeyValuePair<string, string>> mappings)
+    public bool MSet(IEnumerable<KeyValuePair<string, T>> mappings)
     {
-      writeCmd("MSET", mappings.ToArray());
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("MSET", mappings.ToArray());
+        return readOk();
+      });
     }
 
-    public bool MSetNX(IEnumerable<KeyValuePair<string, string>> mappings)
+    public bool MSetNX(IEnumerable<KeyValuePair<string, T>> mappings)
     {
-      writeCmd("MSETNX", mappings.ToArray());
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("MSETNX", mappings.ToArray());
+        return readBool();
+      });
     }
 
-    public bool Set(string key, string value)
+    public bool Set(string key, T value)
     {
-      writeCmd("SET", key, value);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SET", key, value);
+        return readOk();
+      });
     }
 
     public bool SetRaw(string key, byte[] raw)
     {
-      writeCmd("SET", key, raw);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SET", key, raw);
+        return readOk();
+      });
     }
 
     public bool SetFrom(string key, Stream source, int count)
     {
-      writeCmd("SET", key, source, count);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SET", key, source, count);
+        return readOk();
+      });
     }
 
     public int SetBit(string key, int offset, int value)
     {
-      writeCmd("SETBIT", key, offset.ToString(), value.ToString());
-      return readInt();
+      return execute(() =>
+      {
+        writeStrCmd("SETBIT", key, offset.ToString(), value.ToString());
+        return readInt();
+      });
     }
 
-    public bool SetEX(string key, TimeSpan ttl, string value)
+    public bool SetEX(string key, TimeSpan ttl, T value)
     {
-      writeCmd("SETEX", key, formatTimeSpan(ttl), value);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SETEX", key, formatTimeSpan(ttl), value);
+        return readOk();
+      });
     }
 
-    public bool SetNX(string key, string value)
+    public bool SetNX(string key, T value)
     {
-      writeCmd("SETNX", key, value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("SETNX", key, value);
+        return readBool();
+      });
     }
 
-    public int SetRange(string key, int offset, string value)
+    public int SetRange(string key, int offset, T value)
     {
-      writeCmd("SETRANGE", key, offset.ToString(), value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("SETRANGE", key, offset.ToString(), value);
+        return readInt();
+      });
     }
 
     public int SetRangeRaw(string key, int offset, byte[] value)
     {
-      writeCmd("SETRANGE", key, offset.ToString(), value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("SETRANGE", key, offset.ToString(), value);
+        return readInt();
+      });
     }
 
     public int SetRangeFrom(string key, int offset, Stream source, int count)
     {
-      writeCmd("SETRANGE", key, offset.ToString(), source, count);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("SETRANGE", key, offset.ToString(), source, count);
+        return readInt();
+      });
     }
 
     public int Strlen(string key)
     {
-      writeCmd("STRLEN", key);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("STRLEN", key);
+        return readInt();
+      });
     }
 
     #endregion
@@ -399,105 +560,153 @@ namespace Sider
 
     public bool HDel(string key, string field)
     {
-      writeCmd("HDEL", key, field);
-      return readBool();
+      return execute(() =>
+      {
+        writeStrCmd("HDEL", key, field);
+        return readBool();
+      });
     }
 
     public bool HExists(string key, string field)
     {
-      writeCmd("HEXISTS", key, field);
-      return readBool();
+      return execute(() =>
+      {
+        writeStrCmd("HEXISTS", key, field);
+        return readBool();
+      });
     }
 
-    public string HGet(string key, string field)
+    public T HGet(string key, string field)
     {
-      writeCmd("HGET", key, field);
-      return readBulk();
+      return execute(() =>
+      {
+        writeStrCmd("HGET", key, field);
+        return readBulk();
+      });
     }
 
     public byte[] HGetRaw(string key, string field)
     {
-      writeCmd("HGET", key, field);
-      return readBulkRaw();
+      return execute(() =>
+      {
+        writeStrCmd("HGET", key, field);
+        return readBulkRaw();
+      });
     }
 
     public int HGetTo(string key, string field, Stream target)
     {
-      writeCmd("HGET", key, field);
-      return readCore(ResponseType.Bulk, r =>
+      return execute(() =>
       {
-        var length = r.ReadNumberLine();
-        if (length > -1)
-          r.ReadBulkTo(target, length);
+        writeStrCmd("HGET", key, field);
+        return readCore(ResponseType.Bulk, r =>
+        {
+          var length = r.ReadNumberLine();
+          if (length > -1)
+            r.ReadBulkTo(target, length);
 
-        return length;
+          return length;
+        });
       });
     }
 
-    public IEnumerable<KeyValuePair<string, string>> HGetAll(string key)
+    public IEnumerable<KeyValuePair<string, T>> HGetAll(string key)
     {
-      writeCmd("HGETALL", key);
-      return readKeyValues();
+      return execute(() =>
+      {
+        writeCmd("HGETALL", key);
+        return readKeyValues();
+      });
     }
 
     public long HIncrBy(string key, string field, long amount)
     {
-      writeCmd("HINCRBY", key, field, amount.ToString());
-      return readInt64();
+      return execute(() =>
+      {
+        writeStrCmd("HINCRBY", key, field, amount.ToString());
+        return readInt64();
+      });
     }
 
     public string[] HKeys(string key)
     {
-      writeCmd("HKEYS", key);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("HKEYS", key);
+        return readStrMultiBulk();
+      });
     }
 
     public int HLen(string key)
     {
-      writeCmd("HLEN", key);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("HLEN", key);
+        return readInt();
+      });
     }
 
-    public string[] HMGet(string key, params string[] fields)
+    public T[] HMGet(string key, params string[] fields)
     {
-      writeCmd("HMGET", key, fields);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("HMGET", key, fields);
+        return readMultiBulk();
+      });
     }
 
-    public bool HMSet(string key, IEnumerable<KeyValuePair<string, string>> mappings)
+    public bool HMSet(string key, IEnumerable<KeyValuePair<string, T>> mappings)
     {
-      writeCmd("HMSET", key, mappings.ToArray());
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("HMSET", key, mappings.ToArray());
+        return readOk();
+      });
     }
 
-    public bool HSet(string key, string field, string value)
+    public bool HSet(string key, string field, T value)
     {
-      writeCmd("HSET", key, field, value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("HSET", key, field, value);
+        return readBool();
+      });
     }
 
     public bool HSetRaw(string key, string field, byte[] data)
     {
-      writeCmd("HSET", key, field, data);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("HSET", key, field, data);
+        return readBool();
+      });
     }
 
     public bool HSetFrom(string key, string field, Stream source, int count)
     {
-      writeCmd("HSET", key, field, source, count);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("HSET", key, field, source, count);
+        return readBool();
+      });
     }
 
-    public bool HSetNX(string key, string field, string value)
+    public bool HSetNX(string key, string field, T value)
     {
-      writeCmd("HSETNX", key, field, value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("HSETNX", key, field, value);
+        return readBool();
+      });
     }
 
-    public string[] HVals(string key)
+    public T[] HVals(string key)
     {
-      writeCmd("HVALS", key);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("HVALS", key);
+        return readMultiBulk();
+      });
     }
 
     #endregion
@@ -508,204 +717,297 @@ namespace Sider
     //   BLPOP, BRPOP, BRPOPLPUSH
 
     // a slight variation from Redis doc since params array must be last
-    public KeyValuePair<string, string>? BLPop(int timeout, params string[] keys)
+    public KeyValuePair<string, T>? BLPop(int timeout, params string[] keys)
     {
-      writeCmd("BLPOP", keys, timeout.ToString());
-      return readKeyValue();
+      return execute(() =>
+      {
+        writeCmd("BLPOP", keys, timeout.ToString());
+        return readKeyValue();
+      });
     }
 
-    public KeyValuePair<string, string>? BRPop(int timeout, params string[] keys)
+    public KeyValuePair<string, T>? BRPop(int timeout, params string[] keys)
     {
-      writeCmd("BRPOP", keys, timeout.ToString());
-      return readKeyValue();
+      return execute(() =>
+      {
+        writeCmd("BRPOP", keys, timeout.ToString());
+        return readKeyValue();
+      });
     }
 
-    public string BRPopLPush(string src, string dest, int timeout)
+    public T BRPopLPush(string src, string dest, int timeout)
     {
-      writeCmd("BRPOPLPUSH", src, dest, timeout.ToString());
+      return execute(() =>
+      {
+        writeStrCmd("BRPOPLPUSH", src, dest, timeout.ToString());
 
-      // NOTE: There is inconsistency in redis protocol v < 2.2 which
-      //   returns a Multi-Bulk nil when the timeout occurs instead of a
-      //   bulk-nil, this should be fixed in 2.2 so I'm leaving this as-is
-      return readBulk();
+        // NOTE: There is inconsistency in redis protocol v < 2.2 which
+        //   returns a Multi-Bulk nil when the timeout occurs instead of a
+        //   bulk-nil, this should be fixed in 2.2 so I'm leaving this as-is
+        return readBulk();
+      });
     }
 
-    public string LIndex(string key, int index)
+    public T LIndex(string key, int index)
     {
-      writeCmd("LINDEX", key, index.ToString());
-      return readBulk();
+      return execute(() =>
+      {
+        writeStrCmd("LINDEX", key, index.ToString());
+        return readBulk();
+      });
     }
 
     // TODO: Implement LInsert with complex args
 
     public int LLen(string key)
     {
-      writeCmd("LLEN", key);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("LLEN", key);
+        return readInt();
+      });
     }
 
-    public string LPop(string key)
+    public T LPop(string key)
     {
-      writeCmd("LPOP", key);
-      return readBulk();
+      return execute(() =>
+      {
+        writeCmd("LPOP", key);
+        return readBulk();
+      });
     }
 
-    public int LPush(string key, string value)
+    public int LPush(string key, T value)
     {
-      writeCmd("LPUSH", key, value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("LPUSH", key, value);
+        return readInt();
+      });
     }
 
-    public int LPushX(string key, string value)
+    public int LPushX(string key, T value)
     {
-      writeCmd("LPUSHX", key, value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("LPUSHX", key, value);
+        return readInt();
+      });
     }
 
-    public string[] LRange(string key, int minIncl, int maxIncl)
+    public T[] LRange(string key, int minIncl, int maxIncl)
     {
-      writeCmd("LRANGE", key, minIncl.ToString(), maxIncl.ToString());
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeStrCmd("LRANGE", key, minIncl.ToString(), maxIncl.ToString());
+        return readMultiBulk();
+      });
     }
 
-    public int LRem(string key, int count, string value)
+    public int LRem(string key, int count, T value)
     {
-      writeCmd("LREM", key, count.ToString(), value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("LREM", key, count.ToString(), value);
+        return readInt();
+      });
     }
 
-    public bool LSet(string key, int index, string value)
+    public bool LSet(string key, int index, T value)
     {
-      writeCmd("LSET", key, index.ToString(), value);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("LSET", key, index.ToString(), value);
+        return readOk();
+      });
     }
 
     public bool LTrim(string key, int minIncl, int maxIncl)
     {
-      writeCmd("LTRIM", key, minIncl.ToString(), maxIncl.ToString());
-      return readOk();
+      return execute(() =>
+      {
+        writeStrCmd("LTRIM", key, minIncl.ToString(), maxIncl.ToString());
+        return readOk();
+      });
     }
 
-    public string RPop(string key)
+    public T RPop(string key)
     {
-      writeCmd("RPOP", key);
-      return readBulk();
+      return execute(() =>
+      {
+        writeCmd("RPOP", key);
+        return readBulk();
+      });
     }
 
-    public string RPopLPush(string srcKey, string destKey)
+    public T RPopLPush(string srcKey, string destKey)
     {
-      writeCmd("RPOPLPUSH", srcKey, destKey);
-      return readBulk();
+      return execute(() =>
+      {
+        writeStrCmd("RPOPLPUSH", srcKey, destKey);
+        return readBulk();
+      });
     }
 
-    public int RPush(string key, string value)
+    public int RPush(string key, T value)
     {
-      writeCmd("RPUSH", key, value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("RPUSH", key, value);
+        return readInt();
+      });
     }
 
-    public int RPushX(string key, string value)
+    public int RPushX(string key, T value)
     {
-      writeCmd("RPUSHX", key, value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("RPUSHX", key, value);
+        return readInt();
+      });
     }
 
     #endregion
 
     #region Sets
 
-    public bool SAdd(string key, string value)
+    public bool SAdd(string key, T value)
     {
-      writeCmd("SADD", key, value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("SADD", key, value);
+        return readBool();
+      });
     }
 
     public int SCard(string key)
     {
-      writeCmd("SCARD", key);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("SCARD", key);
+        return readInt();
+      });
     }
 
-    public string[] SDiff(params string[] keys)
+    public T[] SDiff(params string[] keys)
     {
-      writeCmd("SDIFF", keys);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("SDIFF", keys);
+        return readMultiBulk();
+      });
     }
 
     public bool SDiffStore(string destKey, params string[] keys)
     {
-      writeCmd("SDIFFSTORE", destKey, keys);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SDIFFSTORE", destKey, keys);
+        return readOk();
+      });
     }
 
-    public string[] SInter(params string[] keys)
+    public T[] SInter(params string[] keys)
     {
-      writeCmd("SINTER", keys);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("SINTER", keys);
+        return readMultiBulk();
+      });
     }
 
     public bool SInterStore(string destKey, params string[] keys)
     {
-      writeCmd("SINTERSTORE", destKey, keys);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SINTERSTORE", destKey, keys);
+        return readOk();
+      });
     }
 
-    public bool SIsMember(string key, string value)
+    public bool SIsMember(string key, T value)
     {
-      writeCmd("SISMEMBER", key, value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("SISMEMBER", key, value);
+        return readBool();
+      });
     }
 
-    public string[] SMembers(string key)
+    public T[] SMembers(string key)
     {
-      writeCmd("SMEMBERS", key);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("SMEMBERS", key);
+        return readMultiBulk();
+      });
     }
 
-    public bool SMove(string srcKey, string destKey, string value)
+    public bool SMove(string srcKey, string destKey, T value)
     {
-      writeCmd("SMOVE", srcKey, destKey, value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("SMOVE", srcKey, destKey, value);
+        return readBool();
+      });
     }
 
-    public string SPop(string key)
+    public T SPop(string key)
     {
-      writeCmd("SPOP", key);
-      return readBulk();
+      return execute(() =>
+      {
+        writeCmd("SPOP", key);
+        return readBulk();
+      });
     }
 
-    public string SRandMember(string key)
+    public T SRandMember(string key)
     {
-      writeCmd("SRANDMEMBER", key);
-      return readBulk();
+      return execute(() =>
+      {
+        writeCmd("SRANDMEMBER", key);
+        return readBulk();
+      });
     }
 
-    public bool SRem(string key, string value)
+    public bool SRem(string key, T value)
     {
-      writeCmd("SREM", key, value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("SREM", key, value);
+        return readBool();
+      });
     }
 
-    public string[] SUnion(params string[] keys)
+    public T[] SUnion(params string[] keys)
     {
-      writeCmd("SUNION", keys);
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeCmd("SUNION", keys);
+        return readMultiBulk();
+      });
     }
 
     public bool SUnionStore(string destKey, params string[] keys)
     {
-      writeCmd("SUNIONSTORE", destKey, keys);
-      return readOk();
+      return execute(() =>
+      {
+        writeCmd("SUNIONSTORE", destKey, keys);
+        return readOk();
+      });
     }
 
     #endregion
 
     #region Sorted Sets
 
-    public bool ZAdd(string key, double score, string value)
+    public bool ZAdd(string key, double score, T value)
     {
-      writeCmd("ZADD", key, formatDouble(score), value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("ZADD", key, formatDbl(score), value);
+        return readBool();
+      });
     }
 
     public int ZCard(string key)
@@ -716,86 +1018,128 @@ namespace Sider
 
     public int ZCount(string key, double minIncl, double maxIncl)
     {
-      writeCmd("ZCOUNT", key, formatDouble(minIncl), formatDouble(maxIncl));
-      return readInt();
+      return execute(() =>
+      {
+        writeStrCmd("ZCOUNT", key, formatDbl(minIncl), formatDbl(maxIncl));
+        return readInt();
+      });
     }
 
-    public double ZIncrBy(string key, double amount, string value)
+    public double ZIncrBy(string key, double amount, T value)
     {
-      writeCmd("ZINCRBY", key, formatDouble(amount), value);
-      return readDouble();
+      return execute(() =>
+      {
+        writeCmd("ZINCRBY", key, formatDbl(amount), value);
+        return readDouble();
+      });
     }
 
     public int ZInterStore(string destKey, params string[] srcKeys)
     {
-      writeCmd("ZINTERSTORE", destKey, srcKeys.Length.ToString(), srcKeys);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("ZINTERSTORE", destKey, srcKeys.Length.ToString(), srcKeys);
+        return readInt();
+      });
     }
 
-    public string[] ZRange(string key, int startRank, int endRank)
+    public T[] ZRange(string key, int startRank, int endRank)
     {
-      writeCmd("ZRANGE", key, startRank.ToString(), endRank.ToString());
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeStrCmd("ZRANGE", key, startRank.ToString(), endRank.ToString());
+        return readMultiBulk();
+      });
     }
 
-    public string[] ZRangeByScore(string key, double minIncl, double maxIncl)
+    public T[] ZRangeByScore(string key, double minIncl, double maxIncl)
     {
-      writeCmd("ZRANGEBYSCORE", key, formatDouble(minIncl), formatDouble(maxIncl));
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeStrCmd("ZRANGEBYSCORE", key, formatDbl(minIncl), formatDbl(maxIncl));
+        return readMultiBulk();
+      });
     }
 
-    public int ZRank(string key, string value)
+    public int ZRank(string key, T value)
     {
-      writeCmd("ZRANK", key, value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("ZRANK", key, value);
+        return readInt();
+      });
     }
 
-    public bool ZRem(string key, string value)
+    public bool ZRem(string key, T value)
     {
-      writeCmd("ZREM", key, value);
-      return readBool();
+      return execute(() =>
+      {
+        writeCmd("ZREM", key, value);
+        return readBool();
+      });
     }
 
     public int ZRemRangeByRank(string key, int startRank, int endRank)
     {
-      writeCmd("ZREMRANGEBYRANK", key, startRank.ToString(), endRank.ToString());
-      return readInt();
+      return execute(() =>
+      {
+        writeStrCmd("ZREMRANGEBYRANK", key, startRank.ToString(), endRank.ToString());
+        return readInt();
+      });
     }
 
     public int ZRemRangeByScore(string key, double minIncl, double maxIncl)
     {
-      writeCmd("ZREMRANGEBYSCORE", key, formatDouble(minIncl), formatDouble(maxIncl));
-      return readInt();
+      return execute(() =>
+      {
+        writeStrCmd("ZREMRANGEBYSCORE", key, formatDbl(minIncl), formatDbl(maxIncl));
+        return readInt();
+      });
     }
 
-    public string[] ZRevRange(string key, int startRank, int endRank)
+    public T[] ZRevRange(string key, int startRank, int endRank)
     {
-      writeCmd("ZREVRANGE", key, startRank.ToString(), endRank.ToString());
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeStrCmd("ZREVRANGE", key, startRank.ToString(), endRank.ToString());
+        return readMultiBulk();
+      });
     }
 
-    public string[] ZRevRangeByScore(string key, double minIncl, double maxIncl)
+    public T[] ZRevRangeByScore(string key, double minIncl, double maxIncl)
     {
-      writeCmd("ZREVRANGE", key, formatDouble(minIncl), formatDouble(maxIncl));
-      return readMultiBulk();
+      return execute(() =>
+      {
+        writeStrCmd("ZREVRANGE", key, formatDbl(minIncl), formatDbl(maxIncl));
+        return readMultiBulk();
+      });
     }
 
-    public int ZRevRank(string key, string value)
+    public int ZRevRank(string key, T value)
     {
-      writeCmd("ZREVRANK", key, value);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("ZREVRANK", key, value);
+        return readInt();
+      });
     }
 
-    public double ZScore(string key, string value)
+    public double ZScore(string key, T value)
     {
-      writeCmd("ZSCORE", key);
-      return readDouble();
+      return execute(() =>
+      {
+        writeCmd("ZSCORE", key);
+        return readDouble();
+      });
     }
 
     public int ZUnionStore(string destKey, params string[] srcKeys)
     {
-      writeCmd("ZUNIONSTORE", destKey, srcKeys.Length.ToString(), srcKeys);
-      return readInt();
+      return execute(() =>
+      {
+        writeCmd("ZUNIONSTORE", destKey, srcKeys.Length.ToString(), srcKeys);
+        return readInt();
+      });
     }
 
     #endregion

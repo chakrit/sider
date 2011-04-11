@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sider
 {
-  public partial class RedisClient
+  public partial class RedisClient<T>
   {
     public const long UnixEpochL = 621355968000000000L; // 1st Jan 1970
     public static readonly DateTime UnixEpoch = new DateTime(UnixEpochL);
@@ -55,7 +55,7 @@ namespace Sider
     }
 
 
-    private static string formatDouble(double d)
+    private static string formatDbl(double d)
     {
       return double.IsPositiveInfinity(d) ? "+inf" :
         double.IsNegativeInfinity(d) ? "-inf" :

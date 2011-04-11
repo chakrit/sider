@@ -4,7 +4,8 @@ using System.IO;
 
 namespace Sider
 {
-  public partial class RedisClient
+  // TODO: Cleanup
+  public partial class RedisClient<T>
   {
     private int readInt()
     { return readCore(ResponseType.Integer, r => r.ReadNumberLine()); }
@@ -36,7 +37,16 @@ namespace Sider
       });
     }
 
-    private string readBulk()
+    private T readBulk()
+    {
+      return readCore(ResponseType.Bulk, r =>
+      {
+        var length = r.ReadNumberLine();
+        return length < 0 ? default(T) : r.ReadSerializedBulk(_serializer, length);
+      });
+    }
+
+    private string readStrBulk()
     {
       return readCore(ResponseType.Bulk, r =>
       {
@@ -66,7 +76,32 @@ namespace Sider
       });
     }
 
-    private string[] readMultiBulk()
+    private T[] readMultiBulk()
+    {
+      return readCore(ResponseType.MultiBulk, r =>
+      {
+        var count = r.ReadNumberLine();
+        if (count == -1)
+          return null;
+
+        var result = new T[count];
+
+        for (var i = 0; i < count; i++) {
+          var type = r.ReadTypeChar();
+          SAssert.ResponseType(ResponseType.Bulk, type);
+
+          var length = r.ReadNumberLine();
+          if (length > -1)
+            result[i] = r.ReadSerializedBulk(_serializer, length);
+          else
+            result[i] = default(T);
+        }
+
+        return result;
+      });
+    }
+
+    private string[] readStrMultiBulk()
     {
       return readCore(ResponseType.MultiBulk, r =>
       {
@@ -91,13 +126,13 @@ namespace Sider
       });
     }
 
-    private KeyValuePair<string, string>? readKeyValue()
+    private KeyValuePair<string, T>? readKeyValue()
     {
       return readCore(ResponseType.MultiBulk, r =>
       {
         var count = r.ReadNumberLine();
         if (count == -1)
-          return (KeyValuePair<string, string>?)null;
+          return (KeyValuePair<string, T>?)null;
 
         // read key
         var type = r.ReadTypeChar();
@@ -110,13 +145,43 @@ namespace Sider
         SAssert.ResponseType(ResponseType.Bulk, type = r.ReadTypeChar());
 
         length = r.ReadNumberLine();
-        var value = decodeStr(r.ReadBulk(length));
+        var value = r.ReadSerializedBulk(_serializer, length);
 
-        return new KeyValuePair<string, string>(key, value);
+        return new KeyValuePair<string, T>(key, value);
       });
     }
 
-    private KeyValuePair<string, string>[] readKeyValues()
+    private KeyValuePair<string, T>[] readKeyValues()
+    {
+      return readCore(ResponseType.MultiBulk, r =>
+      {
+        var count = r.ReadNumberLine();
+        if (count == -1)
+          return null;
+
+        var result = new KeyValuePair<string, T>[count];
+
+        for (var i = 0; i < count; i++) {
+          var type = r.ReadTypeChar();
+          SAssert.ResponseType(ResponseType.Bulk, type);
+
+          var length = r.ReadNumberLine();
+          var key = decodeStr(r.ReadBulk(length));
+
+          type = r.ReadTypeChar();
+          SAssert.ResponseType(ResponseType.Bulk, type);
+
+          length = r.ReadNumberLine();
+          var value = r.ReadSerializedBulk(_serializer, length);
+
+          result[i] = new KeyValuePair<string, T>(key, value);
+        }
+
+        return result;
+      });
+    }
+
+    private KeyValuePair<string, string>[] readStringKeyValues()
     {
       return readCore(ResponseType.MultiBulk, r =>
       {

@@ -12,7 +12,7 @@ namespace Sider.Tests
       public Stream InputStream { get; set; }
       public Stream OutputStream { get; set; }
 
-      public IRedisClient Client { get; set; }
+      public IRedisClient<string> Client { get; set; }
     }
 
     private ClientInfo createClient()
@@ -74,7 +74,7 @@ namespace Sider.Tests
       // MOST = try a few commands that behave differently since
       //        most of the commands are similar and should be skipped
 
-      Action<Action<IRedisClient>> test = clientCallback =>
+      Action<Action<IRedisClient<string>>> test = clientCallback =>
       {
         // no need to fill in data because the exception
         // should be thrown whether there is data or not

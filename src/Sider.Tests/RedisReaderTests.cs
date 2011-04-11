@@ -659,7 +659,7 @@ namespace Sider.Tests
     [Test]
     public void ReadSerializedBulk_ValidSerializer_SerializerReadCalled()
     {
-      var testStr = "hello"; // should be about 5-8 bytes
+      var testStr = "\r\n"; // should be about 7-10 bytes
       var mock = new Mock<ISerializer<string>>();
       mock.SetupAllProperties();
       mock.Setup(s => s.Read(It.IsAny<Stream>(), 5));
@@ -671,20 +671,27 @@ namespace Sider.Tests
     [Test]
     public void ReadSerializedBulk_ValidSerializer_SerializerResultReturned()
     {
-      var expectedValue = "hello";
+      var testStr = "hello\r\n";
+      var expectedValue = "Not hello";
+
       var mock = new Mock<ISerializer<string>>();
       mock.SetupAllProperties();
-      mock.Setup(s => s.Read(It.IsAny<Stream>(), 5))
+      mock.Setup(s => s.Read(It.Is<Stream>(stream =>
+        stream.ReadByte() == 'h' &&
+        stream.ReadByte() == 'e' &&
+        stream.ReadByte() == 'l' &&
+        stream.ReadByte() == 'l' &&
+        stream.ReadByte() == 'o'), 3))
         .Returns(expectedValue);
 
-      var result = createReader("not hello").ReadSerializedBulk(mock.Object, 5);
+      var result = createReader(testStr).ReadSerializedBulk(mock.Object, 3);
       Assert.That(result, Is.EqualTo(expectedValue));
     }
 
     [Test]
     public void ReadSerializedBulk_StringData_DataPassedToSerializer()
     {
-      var buffer = new byte[] { 0x0B, 0x0E, 0x0E, 0x0F };
+      var buffer = new byte[] { 0x0B, 0x0E, 0x0E, 0x0F, 0x0D, 0x0A };
       var mock = new Mock<ISerializer<string>>();
       mock.Setup(m => m.Read(It.Is<Stream>(s =>
         s.ReadByte() == 0x0B &&

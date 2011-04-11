@@ -8,16 +8,11 @@ namespace Sider
   // see the redis commands reference for more info:
   // http://redis.io/commands
 
-  // default data type == string
-  public interface IRedisClient : IRedisClient<string>
-  {
-  }
-
   public interface IRedisClient<T> : IDisposable
   {
     bool IsDisposed { get; }
 
-    IEnumerable<object> Pipeline(Action<IRedisClient> pipelinedCalls);
+    IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls);
 
 
     // NOTE: Please see the RedisClient.API.cs file for a proper sorted listing
@@ -114,17 +109,15 @@ namespace Sider
     int SetRangeRaw(string key, int offset, byte[] value);
     bool SetRaw(string key, byte[] raw);
     void Shutdown();
-    string[] SInter(params string[] keys);
+    T[] SInter(params string[] keys);
     bool SInterStore(string destKey, params string[] keys);
     bool SIsMember(string key, T value);
-    string[] SMembers(string key);
+    T[] SMembers(string key);
     bool SMove(string srcKey, string destKey, T value);
-    string SPop(string key);
-    string SRandMember(string key);
+    T SPop(string key);
+    T SRandMember(string key);
     bool SRem(string key, T value);
     int Strlen(string key);
-    [Obsolete("No longer available since v2.0")]
-    T Substr(string key, int start, int end);
     T[] SUnion(params string[] keys);
     bool SUnionStore(string destKey, params string[] keys);
     TimeSpan TTL(string key);

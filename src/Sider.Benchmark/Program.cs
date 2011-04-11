@@ -12,7 +12,7 @@ namespace Sider.Benchmark
 
 
     private RedisSettings _settings;
-    private IClientsPool _pool;
+    private IClientsPool<string> _pool;
 
     public void Run()
     {
@@ -27,7 +27,7 @@ namespace Sider.Benchmark
       reconnectOnIdle: false,
       reissueWriteOnIdle: false);
 
-      _pool = new RoundRobinPool(_settings, Instances);
+      _pool = new RoundRobinPool<string>(_settings, Instances);
 
 
       do {
@@ -90,7 +90,7 @@ namespace Sider.Benchmark
     private BenchmarkResult benchMark(Job job, int iterations)
     {
       var client = job.Client =
-        _pool == null ? new RedisClient() : _pool.GetClient();
+        _pool == null ? new RedisClient<string>() : _pool.GetClient();
       var sw = new Stopwatch();
 
       // setop

@@ -3,7 +3,7 @@ namespace Sider.GUI
 {
   public class ClientsController
   {
-    private IRedisClient _client;
+    private IRedisClient<string> _client;
 
     private bool _invalidated;
     private string _host;
@@ -29,7 +29,7 @@ namespace Sider.GUI
     }
 
 
-    public IRedisClient GetClient()
+    public IRedisClient<string> GetClient()
     {
       if (_client == null || _client.IsDisposed || _invalidated)
         _client = new RedisClient(_host, _port);

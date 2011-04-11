@@ -37,7 +37,7 @@ namespace Sider.Samples
 
     public override void Run()
     {
-      var clientsPool = new ThreadwisePool();
+      var clientsPool = new ThreadwisePool<string>();
       var clientsCount = 0;
 
       // display ping times continuously
@@ -68,7 +68,7 @@ namespace Sider.Samples
     }
 
 
-    private IEnumerable<double> pingThread(IClientsPool pool)
+    private IEnumerable<double> pingThread(IClientsPool<string> pool)
     {
       while (true) {
         var client = pool.GetClient();
@@ -82,7 +82,7 @@ namespace Sider.Samples
     }
 
 
-    private void spawnThreads(IClientsPool pool, int count)
+    private void spawnThreads(IClientsPool<string> pool, int count)
     {
       for (var i = 0; i < count; i++)
         newThread(pool).Start();
@@ -90,7 +90,7 @@ namespace Sider.Samples
       logClientsCount();
     }
 
-    private Thread newThread(IClientsPool pool)
+    private Thread newThread(IClientsPool<string> pool)
     {
       Thread t = null;
       t = new Thread(_ =>

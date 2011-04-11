@@ -5,7 +5,8 @@ using System.IO;
 
 namespace Sider
 {
-  public partial class RedisClient
+  // TODO: Cleanup
+  public partial class RedisClient<T>
   {
     private void writeCmd(string command)
     {
@@ -21,7 +22,7 @@ namespace Sider
       });
     }
 
-    private void writeCmd(string command, string arg0, string arg1)
+    private void writeCmd(string command, string arg0, T arg1)
     {
       writeCore(w =>
       {
@@ -31,7 +32,17 @@ namespace Sider
       });
     }
 
-    private void writeCmd(string command, string arg0, string arg1, string arg2)
+    private void writeStrCmd(string command, string arg0, string arg1)
+    {
+      writeCore(w =>
+      {
+        writeCmdStart(w, command, 2);
+        writeCmdItem(w, arg0);
+        writeCmdItem(w, arg1);
+      });
+    }
+
+    private void writeCmd(string command, string arg0, string arg1, T arg2)
     {
       writeCore(w =>
       {
@@ -42,7 +53,18 @@ namespace Sider
       });
     }
 
-    private void writeCmd(string command, KeyValuePair<string, string>[] mappings)
+    private void writeStrCmd(string command, string arg0, string arg1, string arg2)
+    {
+      writeCore(w =>
+      {
+        writeCmdStart(w, command, 3);
+        writeCmdItem(w, arg0);
+        writeCmdItem(w, arg1);
+        writeCmdItem(w, arg2);
+      });
+    }
+
+    private void writeCmd(string command, KeyValuePair<string, T>[] mappings)
     {
       writeCore(w =>
       {
@@ -56,7 +78,7 @@ namespace Sider
     }
 
     private void writeCmd(string command, string arg0,
-      KeyValuePair<string, string>[] mappings)
+      KeyValuePair<string, T>[] mappings)
     {
       writeCore(w =>
       {
@@ -175,6 +197,12 @@ namespace Sider
       w.WriteTypeChar(ResponseType.Bulk);
       w.WriteLine(arr.Count);
       w.WriteBulk(arr.Array, arr.Offset, arr.Count);
+    }
+
+    private void writeCmdItem(RedisWriter w, T value)
+    {
+      var bytes = _serializer.GetBytesNeeded(value);
+      w.WriteSerializedBulk(_serializer, value, bytes);
     }
 
     private void writeCmdItem(RedisWriter w, Stream source, int count)

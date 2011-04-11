@@ -66,12 +66,12 @@ namespace Sider.GUI
     }
 
 
-    private void withClient(Action<IRedisClient> redisAct, string errorMessage)
+    private void withClient(Action<IRedisClient<string>> redisAct, string errorMessage)
     {
       withClient(c => { redisAct(c); return true; }, true, errorMessage);
     }
 
-    private bool withClient<T>(Func<IRedisClient, T> redisFunc,
+    private bool withClient<T>(Func<IRedisClient<string>, T> redisFunc,
       T expectedResult, string errorMessage)
     {
       T result;
