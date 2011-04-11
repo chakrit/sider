@@ -76,6 +76,7 @@
     <Compile Include="RedisWriter.cs" />
     <Compile Include="ResponseException.cs" />
     <Compile Include="ResponseType.cs" />
+    <Compile Include="Serialization\Serializers.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Serialization\StringSerializer.cs" />
     <Compile Include="ThreadwisePool.cs" />

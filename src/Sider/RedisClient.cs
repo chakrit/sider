@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using Sider.Serialization;
 
 namespace Sider
 {
@@ -21,10 +22,10 @@ namespace Sider
 
   public partial class RedisClient<T> : IRedisClient<T>
   {
-    // TODO: Provide a way to safely set ISerizlier<T> 
-    //  (e.g. should not be settable while piplining)
+    // TODO: Provide a way to safely configure ISerizlier<T> 
+    //  (one should be selected on init, should not be settable while piplining etc.)
     private RedisSettings _settings;
-    private ISerializer<T> _serializer;
+    private ISerializer<T> _serializer = (ISerializer<T>)Serializers.For<T>();
 
     private Socket _socket;
     private Stream _stream;

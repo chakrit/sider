@@ -5,12 +5,11 @@ namespace Sider
 {
   public interface ISerializer
   {
+    RedisSettings Settings { get; }
   }
 
   public interface ISerializer<T> : ISerializer
   {
-    RedisSettings Settings { get; }
-
     T Read(Stream src, int length);
 
     int GetBytesNeeded(T obj);
