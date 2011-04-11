@@ -45,6 +45,9 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AbsorbingStreamWrapper.cs" />
+    <Compile Include="LimitingStream.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Serialization\ObjectSerializer.cs" />
     <Compile Include="Serialization\SerializerBase.cs" />
     <None Include="RedisClientPipeliningExtensions.tt">
