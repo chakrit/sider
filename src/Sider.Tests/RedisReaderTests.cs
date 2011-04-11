@@ -581,32 +581,6 @@ namespace Sider.Tests
       readBulkTo_withStream_exceptionTest<MyException>("0123456789\r\n", testStream, 10);
     }
 
-    // test that, if the stream supplied to ReadBulkTo threw an exception during
-    // Read/Write for whatever reason, all data is still properly read out of
-    // the socket (as to maintain proper stream position for next read)
-    [Test]
-    public void ReadBulkTo_OutputStreamFailedMidway_ProtocolStillMaintained()
-    {
-      var errorStream = new TestExceptionStream(5, new MyException());
-      var validStream = new MemoryStream();
-
-      string result = null;
-      var data = "0123456789";
-      var reader = createReader(data + "\r\n" + data + "\r\n");
-
-      try {
-        reader.ReadBulkTo(errorStream, 10);
-        Assert.Fail("Expected MyException to be thrown.");
-      }
-      catch (MyException) {
-        reader.ReadBulkTo(validStream, 10);
-        result = Encoding.UTF8.GetString(validStream.ToArray());
-      }
-
-      Assert.That(result, Is.Not.Null);
-      Assert.That(result, Is.EquivalentTo(data));
-    }
-
     [Test]
     public void ReadBulkTo_LengthIsZero_StreamContainsJustCrLf()
     {

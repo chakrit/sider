@@ -22,7 +22,7 @@ namespace Sider
       SAssert.ArgumentNotNull(() => settings);
 
       _settings = settings;
-      _stream = stream;
+      _stream = new BufferedStream(stream, _settings.ReadBufferSize);
     }
 
 
@@ -169,32 +169,15 @@ namespace Sider
       SAssert.ArgumentNonNegative(() => bulkLength);
       SAssert.ArgumentPositive(() => bufferSize);
 
-      var buffer = new byte[bufferSize];
-      var chunkSize = 0;
-      var bytesLeft = bulkLength;
-      var bytesRead = 0;
+      using (var limiter = new LimitingStream(_stream, bulkLength))
+        limiter.CopyTo(target);
 
-      // absorb user-supplied stream write exceptions
-      // to maintain valid reader state and then
-      // rethrow when we've properly read out all the bytes
-      // RedisReader.WriteBulkFrom should looks about the same
-      using (var wrapper = new AbsorbingStreamWrapper(target)) {
-        while (bytesLeft > 0) {
-          chunkSize = bytesLeft > buffer.Length ? buffer.Length : bytesLeft;
-          bytesLeft -= bytesRead = _stream.Read(buffer, 0, chunkSize);
+      // eat up crlf
+      var b = _stream.ReadByte();
+      b = _stream.ReadByte();
 
-          wrapper.Write(buffer, 0, bytesRead);
-        }
-
-        // eat up crlf
-        var b = _stream.ReadByte();
-        b = _stream.ReadByte();
-
-        wrapper.ThrowIfError();
-
-        SAssert.IsTrue(b == '\n',
-          () => new ResponseException("Expected CRLF, got '" + ((char)b) + "' instead."));
-      }
+      SAssert.IsTrue(b == '\n',
+        () => new ResponseException("Expected CRLF, got '" + ((char)b) + "' instead."));
     }
   }
 }
