@@ -12,14 +12,13 @@ namespace Sider.Serialization
 
     public override object Read(RedisSettings settings, Stream src, int length)
     {
-      _mem.SetLength(0);
-      _formatter.Deserialize(
+      return _formatter.Deserialize(new LimitingStream(src, length));
     }
 
 
     public override int GetBytesNeeded(RedisSettings settings)
     {
-      // TODO: Could use a type-specific serializer which might be faster
+      // TODO: Could switch on a type-specific serializer which might be faster
       _mem.SetLength(0);
       _formatter.Serialize(_mem, Object);
 
@@ -29,7 +28,7 @@ namespace Sider.Serialization
 
     public override int Write(byte[] buffer, int offset, int count)
     {
-      throw new System.NotImplementedException();
+      return _mem.Read(buffer, offset, count);
     }
   }
 }

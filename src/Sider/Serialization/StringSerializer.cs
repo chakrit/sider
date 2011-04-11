@@ -25,12 +25,12 @@ namespace Sider
     }
 
 
-    public int GetBytesNeeded(RedisSettings settings)
+    public override int GetBytesNeeded(RedisSettings settings)
     {
       return _bytesNeeded = _encoding.GetByteCount(Object);
     }
 
-    public int Write(byte[] buffer, int offset, int count)
+    public override int Write(byte[] buffer, int offset, int count)
     {
       if (_tempBuffer == null) {
         if (_bytesNeeded <= count)
