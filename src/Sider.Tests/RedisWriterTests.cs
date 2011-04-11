@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Moq;
 using NUnit.Framework;
 
 namespace Sider.Tests
@@ -14,6 +15,8 @@ namespace Sider.Tests
     {
       public RedisWriter Writer { get; set; }
       public MemoryStream Stream { get; set; }
+
+      public Mock<ISerializer<string>> Mock { get; set; }
       public byte[] Buffer { get; set; }
     }
 
@@ -34,7 +37,8 @@ namespace Sider.Tests
       return new WriterInfo {
         Writer = writer,
         Stream = stream,
-        Buffer = buffer
+        Buffer = buffer,
+        Mock = new Mock<ISerializer<string>>()
       };
     }
 
@@ -322,6 +326,95 @@ namespace Sider.Tests
       Assert.Throws<TException>(() =>
         createWriter().Writer.WriteBulkFrom(s, count));
     }
+    #endregion
+
+    #region WriteSerializedBulk
+
+    [Test]
+    public void WriteSerializedBulk_SerializerIsNull_ExceptionThrown()
+    {
+      Assert.Throws<ArgumentNullException>(() =>
+        createWriter().Writer.WriteSerializedBulk<string>(null, string.Empty, 0));
+    }
+
+    [Test]
+    public void WriteSerializedBulk_NegativeCount_ExceptionThrown()
+    {
+      var pack = createWriter();
+      Assert.Throws<ArgumentOutOfRangeException>(() => pack.Writer
+        .WriteSerializedBulk<string>(pack.Mock.Object, "", -1));
+    }
+
+    [Test]
+    public void WriteSerializedBulk_ValidSerializer_SerializedWriteCalled()
+    {
+      var pack = createWriter();
+      pack.Mock
+        .Setup(s => s.Write(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<int>()));
+
+      pack.Writer.WriteSerializedBulk(pack.Mock.Object, "", 3);
+      pack.Mock.VerifyAll();
+    }
+
+    [Test]
+    public void WriteSerailizedBulk_ValidSerializer_WritableStreamPassedToSerializer()
+    {
+      var pack = createWriter();
+      pack.Mock.Setup(s => s.Write(It.IsAny<string>(),
+        It.Is<Stream>(stream => stream != null && stream.CanWrite),
+        It.IsAny<int>()));
+
+      pack.Writer.WriteSerializedBulk(pack.Mock.Object, "asdf", 4);
+      pack.Mock.VerifyAll();
+    }
+
+    [Test]
+    public void WriteSerializedBulk_ValidObject_ObjectPassedToSerializer()
+    {
+      var pack = createWriter();
+      var str = "YAY";
+      pack.Mock.Setup(s => s.Write(str, It.IsAny<Stream>(), It.IsAny<int>()));
+
+      pack.Writer.WriteSerializedBulk(pack.Mock.Object, str, 3);
+      pack.Mock.VerifyAll();
+    }
+
+    [Test]
+    public void WriteSerializedBulk_ValidCount_CountPassedToSerializer()
+    {
+      var pack = createWriter();
+      var str = "YAY";
+      pack.Mock.Setup(s => s.Write(It.IsAny<string>(), It.IsAny<Stream>(), 1337));
+
+      pack.Writer.WriteSerializedBulk(pack.Mock.Object, str, 1337);
+      pack.Mock.VerifyAll();
+    }
+
+    [Test]
+    public void WriteSerializedBulk_ValidObject_StreamPassedToSerializer()
+    {
+      var pack = createWriter();
+      var str = "Test";
+
+      var mock = new Mock<ISerializer<string>>();
+      mock.Setup(s => s.Write(It.IsAny<string>(),
+        It.Is<Stream>(stream => stream != null),
+        It.IsAny<int>()));
+
+      pack.Writer.WriteSerializedBulk(mock.Object, str, 4);
+      mock.VerifyAll();
+    }
+
+    [Test]
+    public void WriteSerializedBulk_SerializerDone_CrLfWrittenToStream()
+    {
+      var pack = createWriter();
+      pack.Writer.WriteSerializedBulk(pack.Mock.Object, "test", 1234);
+
+      Assert.That(pack.Buffer[0], Is.EqualTo(0x0D));
+      Assert.That(pack.Buffer[1], Is.EqualTo(0x0A));
+    }
+
     #endregion
 
 

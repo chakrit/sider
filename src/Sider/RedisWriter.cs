@@ -104,6 +104,15 @@ namespace Sider
       }
     }
 
+    public void WriteSerializedBulk<T>(ISerializer<T> serializer, T obj, int count)
+    {
+      SAssert.ArgumentNotNull(() => serializer);
+      SAssert.ArgumentNonNegative(() => count);
+
+      serializer.Write(obj, _stream, count);
+      writeCrLf();
+    }
+
 
     public void Flush()
     {
