@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Sider
 {
-  public interface ITranslator<T>
+  public interface ISerializer<T>
   {
     T Read(RedisSettings settings, Stream src, int length);
 

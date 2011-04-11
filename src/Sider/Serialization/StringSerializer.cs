@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Sider
 {
-  public class StringTranslator : TranslatorBase<string>
+  public class StringSerializer : SerializerBase<string>
   {
     private Encoding _encoding;
     private int _bytesNeeded;
@@ -14,9 +14,9 @@ namespace Sider
     private int _tempOffset;
     private int _bytesLeft;
 
-    public StringTranslator() : this(Encoding.UTF8) { }
+    public StringSerializer() : this(Encoding.UTF8) { }
 
-    public StringTranslator(Encoding enc) { _encoding = enc; }
+    public StringSerializer(Encoding enc) { _encoding = enc; }
 
 
     public override string Read(RedisSettings settings, Stream src, int length)
