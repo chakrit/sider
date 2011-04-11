@@ -25,6 +25,8 @@ namespace Sider
       set { _inner.Position = value; }
     }
 
+    public int BytesLeft { get { return _bytesLeft; } }
+
     public LimitingStream(Stream inner, int bytesLimit)
     {
       SAssert.ArgumentNotNull(() => inner);
