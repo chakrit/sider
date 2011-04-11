@@ -64,6 +64,11 @@
     <Compile Include="RedisReaderTests.cs" />
     <Compile Include="RedisSettingsTests.cs" />
     <Compile Include="RedisWriterTests.cs" />
+    <Compile Include="Serialization\TestStruct.cs" />
+    <Compile Include="Serialization\ObjectSerializerTests.cs" />
+    <Compile Include="Serialization\SerializationInfo.cs" />
+    <Compile Include="Serialization\SerializationTestBase.cs" />
+    <Compile Include="Serialization\TestObj.cs" />
     <Compile Include="SiderTestBase.cs" />
     <Compile Include="TestExceptionStream.cs" />
   </ItemGroup>
