@@ -45,6 +45,9 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AbsorbingStreamWrapper.cs" />
+    <Compile Include="LimitingStream.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <None Include="RedisClientPipeliningExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>RedisClientPipeliningExtensions.cs</LastGenOutput>
