@@ -283,52 +283,6 @@ namespace Sider.Tests
     }
 
     [Test]
-    public void WriteBulkFrom_InputStreamFailedMidway_ProtocolStillMaintained()
-    {
-      var errorIdx = 4; // error at the 5th byte
-      var buffer = getRandomBuffer(10);
-      var validStream = new MemoryStream(buffer, false);
-      var errorStream = new TestExceptionStream(new MemoryStream(buffer, false),
-        errorIdx + 1, new MyException());
-
-      // create a writer with only 1 byte buffer size, so all the bytes before
-      // the error point is written through to the output stream
-      var pack = createWriter(writerBufferSize: 1);
-
-      // write twice
-      try {
-        pack.Writer.WriteBulkFrom(errorStream, buffer.Length);
-        Assert.Fail("Expected MyException to be thrown.");
-      }
-      catch (MyException) {
-        pack.Writer.WriteBulkFrom(validStream, buffer.Length);
-      }
-
-      pack.Stream.Flush();
-      Assert.That(pack.Stream.Length, Is.EqualTo(
-        2 * (10 /*buffer*/ + 2 /*CRLF*/)));
-
-      // check the series of bytes in the buffer before the error point
-      var bufferIdx = 0;
-      for (; bufferIdx < errorIdx; bufferIdx++)
-        Assert.That(buffer[bufferIdx], Is.EqualTo(pack.Buffer[bufferIdx]));
-
-      // skip the rest of the buffer since the result is undefined
-      bufferIdx = 10;
-
-      // ensure, though, that the protocol is still maintained
-      Assert.That(pack.Buffer[bufferIdx++], Is.EqualTo(0x0D));
-      Assert.That(pack.Buffer[bufferIdx++], Is.EqualTo(0x0A));
-
-      // check the second written buffer, it should also be correct
-      for (; bufferIdx < 22; bufferIdx++)
-        Assert.That(buffer[bufferIdx - 12], Is.EqualTo(pack.Buffer[bufferIdx]));
-
-      Assert.That(pack.Buffer[bufferIdx++], Is.EqualTo(0x0D));
-      Assert.That(pack.Buffer[bufferIdx++], Is.EqualTo(0x0A));
-    }
-
-    [Test]
     public void WriteBulkFrom_ZeroCount_CrLfWrittenToStream()
     {
       using (var ms = new MemoryStream(getRandomBuffer()))

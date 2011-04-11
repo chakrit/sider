@@ -7,11 +7,10 @@ namespace Sider
 {
   public class RedisWriter
   {
-    private Stream _stream;
-    private byte[] _buffer;
-    private int _bufferOffset;
-
     private RedisSettings _settings;
+    private Stream _stream;
+
+    private byte[] _strBuffer;
 
 
     internal bool AutoFlush { get; set; }
@@ -24,11 +23,11 @@ namespace Sider
       SAssert.ArgumentSatisfy(() => stream, s => s.CanWrite, "Stream must be writable.");
       SAssert.ArgumentNotNull(() => settings);
 
-      _settings = settings;
+      AutoFlush = false;
 
-      _stream = stream;
-      _buffer = new byte[_settings.WriteBufferSize];
-      _bufferOffset = 0;
+      _settings = settings;
+      _stream = new BufferedStream(stream, _settings.WriteBufferSize);
+      _strBuffer = new byte[_settings.StringBufferSize];
     }
 
 
@@ -36,11 +35,10 @@ namespace Sider
     {
       SAssert.ArgumentNotNull(() => str);
 
-      var bytesNeeded = Encoding.Default.GetByteCount(str) + 2;
-
-      if (fitInBuffer(bytesNeeded)) {
-        _bufferOffset += Encoding.Default
-          .GetBytes(str, 0, str.Length, _buffer, _bufferOffset);
+      var bytesNeeded = Encoding.Default.GetByteCount(str);
+      if (bytesNeeded < _strBuffer.Length) {
+        Encoding.Default.GetBytes(str, 0, str.Length, _strBuffer, 0);
+        _stream.Write(_strBuffer, 0, bytesNeeded);
       }
       else {
         var buffer = Encoding.Default.GetBytes(str);
@@ -64,10 +62,8 @@ namespace Sider
 
       // assuming writebuffersize >= 1 so fitInBuffer(1) == true
       // the else case is for testing purpose
-      if (fitInBuffer(1))
-        _buffer[_bufferOffset++] = (byte)type;
-      else
-        _stream.WriteByte((byte)type);
+      _stream.WriteByte((byte)type);
+      flushIfAuto();
     }
 
 
@@ -90,14 +86,7 @@ namespace Sider
       SAssert.ArgumentSatisfy(() => offset, o => o + count <= buffer.Length,
         "Offset plus count is larger than the buffer.");
 
-      if (fitInBuffer(count)) {
-        Buffer.BlockCopy(buffer, offset, _buffer, _bufferOffset, count);
-        _bufferOffset += count;
-      }
-      else {
-        _stream.Write(buffer, offset, count);
-      }
-
+      _stream.Write(buffer, offset, count);
       writeCrLf();
     }
 
@@ -106,74 +95,33 @@ namespace Sider
       SAssert.ArgumentNotNull(() => source);
       SAssert.ArgumentNonNegative(() => count);
 
-      var bytesLeft = count;
-      var chunkSize = 0;
-      var bytesRead = 0;
-
-      // absorb user-supplied stream read exceptions
-      // to maintain valid writer state and then
-      // rethrow when we've properly written out all the garbled bytes
-      // RedisReader.ReadBulkTo should looks about the same
-      using (var wrapper = new AbsorbingStreamWrapper(source)) {
-        while (bytesLeft > 0) {
-          chunkSize = fitInBuffer(bytesLeft) ?
-            bytesLeft :
-            Math.Min(bytesLeft, _buffer.Length);
-
-          bytesRead = wrapper.Read(_buffer, _bufferOffset, chunkSize);
-          SAssert.IsTrue(bytesRead > 0,
-            () => new InvalidOperationException("Stream does not contains enough data."));
-
-          bytesLeft -= bytesRead;
-          _bufferOffset += bytesRead;
-        }
-
+      using (var limiter = new LimitingStream(source, count)) {
+        limiter.CopyTo(_stream);
         writeCrLf();
-        wrapper.ThrowIfError();
+
+        SAssert.IsTrue(limiter.BytesLeft == 0,
+          () => new InvalidOperationException("Stream does not contains enough data."));
       }
     }
 
 
     public void Flush()
     {
-      _stream.Write(_buffer, 0, _bufferOffset);
       _stream.Flush();
-      _bufferOffset = 0;
     }
 
-
-    private bool fitInBuffer(int bytesNeeded)
+    private void flushIfAuto()
     {
-      // don't use the buffer in AutoFlush mode, just write
-      // everything to the stream directly
-      if (AutoFlush) {
-        if (_bufferOffset > 0)
-          Flush();
-
-        return false;
-      }
-
-      // AutoFlush == false , buffer writes
-      if (_bufferOffset + bytesNeeded > _buffer.Length) {
-        // not enough space, try flushing first
-        Flush();
-        return bytesNeeded <= _buffer.Length;
-      }
-
-      // enough space is available
-      return true;
+      if (AutoFlush) Flush();
     }
+
 
     private void writeCrLf()
     {
-      if (fitInBuffer(2)) {
-        _buffer[_bufferOffset++] = 0x0D;
-        _buffer[_bufferOffset++] = 0x0A;
-      }
-      else {
-        // should be rare case where writebuffersize < 2
-        _stream.Write(new byte[] { 0x0D, 0x0A }, 0, 2);
-      }
+      _stream.WriteByte(0x0D);
+      _stream.WriteByte(0x0A);
+
+      flushIfAuto();
     }
 
   }
