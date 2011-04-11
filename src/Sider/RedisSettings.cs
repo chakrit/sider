@@ -3,6 +3,7 @@ using System;
 
 namespace Sider
 {
+  // TODO: Overhaul
   public class RedisSettings
   {
     public const int DefaultReadBufferSize = 4096;
