@@ -45,13 +45,13 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AbsorbingStreamWrapper.cs" />
-    <Compile Include="BufferTranslator.cs" />
-    <Compile Include="TranslatorBase.cs" />
+    <Compile Include="Serialization\TranslatorBase.cs" />
     <None Include="RedisClientPipeliningExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>RedisClientPipeliningExtensions.cs</LastGenOutput>
     </None>
-    <Compile Include="ITranslator.cs" />
+    <Compile Include="Serialization\BufferTranslator.cs" />
+    <Compile Include="Serialization\ITranslator.cs" />
     <Compile Include="RedisClientPipeliningExtensions.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -74,7 +74,7 @@
     <Compile Include="ResponseException.cs" />
     <Compile Include="ResponseType.cs" />
     <Compile Include="StringExtensions.cs" />
-    <Compile Include="StringTranslator.cs" />
+    <Compile Include="Serialization\StringTranslator.cs" />
     <Compile Include="ThreadwisePool.cs" />
   </ItemGroup>
   <ItemGroup>
