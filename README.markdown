@@ -221,7 +221,10 @@ You can fine-tune buffer sizes to your liking by passing a
 
 # SUPPORT / CONTRIBUTE
 
-Just shoot me an email at `service @ chakrit . net` (without the spaces) or if
+Send an email to `sider-lemonade@googlegroups.com` or visit the 
+[sider-lemonade](http://groups.google.com/group/sider-lemonade) group directly.
+
+Or just shoot me an email at `service @ chakrit . net` (without the spaces) or if
 you use twitter, feel free to mention [@chakrit](http://twitter.com/chakrit) for
 help.
 
