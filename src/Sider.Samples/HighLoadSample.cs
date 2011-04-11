@@ -47,7 +47,7 @@ namespace Sider.Samples
         .SubscribeOn(Scheduler.CurrentThread)
         .Sample(TimeSpan.FromMilliseconds(PingStatInterval / PingStatWindow))
         .BufferWithTime(TimeSpan.FromMilliseconds(PingStatInterval))
-        .Select(times => times.Average())
+        .Select(times => times.DefaultIfEmpty(0.0).Average())
         .Subscribe(logPingTime);
 
       // begin spawing clients
