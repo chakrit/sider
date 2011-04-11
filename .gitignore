@@ -9,6 +9,6 @@ TestResults
 TestResult.*
 build
 build.zip
-*.nupkg
+build\*.nupkg
 sider.all.zip
 sider.nupkg.zip
