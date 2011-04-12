@@ -24,6 +24,8 @@ namespace Sider.Tests.Serialization
     public void Setup()
     {
       Serializer = BuildSerializer();
+      Serializer.Init(Settings);
+
       TempStream = new MemoryStream();
       TempBuffer = new byte[1024];
     }
