@@ -49,6 +49,8 @@ namespace Sider
       SAssert.ArgumentNotNull(() => settings);
 
       _disposing = _disposed = false;
+      _settings = settings;
+      _stringBuffer = new byte[_settings.StringBufferSize];
 
       if (settings.SerializerOverride != null) {
         _serializer = settings.SerializerOverride as ISerializer<T>;
@@ -60,8 +62,7 @@ namespace Sider
 
       _serializer.Init(_settings);
 
-      _settings = settings;
-      _stringBuffer = new byte[_settings.StringBufferSize];
+      // connect
       Reset();
     }
 
