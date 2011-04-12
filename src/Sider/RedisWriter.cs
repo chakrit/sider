@@ -15,7 +15,7 @@ namespace Sider
 
     internal bool AutoFlush { get; set; }
 
-    public RedisWriter(Stream stream) : this(stream, new RedisSettings()) { }
+    public RedisWriter(Stream stream) : this(stream, RedisSettings.Default) { }
 
     public RedisWriter(Stream stream, RedisSettings settings)
     {

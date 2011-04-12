@@ -18,7 +18,7 @@ namespace Sider.Tests.Serialization
 
 
     [TestFixtureSetUp]
-    public void FixtureSetup() { Settings = new RedisSettings(); }
+    public void FixtureSetup() { Settings = RedisSettings.Default; }
 
     [SetUp]
     public void Setup()

@@ -27,7 +27,7 @@ namespace Sider.Tests
 
     private RedisReader createReader(Stream s)
     {
-      return new RedisReader(s, new RedisSettings());
+      return new RedisReader(s, RedisSettings.Default);
     }
 
 

@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Text;
 
 namespace Sider
 {
@@ -14,15 +15,18 @@ namespace Sider
     public static RedisSettings Default { get { return _default; } }
 
 
-    public string Host { get; protected set; }
-    public int Port { get; protected set; }
+    public string Host { get; private set; }
+    public int Port { get; private set; }
 
-    public bool ReconnectOnIdle { get; protected set; }
-    public bool ReissueWriteOnReconnect { get; protected set; }
+    public bool ReconnectOnIdle { get; private set; }
+    public bool ReissueWriteOnReconnect { get; private set; }
 
-    public int ReadBufferSize { get; protected set; }
-    public int WriteBufferSize { get; protected set; }
-    public int StringBufferSize { get; protected set; }
+    public int ReadBufferSize { get; private set; }
+    public int WriteBufferSize { get; private set; }
+    public int StringBufferSize { get; private set; }
+
+    public Encoding KeyEncoding { get; private set; }
+    public Encoding ValueEncoding { get; private set; }
 
     private RedisSettings()
     {
@@ -36,12 +40,9 @@ namespace Sider
       ReadBufferSize = 4096;
       WriteBufferSize = 4096;
       StringBufferSize = 256;
-    }
 
-    public RedisSettings(string host = "localhost", int port = 6379) :
-      this()
-    {
-      new Builder(this).Host(host).Port(port);
+      KeyEncoding = Encoding.ASCII;
+      ValueEncoding = Encoding.UTF8;
     }
 
     public static Builder New() { return new Builder(); }
@@ -121,6 +122,22 @@ namespace Sider
           new ArgumentException("ReissueWriteOnReconnect requires ReconnectOnIdle"));
 
         _settings.ReissueWriteOnReconnect = reissueWriteOnReconnect;
+        return this;
+      }
+
+      public Builder ValueEncoding(Encoding encoding)
+      {
+        SAssert.ArgumentNotNull(() => encoding);
+
+        _settings.ValueEncoding = encoding;
+        return this;
+      }
+
+      public Builder KeyEncoding(Encoding encoding)
+      {
+        SAssert.ArgumentNotNull(() => encoding);
+
+        _settings.KeyEncoding = encoding;
         return this;
       }
     }

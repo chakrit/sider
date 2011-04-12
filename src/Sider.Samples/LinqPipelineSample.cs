@@ -13,7 +13,7 @@ namespace Sider.Samples
 
     public override void Run()
     {
-      var client = new RedisClient<int>(new RedisSettings());
+      var client = new RedisClient<int>(RedisSettings.Default);
 
       // initialize 1000 counters with a number
       var success = client

@@ -21,7 +21,7 @@ namespace Sider.Tests.Serialization
       TempStream = new MemoryStream();
       TempBuffer = new byte[4096];
 
-      Settings = new RedisSettings();
+      Settings = RedisSettings.Default;
     }
 
 

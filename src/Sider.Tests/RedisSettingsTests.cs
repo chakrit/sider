@@ -9,10 +9,7 @@ namespace Sider.Tests
     protected RedisSettings.Builder Builder { get; private set; }
 
     [SetUp]
-    public void Init()
-    {
-      Builder = RedisSettings.New();
-    }
+    public void Init() { Builder = RedisSettings.New(); }
 
 
     [Test]
@@ -43,6 +40,18 @@ namespace Sider.Tests
     {
       throwsOutOfRange(() => Builder.WriteBufferSize(0));
       throwsOutOfRange(() => Builder.WriteBufferSize(int.MinValue));
+    }
+
+    [Test]
+    public void Ctor_NullKeyEncoding_ExceptionThrown()
+    {
+      Assert.Throws<ArgumentNullException>(() => Builder.KeyEncoding(null));
+    }
+
+    [Test]
+    public void Ctor_NullValueEncoding_ExceptionThrown()
+    {
+      Assert.Throws<ArgumentNullException>(() => Builder.ValueEncoding(null));
     }
 
 
