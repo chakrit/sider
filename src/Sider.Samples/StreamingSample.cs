@@ -7,7 +7,7 @@ namespace Sider.Samples
   {
     public override string Name
     {
-      get { return "Streaming commands."; }
+      get { return "Streaming commands for working with binary data."; }
     }
 
     public override void Run()
