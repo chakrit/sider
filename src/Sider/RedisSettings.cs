@@ -24,9 +24,12 @@ namespace Sider
     public int ReadBufferSize { get; private set; }
     public int WriteBufferSize { get; private set; }
     public int StringBufferSize { get; private set; }
+    public int SerializationBufferSize { get; private set; }
 
     public Encoding KeyEncoding { get; private set; }
     public Encoding ValueEncoding { get; private set; }
+
+    public ISerializer Serializer { get; private set; }
 
     private RedisSettings()
     {
@@ -37,9 +40,11 @@ namespace Sider
       ReconnectOnIdle = true;
       ReissueWriteOnReconnect = true;
 
+      // TODO: Use buffer pools?
       ReadBufferSize = 4096;
       WriteBufferSize = 4096;
       StringBufferSize = 256;
+      SerializationBufferSize = 2048;
 
       KeyEncoding = Encoding.ASCII;
       ValueEncoding = Encoding.UTF8;
