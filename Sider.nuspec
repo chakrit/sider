@@ -9,11 +9,14 @@
     <description>
       SIDER : REDIS bindings for C#/.NET 4.0 --
 
+      Please see https://github.com/chakrit/sider/blob/master/CHANGES.markdown
+      for the list of changes in this version. --
+
       Redis client that sticks to the metal.
       Minimal, lightweight, easy to use, no fancy APIs, no gigantic class hierarchies.
       No ORM madness, just assumes knowledge of how Redis works.
 
-      Suggestions/fixes please post it to the google groups:
+      Suggestions/fixes please post it to the google group:
       http://groups.google.com/group/sider-lemonade or just mention me (@chakrit)
       if you have a Twitter account.
 
