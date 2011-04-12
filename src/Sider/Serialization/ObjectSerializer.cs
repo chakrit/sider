@@ -4,7 +4,13 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Sider.Serialization
 {
-  public class ObjectSerializer : SerializerBase<object>
+  public class ObjectSerializer : ObjectSerializer<object>
+  {
+    public ObjectSerializer(int bufferSize = RedisSettings.DefaultStringBufferSize) :
+      base(bufferSize) { }
+  }
+
+  public class ObjectSerializer<T> : SerializerBase<T>
   {
     private BinaryFormatter _formatter;
     private MemoryStream _mem;
@@ -18,14 +24,14 @@ namespace Sider.Serialization
     }
 
 
-    public override object Read(Stream src, int length)
+    public override T Read(Stream src, int length)
     {
       using (var limiter = new LimitingStream(src, length))
-        return _formatter.Deserialize(limiter);
+        return (T)_formatter.Deserialize(limiter);
     }
 
 
-    public override int GetBytesNeeded(object obj)
+    public override int GetBytesNeeded(T obj)
     {
       _mem.SetLength(0);
       _formatter.Serialize(_mem, obj);
@@ -34,7 +40,7 @@ namespace Sider.Serialization
       return (int)_mem.Length;
     }
 
-    public override void Write(object obj, Stream dest, int bytesNeeded)
+    public override void Write(T obj, Stream dest, int bytesNeeded)
     {
       _mem.CopyTo(dest);
     }

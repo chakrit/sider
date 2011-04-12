@@ -12,7 +12,7 @@ namespace Sider.Serialization
       if (typeof(T) == typeof(byte[]))
         return (ISerializer<T>)new BufferSerializer();
 
-      return (ISerializer<T>)new ObjectSerializer();
+      return (ISerializer<T>)new ObjectSerializer<T>();
     }
   }
 }
