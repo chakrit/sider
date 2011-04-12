@@ -43,6 +43,20 @@ namespace Sider.Tests
     }
 
     [Test]
+    public void Ctor_TooLowStringBufferSize_ExceptionThrown()
+    {
+      throwsOutOfRange(() => Builder.StringBufferSize(0));
+      throwsOutOfRange(() => Builder.StringBufferSize(int.MinValue));
+    }
+
+    [Test]
+    public void Ctor_TooLowSerializationBufferSize_ExceptionThrown()
+    {
+      throwsOutOfRange(() => Builder.SerializationBufferSize(0));
+      throwsOutOfRange(() => Builder.SerializationBufferSize(int.MinValue));
+    }
+
+    [Test]
     public void Ctor_NullKeyEncoding_ExceptionThrown()
     {
       Assert.Throws<ArgumentNullException>(() => Builder.KeyEncoding(null));

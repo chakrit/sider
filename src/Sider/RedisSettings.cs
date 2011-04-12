@@ -29,7 +29,7 @@ namespace Sider
     public Encoding KeyEncoding { get; private set; }
     public Encoding ValueEncoding { get; private set; }
 
-    public ISerializer Serializer { get; private set; }
+    public ISerializer SerializerOverride { get; private set; }
 
     private RedisSettings()
     {
@@ -40,7 +40,7 @@ namespace Sider
       ReconnectOnIdle = true;
       ReissueWriteOnReconnect = true;
 
-      // TODO: Use buffer pools?
+      // TODO: Use buffer pools? with growable buffers?
       ReadBufferSize = 4096;
       WriteBufferSize = 4096;
       StringBufferSize = 256;
@@ -48,6 +48,8 @@ namespace Sider
 
       KeyEncoding = Encoding.ASCII;
       ValueEncoding = Encoding.UTF8;
+
+      SerializerOverride = null;
     }
 
     public static Builder New() { return new Builder(); }
@@ -107,12 +109,28 @@ namespace Sider
         return this;
       }
 
-      public Builder BufferSize(int read, int write, int str)
+      public Builder SerializationBufferSize(int bufferSize)
+      {
+        SAssert.ArgumentPositive(() => bufferSize);
+
+        _settings.SerializationBufferSize = bufferSize;
+        return this;
+      }
+
+      public Builder BufferSize(int read, int write)
+      {
+        return this
+          .ReadBufferSize(read)
+          .WriteBufferSize(write);
+      }
+
+      public Builder BufferSize(int read, int write, int str, int serialization)
       {
         return this
           .ReadBufferSize(read)
           .WriteBufferSize(write)
-          .StringBufferSize(str);
+          .StringBufferSize(str)
+          .SerializationBufferSize(serialization);
       }
 
       public Builder ReconnectOnIdle(bool reconnectOnIdle)
@@ -143,6 +161,13 @@ namespace Sider
         SAssert.ArgumentNotNull(() => encoding);
 
         _settings.KeyEncoding = encoding;
+        return this;
+      }
+
+      public Builder OverrideSerializer(ISerializer serializer)
+      {
+        // can be null
+        _settings.SerializerOverride = serializer;
         return this;
       }
     }
