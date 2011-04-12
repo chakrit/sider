@@ -23,9 +23,9 @@ namespace Sider.Benchmark
 
       Func<Job> getJob = () => new SetWithStringSerializerJob();
 
-      _settings = new RedisSettings(
-      reconnectOnIdle: false,
-      reissueWriteOnIdle: false);
+      _settings = RedisSettings.New()
+        .ReconnectOnIdle(false)
+        .ReissueWriteOnReconnect(false);
 
       _pool = new RoundRobinPool<string>(_settings, Instances);
 

@@ -41,10 +41,9 @@ namespace Sider
 
     public bool IsDisposed { get { return _disposed; } }
 
-    public RedisClient(
-      string host = RedisSettings.DefaultHost,
+    public RedisClient(string host = RedisSettings.DefaultHost,
       int port = RedisSettings.DefaultPort) :
-      this(new RedisSettings(host: host, port: port)) { }
+      this(RedisSettings.New().Host(host).Port(port)) { }
 
     public RedisClient(RedisSettings settings)
     {

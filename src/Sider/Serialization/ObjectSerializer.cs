@@ -4,10 +4,12 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Sider.Serialization
 {
+  // TODO: Clean Serializers construction
   public class ObjectSerializer : ObjectSerializer<object>
   {
-    public ObjectSerializer(int bufferSize = RedisSettings.DefaultStringBufferSize) :
-      base(bufferSize) { }
+    public ObjectSerializer() : base() { }
+
+    public ObjectSerializer(int bufferSize) : base(bufferSize) { }
   }
 
   public class ObjectSerializer<T> : SerializerBase<T>
@@ -15,7 +17,12 @@ namespace Sider.Serialization
     private BinaryFormatter _formatter;
     private MemoryStream _mem;
 
-    public ObjectSerializer(int bufferSize = RedisSettings.DefaultStringBufferSize)
+    public ObjectSerializer() : this(RedisSettings.Default) { }
+
+    public ObjectSerializer(RedisSettings settings) :
+      this(settings.StringBufferSize) { }
+
+    public ObjectSerializer(int bufferSize)
     {
       SAssert.ArgumentPositive(() => bufferSize);
 

@@ -12,6 +12,14 @@ namespace Sider
     public SerializerBase(RedisSettings settings) { Settings = settings; }
 
 
+    public void Init(RedisSettings settings)
+    {
+      Settings = settings;
+    }
+
+    protected virtual void OnInit() { }
+
+
     public abstract T Read(Stream src, int length);
 
     public abstract int GetBytesNeeded(T obj);

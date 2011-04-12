@@ -13,7 +13,7 @@ namespace Sider
     private RedisSettings _settings;
 
 
-    public RedisReader(Stream stream) : this(stream, new RedisSettings()) { }
+    public RedisReader(Stream stream) : this(stream, RedisSettings.Default) { }
 
     public RedisReader(Stream stream, RedisSettings settings)
     {

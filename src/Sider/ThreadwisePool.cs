@@ -20,7 +20,7 @@ namespace Sider
     public ThreadwisePool(string host = RedisSettings.DefaultHost,
       int port = RedisSettings.DefaultPort,
       int? db = null) :
-      this(new RedisSettings(host: host, port: port), db) { }
+      this(RedisSettings.New().Host(host).Port(port), db) { }
 
     public ThreadwisePool(RedisSettings settings, int? db = null)
     {

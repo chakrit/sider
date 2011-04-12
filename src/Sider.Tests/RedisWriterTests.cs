@@ -28,7 +28,8 @@ namespace Sider.Tests
       stream.SetLength(0);
 
       var writer = writerBufferSize.HasValue ?
-        new RedisWriter(stream, new RedisSettings(writeBufferSize: writerBufferSize.Value)) :
+        new RedisWriter(stream, RedisSettings.New()
+          .WriteBufferSize(writerBufferSize.Value)) :
         new RedisWriter(stream);
 
       // for testing purpose, we don't need to keep flushing all the time
@@ -173,7 +174,7 @@ namespace Sider.Tests
     [Test]
     public void WriteBulk_LargeBuffer_BufferWithCrLfWrittenToStream()
     {
-      var bufferSize = RedisSettings.DefaultWriterBufferSize * 4;
+      var bufferSize = RedisSettings.Default.WriteBufferSize * 4;
       var writeBuffer = getRandomBuffer(bufferSize);
 
       writeBulk_writeTestCore(w => w.WriteBulk(writeBuffer), writeBuffer);
@@ -247,7 +248,7 @@ namespace Sider.Tests
     [Test]
     public void WriteBulk_WithOffset_LargeBuffer_StreamContainsBufferWithCrLf()
     {
-      var buffer = getRandomBuffer(RedisSettings.DefaultWriterBufferSize * 4);
+      var buffer = getRandomBuffer(RedisSettings.Default.WriteBufferSize * 4);
       writeBulk_writeTestCore(w => w.WriteBulk(buffer, 0, buffer.Length), buffer);
     }
 
@@ -314,7 +315,7 @@ namespace Sider.Tests
     [Test]
     public void WriteBulkFrom_LargeData_AllDataAndCrLfWrittenToStream()
     {
-      var buffer = getRandomBuffer(RedisSettings.DefaultWriterBufferSize);
+      var buffer = getRandomBuffer(RedisSettings.Default.WriteBufferSize);
       using (var ms = new MemoryStream(buffer))
         writeBulk_writeTestCore(w => w.WriteBulkFrom(ms, buffer.Length), buffer);
     }

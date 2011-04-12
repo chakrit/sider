@@ -10,10 +10,10 @@ namespace Sider
     private byte[] _buffer;
 
 
-    public StringSerializer() : this(Encoding.UTF8) { }
+    public StringSerializer() : this(Encoding.UTF8, 256) { }
 
     public StringSerializer(Encoding enc,
-      int bufferSize = RedisSettings.DefaultStringBufferSize)
+      int bufferSize)
     {
       SAssert.ArgumentNotNull(() => enc);
       SAssert.ArgumentPositive(() => bufferSize);
