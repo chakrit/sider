@@ -201,8 +201,10 @@ namespace Sider
 
     private void writeCmdItem(RedisWriter w, T value)
     {
-      var bytes = _serializer.GetBytesNeeded(value);
-      w.WriteSerializedBulk(_serializer, value, bytes);
+      var bytesNeeded = _serializer.GetBytesNeeded(value);
+      w.WriteTypeChar(ResponseType.Bulk);
+      w.WriteLine(bytesNeeded);
+      w.WriteSerializedBulk(_serializer, value, bytesNeeded);
     }
 
     private void writeCmdItem(RedisWriter w, Stream source, int count)

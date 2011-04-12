@@ -52,6 +52,7 @@
     <Compile Include="IncrJob.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="MultiplePipelinedResultTypeJob.cs" />
+    <Compile Include="SetWithStringSerializerJob.cs" />
     <Compile Include="SmallPipelinedPingJob.cs" />
     <Compile Include="PingJob.cs" />
     <Compile Include="WholesalePipelinedPingJob.cs" />
