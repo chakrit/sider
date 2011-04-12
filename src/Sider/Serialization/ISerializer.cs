@@ -5,7 +5,7 @@ namespace Sider
 {
   public interface ISerializer
   {
-    RedisSettings Settings { get; }
+    void Init(RedisSettings settings);
   }
 
   public interface ISerializer<T> : ISerializer

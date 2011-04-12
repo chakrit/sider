@@ -25,7 +25,7 @@ namespace Sider
     // TODO: Provide a way to safely configure ISerizlier<T> 
     //  (one should be selected on init, should not be settable while piplining etc.)
     private RedisSettings _settings;
-    private ISerializer<T> _serializer = (ISerializer<T>)Serializers.For<T>();
+    private ISerializer<T> _serializer;
 
     private Socket _socket;
     private Stream _stream;
@@ -34,7 +34,6 @@ namespace Sider
 
     private byte[] _stringBuffer;
 
-    private DateTime _lastWriteTime;
     private bool _disposing;
     private bool _disposed;
 
@@ -51,8 +50,18 @@ namespace Sider
 
       _disposing = _disposed = false;
 
-      _stringBuffer = new byte[settings.StringBufferSize];
+      if (settings.SerializerOverride != null) {
+        _serializer = settings.SerializerOverride as ISerializer<T>;
+        if (_serializer == null)
+          throw new ArgumentException("Specified serializer is not compatible.");
+      }
+      else
+        _serializer = Serializers.For<T>();
+
+      _serializer.Init(_settings);
+
       _settings = settings;
+      _stringBuffer = new byte[_settings.StringBufferSize];
       Reset();
     }
 
@@ -62,6 +71,7 @@ namespace Sider
       _socket = null;
       _stream = null;
 
+      _settings = RedisSettings.Default;
       _reader = new RedisReader(incoming);
       _writer = new RedisWriter(outgoing);
     }
@@ -83,8 +93,6 @@ namespace Sider
       _stream = new NetworkStream(_socket, FileAccess.ReadWrite, true);
       _reader = new RedisReader(_stream, _settings);
       _writer = new RedisWriter(_stream, _settings);
-
-      _lastWriteTime = DateTime.Now;
     }
 
 

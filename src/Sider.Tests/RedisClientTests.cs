@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.IO;
+using Moq;
 using NUnit.Framework;
 
 namespace Sider.Tests
@@ -66,6 +67,14 @@ namespace Sider.Tests
     public void Ctor_SettingsIsNull_ExceptionThrown()
     {
       Assert.Throws<ArgumentNullException>(() => new RedisClient(settings: null));
+    }
+
+    [Test]
+    public void Ctor_IncompatibleSerializer_ExceptionThrown()
+    {
+      // use a string serializer for int clients
+      Assert.Throws<ArgumentException>(() => new RedisClient<int>(RedisSettings.New()
+        .OverrideSerializer(new Mock<ISerializer<string>>().Object)));
     }
 
     [Test]

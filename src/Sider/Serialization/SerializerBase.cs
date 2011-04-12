@@ -15,6 +15,7 @@ namespace Sider
     public void Init(RedisSettings settings)
     {
       Settings = settings;
+      OnInit();
     }
 
     protected virtual void OnInit() { }

@@ -18,7 +18,7 @@ namespace Sider
 
     public override void Write(byte[] obj, Stream dest, int bytesNeeded)
     {
-      dest.Write(obj, 0, obj.Length);
+      dest.Write(obj, 0, bytesNeeded);
     }
   }
 }

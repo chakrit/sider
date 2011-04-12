@@ -9,17 +9,10 @@ namespace Sider
     private Encoding _encoding;
     private byte[] _buffer;
 
-
-    public StringSerializer() : this(Encoding.UTF8, 256) { }
-
-    public StringSerializer(Encoding enc,
-      int bufferSize)
+    protected override void OnInit()
     {
-      SAssert.ArgumentNotNull(() => enc);
-      SAssert.ArgumentPositive(() => bufferSize);
-
-      _encoding = enc;
-      _buffer = new byte[bufferSize];
+      _encoding = Settings.ValueEncoding;
+      _buffer = new byte[Settings.SerializationBufferSize];
     }
 
 
@@ -27,6 +20,7 @@ namespace Sider
     {
       return _encoding.GetString(ReadBytes(src, length));
     }
+
 
     public override int GetBytesNeeded(string obj)
     {
