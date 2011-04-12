@@ -55,6 +55,7 @@
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="HighLoadSample.cs" />
+    <Compile Include="LinqPipelineSample.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Sample.cs" />
     <Compile Include="StreamingSample.cs" />
