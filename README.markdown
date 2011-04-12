@@ -1,6 +1,8 @@
 SIDER : REDIS bindings for C#
 ====
 
+For the latest changes, please see the `CHANGES.markdown` file.
+
 Inspired by migueldeicaza's first stab at the problem (I used some of his
 algorithm) and ServiceStack.Redis (to take it a lot further).
 
@@ -32,7 +34,8 @@ as much as possible which results in:
 * Simple API that maps closely to the Redis commands reference.
 * Easy to use, no gigantic class hierarchies to setup. No confusing naming
   convention that obfuscates the real command being sent to Redis.
-* As fast as my limited networking skills will allow.
+* As fast as my limited networking skills and Redis itself will allow.
+  (Which is already lightning-fast thanks to Redis!)
 * Supports reading from and writing data to user-supplied streams for GET/SET
   and other similar commands to allow Redis to be used to store really
   really large blobs (e.g. user-uploaded files) without huge buffers.
@@ -47,7 +50,7 @@ following:
   cases.
 
 Other than that, it's solid and somewhat fault-tolerant. I'm using this myself
-in production code as well, so expect fast fixes should there be any problems.
+in a few production sties so expect fast fixes should there be any problems.
 
 # HOWTO
 
@@ -104,6 +107,12 @@ Results are returned as an `IEnumerable<object>` with as many elements as
 the number of calls you've made with each object having the same type as the
 corresponding pipelined call.
 
+Since its an `IEnumerable<object>`, it also works with LINQ. See the
+`LinqPipelineSample.cs` file in the `src/Sider.Samples` folder for a 
+sample implementation.
+
+**Strongly-typed extension**
+
 If you only need a fixed number of calls which you can determine at compile-time
 then you can use the extension method version of `.Pipeline` to help you with
 type-casting.
@@ -122,47 +131,62 @@ Example, for a fixed number of calls:
     string[] keysResults = result.Item3;
 
 The returned value of these extension methods is a strongly-typed `Tuple<>`.
-    
-Example when doing more than 7 calls:
-    
-    // unlimited number of calls (don't abuse it though)
-    var result = client.Pipeline(c => {
-      c.Get("KEY1");
-      c.Get("KEY2");
-      c.Get("KEY3");
-      /* -snip- */
-      c.Get("KEY8");
-      c.Get("KEY9");
-      c.Get("KEY10");
-    });
-    
-    var resultArr = result.ToArray();
-    Trace.Assert(resultArr[0] == /* value from KEY1 */);
-    Trace.Assert(resultArr[1] == /* value from KEY2 */);
-    Trace.Assert(resultArr[2] == /* value from KEY3 */);
-    // ...
 
-Note that pipeline results are not lazy as is the case with many `IEnumerable`
-implementation -- All commands will be executed immediately as soon as you
-finish the `.Pipeline` call.
+**NOTE**
+
+Note that pipeline results are not lazy as is usually the case with
+`IEnumerable` implementations -- All commands will be executed immediately as
+soon as you finish the `.Pipeline` call.
+
+# CUSTOM TYPE / SERIALIZERS
+
+To use `RedisClient` with your own custom type to get automatic serialization,
+just add a type parameter like so:
+
+    var client = new RedisClient<MyClass>();
+    client.Set("instance", new MyClass());
+
+    var mc = client.Get("instance");
+    // mc typed as MyClass
+
+To provide your own serialization mechanism, create a class that implements
+`Sider.Serialization.ISerializer<YourClassTypeHere>` and supply it to
+Sider like so:
+
+    public class MyClass { }
+    public class MySerializer : ISerializer<MyClass> { /* -snip- */ }
+
+    var settings = RedisSettings.New()
+      .OverrideSerializer(new MySerializer());
+
+    var client = new RedisClient<MyClass>(settings);
+    
+    // instance serialized and deserialized using your custom serializer
+    client.Set("instance", new MyClass());
+    var value = client.Get("instance")
+
+See the `ComplexSetupSample.cs` file in the `src/Sider.Samples` folder for
+a sample implementation.
 
 # BINARY DATA / STREAMING
 
-Right now raw binary data / streaming is supported for `Get\Set` and
-`HGet\HSet` pairs via `GetTo\SetFrom\GetRaw\SetRaw` and
-`HGetTo\HSetFrom\HGetRaw\HSetRaw` commands as I assumed that you will want
-to work with raw data only when you really have large values. **Although I *am*
-working on a way to provide more types other
-than `string`** which you may find in other branches of this repository. The next
-version, possibly at 0.5 will support a really wide range of values.
+Right now raw binary data / streaming is supported for commands with a single
+value input/output such as `Get\HGet\GetRange` etc. The command which provides
+raw/streamed mode will have a `Raw` and `To/From` prefix/suffix such as
+`GetRaw\SetRaw` for raw mode and `GetTo\SetFrom` for streamed mode.
 
-Four commands support streaming mode for working with large binary data such as
-image caches with minimal bufferring: `GetTo`, `SetFrom`, `HGetTo` and
-`HSetFrom`.
+I assumed that you will want to work with raw/streamed data only when you really
+have large values transferring to and from a simple key (as opposed to a member
+of a set or a sorted set). To work exclusively with raw data, I recommend using
+`RedisClient<byte[]>` instead which uses an direct buffer read/write
+serializer internally.
 
-Instead of a normal string, these four commands accepts `System.IO.Stream` so
-you can send and receive data to and from `FileStream`, `NetworkStream` or
-ASP.NET `OutputStream` with ease:
+**Streaming**
+
+Instead of a normal string or the specified type, streamed mode commands
+accepts `System.IO.Stream` instead so you can send and receive data to and
+from streams such as `FileStream`, `NetworkStream` or ASP.NET `OutputStream`
+directly to and from Redis with minimal bufferring:
 
     var client = new RedisClient();
 
@@ -180,11 +204,13 @@ ASP.NET `OutputStream` with ease:
         bytesWrote, filename);
     }
 
-These commands should be used with care, however. As they may allows external
-exceptions into the core of Sider which may produce unexpected results.
+See the `StreamingSample.cs` file in the `src/Sider.Samples` folder for
+a sample implementation.
 
-Additionally, another four commands are there for working with raw `byte[]`
-buffers: `GetRaw`, `SetRaw`, `HGetRaw` and `HSetRaw` like so:
+**Raw**
+
+Additionally, there are also raw data mode commands which accepts `byte[]`
+buffers directly:
 
     // create random buffer
     var temp = new byte[4096];
@@ -197,20 +223,21 @@ buffers: `GetRaw`, `SetRaw`, `HGetRaw` and `HSetRaw` like so:
     for (var i = 0; i < result.Length; i++)
       Trace.Assert(result[i] == temp[i]);
 
-...
+Just note the `-Raw` suffix.
  
 # CONFIGURATION
 
-You can fine-tune buffer sizes to your liking by passing a
-`RedisSettings` instance like so:
+You can fine-tune buffer sizes to your liking and provide custom serializers
+by passing a `RedisSettings` instance which are built like this:
 
-    var settings = new RedisSettings(
-    host: "192.168.192.111",
-    port: 6379,
-    autoReconnectOnIdle: false,   // if no idle client disconnection
-    readBufferSize: 256,          // optimize for small reads
-    writeBufferSize: 65536);      // optimize for heavy writes
+    var settings = new RedisSettings().New()
+      .Host("192.168.192.111")  // custom host
+      .Port(9736)               // custom port
+      .ReconnectOnIdle(false)   // manage timeouts manually
+      .ReadBufferSize(256)      // optimize for small reads
+      .WriteBufferSize(65536)   // optimize for large writes
 
+    // pass to pool so all clients use the supplied settings
     var pool = new ThreadwisePool(settings);
     var client = pool.GetClient();
 
@@ -221,8 +248,8 @@ You can fine-tune buffer sizes to your liking by passing a
 
 # SUPPORT / CONTRIBUTE
 
-Send an email to `sider-lemonade@googlegroups.com` or visit the 
-[sider-lemonade](http://groups.google.com/group/sider-lemonade) group directly.
+Please post any support request to
+[sider-lemonade](http://groups.google.com/group/sider-lemonade) google group.
 
 Or just shoot me an email at `service @ chakrit . net` (without the spaces) or if
 you use twitter, feel free to mention [@chakrit](http://twitter.com/chakrit) for
