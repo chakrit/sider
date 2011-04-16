@@ -19,6 +19,7 @@ namespace Sider
     public int Port { get; private set; }
 
     public bool ReconnectOnIdle { get; private set; }
+    public int MaxReconnectRetries { get; private set; }
     public bool ReissueWriteOnReconnect { get; private set; }
     public bool ReissueReadOnReconnect { get; private set; }
 
@@ -41,6 +42,7 @@ namespace Sider
       ReconnectOnIdle = true;
       ReissueWriteOnReconnect = true;
       ReissueReadOnReconnect = true;
+      MaxReconnectRetries = 10; // retry forever
 
       // TODO: Use buffer pools? with growable buffers?
       ReadBufferSize = 4096;
@@ -139,6 +141,16 @@ namespace Sider
       public Builder ReconnectOnIdle(bool reconnectOnIdle)
       {
         _settings.ReconnectOnIdle = reconnectOnIdle;
+        return this;
+      }
+
+      public Builder MaxReconnectRetries(int maxRetries)
+      {
+        SAssert.ArgumentPositive(() => maxRetries);
+        SAssert.IsTrue(_settings.ReconnectOnIdle, () =>
+          new ArgumentException("MaxReconnectRetries requires ReconnectOnIdle"));
+
+        _settings.MaxReconnectRetries = maxRetries;
         return this;
       }
 

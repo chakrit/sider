@@ -34,7 +34,7 @@ namespace Sider
       execute<object>(() => { action(); return null; });
     }
 
-    private TOut execute<TOut>(Func<TOut> func)
+    private TOut execute<TOut>(Func<TOut> func, int retryCount = 0)
     {
       try { return func(); }
       catch (Exception ex) {
@@ -47,15 +47,15 @@ namespace Sider
 
           // retry once, if allowed to -- usually harmless even with writes
           // since if there's a disconnection it should means nothing was processed.
-          try { return func(); }
-          catch (Exception ex_) {
-            handleException(ex_);
-            throw;
-          }
+          if (retryCount < _settings.MaxReconnectRetries)
+            return execute(func, retryCount + 1);
+
+          // no more retries
+          throw;
         }
 
-        // so the client is signaled that the action failed.
-        // even though we've reconnected
+        // signal the client that the action failed.
+        // (even though we've reconnected)
         throw;
       }
     }
