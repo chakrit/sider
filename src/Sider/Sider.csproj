@@ -44,6 +44,7 @@
     <Compile Include="..\..\SiderAssemblyInfo.cs">
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Exceptions.cs" />
     <Compile Include="LimitingStream.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -74,7 +75,6 @@
     <Compile Include="RedisReader.cs" />
     <Compile Include="RedisType.cs" />
     <Compile Include="RedisWriter.cs" />
-    <Compile Include="ResponseException.cs" />
     <Compile Include="ResponseType.cs" />
     <Compile Include="Serialization\Serializers.cs" />
     <Compile Include="StringExtensions.cs" />
