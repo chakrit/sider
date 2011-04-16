@@ -178,6 +178,7 @@ namespace Sider
       execute(() =>
       {
         writeCmd("QUIT");
+        readOk();
         Dispose();
       });
     }
