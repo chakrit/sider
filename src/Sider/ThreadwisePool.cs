@@ -41,7 +41,7 @@ namespace Sider
 
       // rebuild the client if it's disposed
       if (client == null || client.IsDisposed) {
-        client = buildClient();
+        client = BuildClient();
         _threadRef.Value = new WeakReference(client);
       }
 
@@ -51,10 +51,10 @@ namespace Sider
 
     private WeakReference buildClientInReference()
     {
-      return new WeakReference(buildClient());
+      return new WeakReference(BuildClient());
     }
 
-    private IRedisClient<T> buildClient()
+    protected virtual IRedisClient<T> BuildClient()
     {
       var client = new RedisClient<T>(_settings);
 
