@@ -53,14 +53,15 @@ namespace Sider
     }
 
     public static Builder New() { return new Builder(); }
+    public Builder CopyNew() { return new Builder(this); }
 
 
-    public class Builder
+    public sealed class Builder
     {
       private RedisSettings _settings;
 
       public Builder() { _settings = new RedisSettings(); }
-      internal Builder(RedisSettings instance) { _settings = instance; }
+      protected internal Builder(RedisSettings instance) { _settings = instance; }
 
       public static implicit operator RedisSettings(Builder b)
       {
