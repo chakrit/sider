@@ -26,11 +26,6 @@ dir build\packages /b/s
 goto end
 
 
-:help_push
-echo Please supply your API key as an argument to push.
-goto end
-
-
 :error
 echo Build error detected, stopping.
 
