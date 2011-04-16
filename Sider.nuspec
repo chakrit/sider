@@ -2,7 +2,7 @@
 <package xmlns="">
   <metadata>
     <id>Sider</id>
-    <version>0.4</version>
+    <version>0.5</version>
     <language>en-us</language>
     <authors>Chakrit Wichian (http://chakrit.net/)</authors>
     <projectUrl>http://github.com/chakrit/sider</projectUrl>
@@ -20,11 +20,7 @@
       http://groups.google.com/group/sider-lemonade or just mention me (@chakrit)
       if you have a Twitter account.
 
-      Sider 0.4 works with Redis 2.2+.
+      Sider 0.5 works with Redis 2.2+.
     </description>
   </metadata>
-  <!-- Package file for use with http://nuget.org/ -->
-  <!-- To use it locally, uncomment these lines: -->
-  <!-- <files src="build\Sider.dll" target="lib" /> -->
-  <!-- <files src="build\Sider.pdb" target="lib" /> -->
 </package>

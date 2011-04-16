@@ -1,5 +1,12 @@
 # CHANGES
 
+0.4 - 0.5
+---
+
+* RedisSettings can now be copied with `.CopyNew()` method.
+* ThreadwisePool.BuildClient is now `protected virtual` so you can override it
+  to roll your own `IRedisClient` implementation.
+
 0.3 - 0.4
 ---
 **Breaking changes:**
