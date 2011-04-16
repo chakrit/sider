@@ -13,7 +13,7 @@ namespace Sider
     public IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls)
     {
       // force-materialize the result to remove unwanted lazy-enumeration effect
-      return pipelineCore(pipelinedCalls).ToArray();
+      return executePipeline(pipelinedCalls).ToArray();
     }
 
 
@@ -713,9 +713,6 @@ namespace Sider
     #endregion
 
     #region Lists
-
-    // TODO: Implement blocking commands
-    //   BLPOP, BRPOP, BRPOPLPUSH
 
     // a slight variation from Redis doc since params array must be last
     public KeyValuePair<string, T>? BLPop(int timeout, params string[] keys)

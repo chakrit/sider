@@ -3,8 +3,8 @@
 0.4 - 0.5
 ---
 
-* Improved exception handling. Now defaults to always retry until connects to deal
-  with timeouts from Redis side and never throw exceptions.
+* Improved exception handling. Now defaults to always retry until connects to
+  deal with timeouts from Redis side and never throw exceptions. 
 * RedisSettings can now be copied with `.CopyNew()` method.
 * ThreadwisePool.BuildClient is now `protected virtual` so you can override it
   to roll your own `IRedisClient` implementation.

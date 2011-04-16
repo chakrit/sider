@@ -20,8 +20,15 @@ namespace Sider
 
     public bool ReconnectOnIdle { get; private set; }
     public int MaxReconnectRetries { get; private set; }
-    public bool ReissueWriteOnReconnect { get; private set; }
-    public bool ReissueReadOnReconnect { get; private set; }
+    public bool ReissueCommandsOnReconnect { get; private set; }
+    public bool ReissuePipelinedCallsOnReconnect { get; private set; }
+
+    [Obsolete("Please ReissueCommandsOnReconnect instead which covers both read and write")]
+    public bool ReissueWriteOnReconnect
+    {
+      get { return ReissueCommandsOnReconnect; }
+      set { ReissueCommandsOnReconnect = value; }
+    }
 
     public int ReadBufferSize { get; private set; }
     public int WriteBufferSize { get; private set; }
@@ -40,8 +47,8 @@ namespace Sider
       Port = 6379;
 
       ReconnectOnIdle = true;
-      ReissueWriteOnReconnect = true;
-      ReissueReadOnReconnect = true;
+      ReissueCommandsOnReconnect = true;
+      ReissuePipelinedCallsOnReconnect = true;
       MaxReconnectRetries = 10; // retry forever
 
       // TODO: Use buffer pools? with growable buffers?
@@ -154,6 +161,7 @@ namespace Sider
         return this;
       }
 
+      [Obsolete("Please ReissueCommandsOnReconnect instead which covers both read and write")]
       public Builder ReissueWriteOnReconnect(bool reissueWriteOnReconnect)
       {
         SAssert.IsTrue(_settings.ReconnectOnIdle, () =>
@@ -163,12 +171,30 @@ namespace Sider
         return this;
       }
 
+      public Builder ReissueCommandsOnReconnect(bool reissueCommandsOnReconnect)
+      {
+        SAssert.IsTrue(_settings.ReconnectOnIdle, () => new ArgumentException(
+          "ReissueCommandsOnReconnect requires ReconnectOnIdle"));
+
+        _settings.ReissueCommandsOnReconnect = reissueCommandsOnReconnect;
+        return this;
+      }
+
+      public Builder ReissuePipelinedCallsOnReconnect(bool reissuePipeline)
+      {
+        SAssert.IsTrue(_settings.ReconnectOnIdle, () => new ArgumentException(
+          "ReissuePipelinedCallsOnReconnect requires ReconnectOnIdle"));
+
+        _settings.ReissuePipelinedCallsOnReconnect = reissuePipeline;
+        return this;
+      }
+
       public Builder ReissueReadOnReconnect(bool reissueReadOnReconnect)
       {
         SAssert.IsTrue(_settings.ReconnectOnIdle, () =>
           new ArgumentException("ReissueReadOnReconnect requires ReconnectOnIdle"));
 
-        _settings.ReissueReadOnReconnect = reissueReadOnReconnect;
+        _settings.ReissueCommandsOnReconnect = reissueReadOnReconnect;
         return this;
       }
 

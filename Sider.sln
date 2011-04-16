@@ -4,11 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{0CE30014-2C41-4378-8208-0704781C0CA9}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGES.markdown = CHANGES.markdown
-		Local.testsettings = Local.testsettings
 		README.markdown = README.markdown
 		Settings.StyleCop = Settings.StyleCop
 		Sider.nuspec = Sider.nuspec
-		Sider.vsmdi = Sider.vsmdi
 		SiderAssemblyInfo.cs = SiderAssemblyInfo.cs
 	EndProjectSection
 EndProject

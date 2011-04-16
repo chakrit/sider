@@ -22,7 +22,7 @@ namespace Sider
 
   public partial class RedisClient<T> : IRedisClient<T>
   {
-    // TODO: Provide a way to safely configure ISerizlier<T> 
+    // TODO: Provide a way to safely configure ISerializer<T> 
     //  (one should be selected on init, should not be settable while piplining etc.)
     private RedisSettings _settings;
     private ISerializer<T> _serializer;

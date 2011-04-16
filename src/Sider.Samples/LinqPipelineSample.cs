@@ -15,6 +15,10 @@ namespace Sider.Samples
     {
       var client = new RedisClient<int>(RedisSettings.Default);
 
+      // NOTE: This is for demonstartion purpose only
+      //       real-world code should just use MGet and MSet which are made
+      //       specifically for tasks like this
+
       // initialize 1000 counters with a number
       var success = client
         .Pipeline(c =>
