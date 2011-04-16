@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Sockets;
 
 namespace Sider
 {
@@ -30,13 +31,58 @@ namespace Sider
 
     private void execute(Action action)
     {
-      // TODO: Add try/catch SocketException/Reset here for handling ReconnectOnIdle
-      action();
+      execute<object>(() => { action(); return null; });
     }
 
     private TOut execute<TOut>(Func<TOut> func)
     {
-      return func();
+      try { return func(); }
+      catch (Exception ex) {
+        if (!handleException(ex))
+          throw;
+
+        // exception processed by this point
+        if ((_settings.ReissueWriteOnReconnect && ex is WriteException) ||
+          (_settings.ReissueReadOnReconnect && ex is ReadException)) {
+
+          // retry once, if allowed to -- usually harmless even with writes
+          // since if there's a disconnection it should means nothing was processed.
+          try { return func(); }
+          catch (Exception ex_) {
+            handleException(ex_);
+            throw;
+          }
+        }
+
+        // so the client is signaled that the action failed.
+        // even though we've reconnected
+        throw;
+      }
+    }
+
+    private bool handleException(Exception ex)
+    {
+      if (!(ex is WriteException || ex is ReadException))
+        return false;
+
+      var innerEx = ex.InnerException;
+      if (!(innerEx is IOException || ex is ObjectDisposedException ||
+        ex is SocketException))
+        return false;
+
+      // assumes Redis disconnected us due to timeouts
+      Dispose();
+      if (!_settings.ReconnectOnIdle)
+        throw timeoutException(ex);
+
+      Reset();
+      return true;
+    }
+
+    private Exception timeoutException(Exception inner)
+    {
+      return new TimeoutException(
+        "Disconnection detected. Probably due to idle timeout.", inner);
     }
 
 
@@ -51,43 +97,14 @@ namespace Sider
         // delay flushes when piplining
         if (!_isPipelining)
           _writer.Flush();
-
       }
       catch (Exception ex) {
-
-        validateClientState(ex);
-        if (_disposed)
-          throw;
-
-        // at this point, error was not due to invalid client state
-        // usually, this catch block is run because of idle connection
-        // timeouts from Redis side
-        if (!_settings.ReconnectOnIdle) {
-          Dispose();
-          return;
-        }
-
-        try {
-          // _settings.ReconnectOnIdle == true
-          Reset();
-
-          // try again one more time before giving up -- havn't encountered
-          // any issues so far with re-issuing writes since failed writes
-          // usually means the data remains untouched on the redis side.
-          if (_settings.ReissueWriteOnReconnect) {
-            writeAction(_writer);
-            _writer.Flush();
-          }
-        }
-        catch (Exception ex_) {
-          validateClientState(ex_);
-          throw;
-        }
-
-      } // catch
+        throw new WriteException(ex);
+      }
     }
 
-    private T readCore<T>(ResponseType expectedType, Func<RedisReader, T> readFunc)
+    private TOut readCore<TOut>(ResponseType expectedType,
+      Func<RedisReader, TOut> readFunc)
     {
       ensureNotDisposed();
 
@@ -110,34 +127,13 @@ namespace Sider
             return readFunc(r);
           });
 
-          return default(T);
+          return default(TOut);
         }
 
       }
       catch (Exception ex) {
-        validateClientState(ex);
-
-        // TODO: Happens in high load environment Redis would disconnect
-        //   a client right after we've written the command to the stream
-        //   and thus readFunc(T) would then strangely fail
-        //   the solution is to reconnect/reissue commands transactionally
-        throw;
+        throw new ReadException(ex);
       }
-    }
-
-
-    private bool validateClientState(Exception ex)
-    {
-      // TODO: Absorbing a generic IOException might be too dangerous.
-      //       Multibulk operations may still cause the reader/writer into
-      //       invalid states. e.g. First reads error, then absorbed, then
-      //       other required bulk read skipped (but client is not disposed
-      //       so user may issue more bulk commands and encounter parsing
-      //       exceptions)
-      if (!(ex is IOException || ex is ObjectDisposedException))
-        Dispose();
-
-      return _disposed;
     }
   }
 }

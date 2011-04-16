@@ -20,6 +20,7 @@ namespace Sider
 
     public bool ReconnectOnIdle { get; private set; }
     public bool ReissueWriteOnReconnect { get; private set; }
+    public bool ReissueReadOnReconnect { get; private set; }
 
     public int ReadBufferSize { get; private set; }
     public int WriteBufferSize { get; private set; }
@@ -39,6 +40,7 @@ namespace Sider
 
       ReconnectOnIdle = true;
       ReissueWriteOnReconnect = true;
+      ReissueReadOnReconnect = true;
 
       // TODO: Use buffer pools? with growable buffers?
       ReadBufferSize = 4096;
@@ -146,6 +148,15 @@ namespace Sider
           new ArgumentException("ReissueWriteOnReconnect requires ReconnectOnIdle"));
 
         _settings.ReissueWriteOnReconnect = reissueWriteOnReconnect;
+        return this;
+      }
+
+      public Builder ReissueReadOnReconnect(bool reissueReadOnReconnect)
+      {
+        SAssert.IsTrue(_settings.ReconnectOnIdle, () =>
+          new ArgumentException("ReissueReadOnReconnect requires ReconnectOnIdle"));
+
+        _settings.ReissueReadOnReconnect = reissueReadOnReconnect;
         return this;
       }
 

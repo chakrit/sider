@@ -9,13 +9,13 @@ namespace Sider
       base("Exception occurred while writing data to Redis.", innerException) { }
   }
 
-  public class ReadException : Exception
+  public sealed class ReadException : Exception
   {
     public ReadException(Exception innerException) :
       base("Exception occurred while reading data from Redis.", innerException) { }
   }
 
-  public class ResponseException : Exception
+  public sealed class ResponseException : Exception
   {
     public ResponseException(string msg) :
       base(msg) { }

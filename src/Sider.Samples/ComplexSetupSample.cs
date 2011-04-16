@@ -82,7 +82,8 @@ namespace Sider.Samples
         .SerializationBufferSize(8192) // as large as reads
         .OverrideSerializer(new PersonnelSerializer()) // custom serializer
         .ReconnectOnIdle(true) // auto reconnect on idle
-        .ReissueWriteOnReconnect(false); // never reissue write
+        .ReissueWriteOnReconnect(false) // never retry automatically
+        .ReissueReadOnReconnect(false);
 
       // create some test data
       var john = new Personnel {

@@ -11,16 +11,16 @@ namespace Sider.Samples
 {
   public class HighLoadSample : Sample
   {
-    public const int MaxClients = 300;
+    public const int MaxClients = 128;
     public const int ClientsStepping = 2;
-    public const int SteppingDelay = 2000;
+    public const int SteppingDelay = 500;
 
-    public const double DyingProb = 0.01;
-    public const int ClientLifetime = 10000;
+    public const double DyingSimProb = 0.00;
+    public const int ClientLifetime = int.MaxValue;
 
     public const int HitDelay = 0;
     public const double IdleClientProb = 0.01;
-    public const int IdleClientTime = 10000;
+    public const int IdleClientTime = 7000;
 
     public const int PingStatInterval = SteppingDelay;
     public const int PingStatWindow = 100;
@@ -71,13 +71,23 @@ namespace Sider.Samples
     private IEnumerable<double> pingThread(IClientsPool<string> pool)
     {
       while (true) {
-        var client = pool.GetClient();
+        double result;
 
-        var startTime = DateTime.Now;
-        Trace.Assert(client.Ping());
-        var endTime = DateTime.Now;
+        try {
+          var client = pool.GetClient();
 
-        yield return (endTime - startTime).TotalMilliseconds;
+          var startTime = DateTime.Now;
+          Trace.Assert(client.Ping());
+          var endTime = DateTime.Now;
+
+          result = (endTime - startTime).TotalMilliseconds;
+        }
+        catch (Exception ex) {
+          logException(ex);
+          result = 0.0;
+        }
+
+        yield return result;
       }
     }
 
@@ -111,15 +121,18 @@ namespace Sider.Samples
           }
 
           // simulate dying clients
-          if (rand.NextDouble() < DyingProb)
+          if (rand.NextDouble() < DyingSimProb)
             break;
 
           var key = getRandomKey();
           var value = getRandomValue();
 
-          client.Set(key, value);
-          Trace.Assert(client.Get(key) == value);
-          client.Del(key);
+          try {
+            client.Set(key, value);
+            Trace.Assert(client.Get(key) == value);
+            client.Del(key);
+          }
+          catch (Exception ex) { logException(ex); }
 
           hitCounter++;
         }
@@ -146,6 +159,15 @@ namespace Sider.Samples
     private void logClientsCount()
     {
       WriteLine("Running threads/clients: " + _threads.Count.ToString());
+    }
+
+    private void logException(Exception ex)
+    {
+      var msg = "Unhandled exception : " + ex.GetType().Name;
+      if (ex.InnerException != null)
+        msg += "\r\n    inner exception : " + ex.InnerException.GetType().Name;
+
+      WriteLine(msg);
     }
 
   }
