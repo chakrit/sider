@@ -17,6 +17,8 @@ namespace Sider
     private int? _db;
 
 
+    protected RedisSettings Settings { get { return _settings; } }
+
     public ThreadwisePool(string host = RedisSettings.DefaultHost,
       int port = RedisSettings.DefaultPort,
       int? db = null) :
@@ -59,6 +61,7 @@ namespace Sider
       var client = new RedisClient<T>(_settings);
 
       // TODO: Is there a better way than using a nullable here?
+      // TODO: Move db selection out of BuildClient
       if (_db.HasValue)
         client.Select(_db.Value);
 
