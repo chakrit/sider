@@ -1,5 +1,11 @@
 # CHANGES
 
+0.5 - 0.6
+---
+
+* MULTI/EXEC support.
+* Complex arguments support for commands like `LINSERT` and `ZRANGEBYSCORE`
+
 0.4 - 0.5
 ---
 

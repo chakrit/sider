@@ -41,16 +41,7 @@ as much as possible which results in:
   really large blobs (e.g. user-uploaded files) without huge buffers.
 * Delegate-based pipelining support.
 
-As of February 1st, 2011, all basic commands have been implemented except for the
-following:
-
-* Extra options for some commands - e.g. `WITHSCORES`, `AGGREGATE` and the likes.
-* Better transaction support - Right now you can use `MULTI`, `EXEC` and 
-  `DISCARD` inside the `.Pipeline` method which should be enough for most
-  cases.
-
-Other than that, it's solid and somewhat fault-tolerant. I'm using this myself
-in a few production sties so expect fast fixes should there be any problems.
+As of April 20th 2011, all commands are available through Sider. Enjoy! :)
 
 # HOWTO
 
