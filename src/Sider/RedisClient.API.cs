@@ -198,11 +198,8 @@ namespace Sider
 
     #endregion
 
-    #region TODO: Transactions
+    #region Transactions
 
-    // TODO: Implement better transaction support
-    //   queue up writeCore calls inside MULTI... EXEC
-    //   and then process readCores in one go
     public bool Multi()
     {
       if (_isPipelining)
