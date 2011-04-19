@@ -2,7 +2,7 @@
 <package xmlns="">
   <metadata>
     <id>Sider</id>
-    <version>0.5</version>
+    <version>0.6</version>
     <language>en-us</language>
     <authors>Chakrit Wichian (http://chakrit.net/)</authors>
     <projectUrl>http://github.com/chakrit/sider</projectUrl>
