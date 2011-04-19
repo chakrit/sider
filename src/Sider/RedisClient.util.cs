@@ -10,7 +10,6 @@ namespace Sider
     public static readonly DateTime UnixEpoch = new DateTime(UnixEpochL);
 
 
-    // TODO: use a shared/reusable buffer?
     private ArraySegment<byte> encodeStr(string s)
     {
       var bytesNeeded = Encoding.UTF8.GetByteCount(s);
@@ -25,6 +24,8 @@ namespace Sider
       return new ArraySegment<byte>(buffer, 0, buffer.Length);
     }
 
+    // TODO: Instead of parsing raw byte[], have the reader reads
+    //   into the shared _stringBuffer instead?
     private static string decodeStr(byte[] raw)
     {
       return Encoding.UTF8.GetString(raw);

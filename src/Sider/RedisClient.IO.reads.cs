@@ -18,6 +18,16 @@ namespace Sider
 
     private bool readOk() { return readStatus("OK"); }
 
+    private bool readQueued() { return readStatus("QUEUED"); }
+
+    private bool readQueueds(int count)
+    {
+      for (var i = 0; i < count; i++)
+        if (!readQueued()) return false;
+
+      return true;
+    }
+
     private string readStatus()
     { return readCore(ResponseType.SingleLine, r => r.ReadStatusLine()); }
 

@@ -6,20 +6,22 @@ using System.Net.Sockets;
 
 namespace Sider
 {
+  // TODO: Maybe needs to convert this whole file into a class of its own
+  //   an IExecutionEngine with implementations for immediate/pipeline/transact
+  //   mode interchanged instead of switching on two booleans.
   public partial class RedisClient<T>
   {
     private bool _isPipelining;
+    private bool _inTransaction;
+
     private Queue<Func<RedisReader, object>> _readsQueue;
 
 
     private IEnumerable<object> executePipeline(Action<IRedisClient<T>> pipelinedCalls,
       int retryCount = 0)
     {
-      object[] results;
-
       try {
-        _readsQueue = _readsQueue ?? new Queue<Func<RedisReader, object>>();
-        _readsQueue.Clear();
+        initReadsQueue();
 
         // all writes executed immediately but reads are queued
         _isPipelining = true;
@@ -27,13 +29,8 @@ namespace Sider
         _writer.Flush();
         _isPipelining = false;
 
-
         // reads out all the return values
-        results = new object[_readsQueue.Count];
-        var resultIdx = 0;
-
-        while (_readsQueue.Count > 0)
-          results[resultIdx++] = _readsQueue.Dequeue()(_reader);
+        return executeQueuedReads();
       }
       catch (Exception ex) {
         if (!handleException(ex))
@@ -47,6 +44,39 @@ namespace Sider
 
         throw;
       }
+    }
+
+    private void beginMultiExec()
+    {
+      _inTransaction = true;
+      _isPipelining = true;
+      initReadsQueue();
+    }
+
+    private void endMultiExec()
+    {
+      _inTransaction = false;
+      _isPipelining = false;
+      _writer.Flush();
+
+      // reads out the pending "+QUEUED"
+      readQueueds(_readsQueue.Count);
+    }
+
+
+    private void initReadsQueue()
+    {
+      _readsQueue = _readsQueue ?? new Queue<Func<RedisReader, object>>();
+      _readsQueue.Clear();
+    }
+
+    private IEnumerable<object> executeQueuedReads()
+    {
+      var results = new object[_readsQueue.Count];
+      var resultIdx = 0;
+
+      while (_readsQueue.Count > 0)
+        results[resultIdx++] = _readsQueue.Dequeue()(_reader);
 
       return results;
     }
@@ -131,17 +161,18 @@ namespace Sider
 
           return readFunc(_reader);
         }
-        else {
-          _readsQueue.Enqueue(r =>
-          {
-            var type = r.ReadTypeChar();
-            SAssert.ResponseType(expectedType, type, r);
 
-            return readFunc(r);
-          });
+        // piplining or inside transaction, queue up the reads
+        _readsQueue.Enqueue(r =>
+        {
+          // TODO: What to do with exceptions?
+          var type = r.ReadTypeChar();
+          SAssert.ResponseType(expectedType, type, r);
 
-          return default(TOut);
-        }
+          return readFunc(r);
+        });
+
+        return default(TOut);
 
       }
       catch (Exception ex) {

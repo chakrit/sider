@@ -57,6 +57,7 @@
     <Compile Include="HighLoadSample.cs" />
     <Compile Include="LinqPipelineSample.cs" />
     <Compile Include="ComplexSetupSample.cs" />
+    <Compile Include="MultiExecSample.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Sample.cs" />
     <Compile Include="StreamingSample.cs" />

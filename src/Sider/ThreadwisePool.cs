@@ -6,9 +6,7 @@ namespace Sider
 {
   public class ThreadwisePool<T> : IClientsPool<T>
   {
-    // TODO: LRU pruning since in peak time lots of clients will be built
-    //   and dangling eating up memory, maybe we should change the _clientRef
-    //   to ThreadLocal<WeakReference>
+    // TODO: proper LRU pruning instead of ThreadLocal<WeakReference>
 
     // separate value for each thread... 
     private ThreadLocal<WeakReference> _threadRef;

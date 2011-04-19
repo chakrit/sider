@@ -12,6 +12,10 @@ namespace Sider
   {
     public IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls)
     {
+      if (_inTransaction)
+        throw new InvalidOperationException(
+          "Cannot call .Pipeline() while inside a MULTI/EXEC transaction.");
+
       // force-materialize the result to remove unwanted lazy-enumeration effect
       return executePipeline(pipelinedCalls).ToArray();
     }
@@ -199,7 +203,65 @@ namespace Sider
     // TODO: Implement better transaction support
     //   queue up writeCore calls inside MULTI... EXEC
     //   and then process readCores in one go
-    //   this should also enable nice pipelining commands support as well
+    public bool Multi()
+    {
+      if (_isPipelining)
+        throw new InvalidOperationException(
+          "Cannot call .Multi() while inside a .Pipeline() calls.\r\n" +
+          "MULTI/EXEC calls are automatically pipelined.");
+
+      return execute(() =>
+      {
+        writeCmd("MULTI");
+        var result = readOk();
+
+        beginMultiExec();
+        return result;
+      });
+    }
+
+    public bool Discard()
+    {
+      return execute(() =>
+      {
+        writeCmd("DISCARD");
+        endMultiExec();
+        return readOk();
+      });
+    }
+
+    public IEnumerable<object> Exec()
+    {
+      return execute(() =>
+      {
+        writeCmd("EXEC");
+        endMultiExec();
+
+        var count = readCore(ResponseType.MultiBulk, r => r.ReadNumberLine());
+        SAssert.IsTrue(count == _readsQueue.Count,
+          () => new ResponseException("EXEC returned wrong number of bulks to read."));
+
+        return executeQueuedReads();
+      });
+    }
+
+    public bool Watch(params string[] keys)
+    {
+      return execute(() =>
+      {
+        writeCmd("WATCH", keys);
+        return readOk();
+      });
+    }
+
+    public bool Unwatch()
+    {
+      return execute(() =>
+      {
+        writeCmd("UNWATCH");
+        return readOk();
+      });
+    }
 
     #endregion
 
