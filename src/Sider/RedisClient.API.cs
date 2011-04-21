@@ -142,9 +142,28 @@ namespace Sider
       });
     }
 
-    // NOTE: INFO, MONITOR, SLAVEOF, SYNC ... these commands are not implemented
+    // TODO: INFO, MONITOR, SLAVEOF, SYNC ... these commands are not implemented
     //   as the format is totally out-of-place and they are mostly used for
     //   manual server diagnostics/maintenance (not from a client lib)
+
+    public IEnumerable<KeyValuePair<string, string>> Info(string section = null)
+    {
+      return execute(() =>
+      {
+        writeCmd("INFO");
+        var rawResult = readStrBulk()
+          .Split(new[] { '\r', '\n', ':' }, StringSplitOptions.RemoveEmptyEntries)
+          .ToArray();
+
+        var result = new KeyValuePair<string, string>[rawResult.Length / 2];
+        var resultIdx = 0;
+        for (var i = 0; i < rawResult.Length; i += 2)
+          result[resultIdx++] = new KeyValuePair<string, string>(
+            rawResult[i], rawResult[i + 1]);
+
+        return result;
+      });
+    }
 
     #endregion
 
