@@ -168,6 +168,8 @@ namespace Sider
       });
     }
 
+    // TODO: `T Echo(T msg)` overload ?
+
     public bool Ping()
     {
       return execute(() =>
@@ -354,7 +356,48 @@ namespace Sider
       });
     }
 
-    // TODO: Implement SORT complex arguments
+    // SORT key [BY pattern] [LIMIT offset count] [GET pattern [GET pattern ...]]
+    //     [ASC|DESC] [ALPHA] [STORE destination]
+    public T[] Sort(string key, string byPattern = null,
+      int? limitOffset = null, int? limitCount = null,
+      string[] getPattern = null, bool descending = false,
+      bool alpha = false, string store = null)
+    {
+      var items = new List<string>();
+      items.Add(key);
+
+      if (!string.IsNullOrEmpty(byPattern)) {
+        items.Add("BY");
+        items.Add(byPattern);
+      }
+
+      if (limitOffset.HasValue || limitCount.HasValue) {
+        items.Add("LIMIT");
+        items.Add(limitOffset.GetValueOrDefault(0).ToString());
+        items.Add(limitCount.GetValueOrDefault(int.MaxValue).ToString());
+      }
+
+      if (getPattern != null) {
+        foreach (var pattern in getPattern) {
+          items.Add("GET");
+          items.Add(pattern);
+        }
+      }
+
+      if (descending) items.Add("DESC");
+      if (alpha) items.Add("ALPHA");
+
+      if (!string.IsNullOrEmpty(store)) {
+        items.Add("STORE");
+        items.Add(store);
+      }
+
+      return execute(() =>
+      {
+        writeCmd("SORT", items.ToArray());
+        return readMultiBulk();
+      });
+    }
 
     public TimeSpan TTL(string key)
     {
@@ -776,6 +819,10 @@ namespace Sider
     // a slight variation from Redis doc since params array must be last
     public KeyValuePair<string, T>? BLPop(int timeout, params string[] keys)
     {
+      if (_inTransaction)
+        throw new InvalidOperationException(
+          "BLPOP cannot be issued while inside a MULTI/EXEC transaction.");
+
       return execute(() =>
       {
         writeCmd("BLPOP", keys, timeout.ToString());
@@ -785,6 +832,10 @@ namespace Sider
 
     public KeyValuePair<string, T>? BRPop(int timeout, params string[] keys)
     {
+      if (_inTransaction)
+        throw new InvalidOperationException(
+          "BRPOP cannot be issued while inside a MULTI/EXEC transaction.");
+
       return execute(() =>
       {
         writeCmd("BRPOP", keys, timeout.ToString());
@@ -794,6 +845,10 @@ namespace Sider
 
     public T BRPopLPush(string src, string dest, int timeout)
     {
+      if (_inTransaction)
+        throw new InvalidOperationException(
+          "BRPOPLPUSH cannot be issued while inside a MULTI/EXEC transaction.");
+
       return execute(() =>
       {
         writeStrCmd("BRPOPLPUSH", src, dest, timeout.ToString());
@@ -1205,6 +1260,12 @@ namespace Sider
 
     // Could be done by using Observables
     // the tricky part will be how to implement unsubscribe?
+
+    // public IObservable<T> PSubscribe(string key);
+    // public bool Publish(string channel, T msg);
+    // public bool PUnsubscribe(string key);
+    // public IObservable<T> Subscribe(string key);
+    // public bool Unsubscribe(string key);
 
     #endregion
   }

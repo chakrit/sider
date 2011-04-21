@@ -12,21 +12,6 @@ namespace Sider.Samples
     }
 
 
-    protected class Personnel
-    {
-      public string Name { get; set; }
-      public string Email { get; set; }
-
-      public short Age { get; set; }
-      public int Salary { get; set; }
-
-      public override string ToString()
-      {
-        return string.Format("{0,12} ({1}) {2} years old, ${3} yearly income.",
-          Name, Email, Age, Salary * 12);
-      }
-    }
-
     protected class PersonnelSerializer : ISerializer<Personnel>
     {
       private MemoryStream _temp;
@@ -78,36 +63,15 @@ namespace Sider.Samples
       var settings = RedisSettings.New()
         .ReadBufferSize(8192) // large reads
         .WriteBufferSize(256) // small writes
-        .StringBufferSize(32) // very-short strings
+        .StringBufferSize(32) // very short strings
         .SerializationBufferSize(8192) // as large as reads
         .OverrideSerializer(new PersonnelSerializer()) // custom serializer
         .ReconnectOnIdle(true) // auto reconnect on idle
-        .ReissueWriteOnReconnect(false) // never retry automatically
+        .ReissueCommandsOnReconnect(false)  // never retry automatically
         .ReissueReadOnReconnect(false);
 
       // create some test data
-      var john = new Personnel {
-        Name = "John Doe",
-        Email = "john@example.com",
-        Age = 20,
-        Salary = 2000,
-      };
-
-      var jane = new Personnel {
-        Name = "Jane Doe",
-        Email = "jane@example.com",
-        Age = 19,
-        Salary = 4000,
-      };
-
-      var jack = new Personnel {
-        Name = "Jack Hammer",
-        Email = "jack@example.com",
-        Age = 18,
-        Salary = 3000
-      };
-
-      var personnels = new[] { john, jane, jack };
+      var personnels = Personnel.GetSamplePersonnels();
 
       // create a client that works with `Personnel` class
       var client = new RedisClient<Personnel>(settings);
