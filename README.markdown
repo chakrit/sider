@@ -41,7 +41,14 @@ as much as possible which results in:
   really large blobs (e.g. user-uploaded files) without huge buffers.
 * Delegate-based pipelining support.
 
-As of April 20th 2011, all commands are available through Sider. Enjoy! :)
+As of April 20th 2011, all commands are available except for the following:
+
+* PUB/SUB will be implemented with IObservables<> in the next version.
+* `INFO/MONITOR/SLAVEOF/SYNC` are not implemented as it is a somewhat
+  dangerous commands and are mainly used for administrative purposes (i.e.
+  not from a client)
+
+Enjoy! :)
 
 # HOWTO
 
