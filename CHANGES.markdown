@@ -4,7 +4,9 @@
 ---
 
 * MULTI/EXEC support.
-* Complex arguments support for commands like `LINSERT` and `ZRANGEBYSCORE`
+* PUBLISH/SUBSCRIBE support via `IObservable`.
+* INFO/SLAVEOF/MONITOR support.
+* Complex arguments support for commands like `SORT` and `ZRANGEBYSCORE`
 
 0.4 - 0.5
 ---
