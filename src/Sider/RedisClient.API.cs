@@ -142,9 +142,8 @@ namespace Sider
       });
     }
 
-    // TODO: INFO, MONITOR, SLAVEOF, SYNC ... these commands are not implemented
-    //   as the format is totally out-of-place and they are mostly used for
-    //   manual server diagnostics/maintenance (not from a client lib)
+    // TODO: MONITOR using IObservable (after PUB/SUB)
+    // public IObservable<string> Monitor()
 
     public IEnumerable<KeyValuePair<string, string>> Info(string section = null)
     {
@@ -164,6 +163,17 @@ namespace Sider
         return result;
       });
     }
+
+    public bool SlaveOf(string host, int port)
+    {
+      return execute(() =>
+      {
+        writeStrCmd("SLAVEOF", host, port.ToString());
+        return readOk();
+      });
+    }
+
+    // NOTE: SYNC ... ?
 
     #endregion
 
