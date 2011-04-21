@@ -189,6 +189,7 @@ namespace Sider
         return this;
       }
 
+      [Obsolete("Please ReissueCommandsOnReconnect instead which covers both read and write")]
       public Builder ReissueReadOnReconnect(bool reissueReadOnReconnect)
       {
         SAssert.IsTrue(_settings.ReconnectOnIdle, () =>

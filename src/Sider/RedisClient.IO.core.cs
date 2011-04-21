@@ -60,6 +60,8 @@ namespace Sider
       _writer.Flush();
 
       // reads out the pending "+QUEUED"
+      // TODO: Maybe better to make "+QUEUED" reads immediate
+      //   since errors can be thrown instead of "+QUEUED"
       readQueueds(_readsQueue.Count);
     }
 

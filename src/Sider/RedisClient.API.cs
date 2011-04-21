@@ -142,8 +142,7 @@ namespace Sider
       });
     }
 
-    // TODO: MONITOR using IObservable (after PUB/SUB)
-    // public IObservable<string> Monitor()
+    // TODO: public IObservable<string> Monitor()
 
     public IEnumerable<KeyValuePair<string, string>> Info(string section = null)
     {
