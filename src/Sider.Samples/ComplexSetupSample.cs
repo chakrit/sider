@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Globalization;
 using System.IO;
 
 namespace Sider.Samples
@@ -66,9 +67,9 @@ namespace Sider.Samples
         .StringBufferSize(32) // very short strings
         .SerializationBufferSize(8192) // as large as reads
         .OverrideSerializer(new PersonnelSerializer()) // custom serializer
+        .OverrideCulture(CultureInfo.GetCultureInfo("fr-FR")) // non-default culture
         .ReconnectOnIdle(true) // auto reconnect on idle
-        .ReissueCommandsOnReconnect(false)  // never retry automatically
-        .ReissueReadOnReconnect(false);
+        .ReissueCommandsOnReconnect(false); // never retry automatically
 
       // create some test data
       var personnels = Personnel.GetSamplePersonnels();
@@ -79,18 +80,25 @@ namespace Sider.Samples
       // add personnels data to sorted set
       client.Pipeline(c =>
       {
-        client.Del("p:salary", "p:age"); // reset old values
+        client.Del("p:salary", "p:sal_week", "p:age"); // reset old values
         Array.ForEach(personnels, p => c.ZAdd("p:salary", p.Salary, p));
+        Array.ForEach(personnels, p => c.ZAdd("p:sal_week", (double)p.Salary / 4.0, p));
         Array.ForEach(personnels, p => c.ZAdd("p:age", p.Age, p));
       });
 
       while (true) {
         WriteLine("0. List personnels sorted by yearly income.");
-        WriteLine("1. List personnels sorted by age.");
+        WriteLine("1. List personnels sorted by weekly income.");
+        WriteLine("2. List personnels sorted by age.");
 
-        var result = ReadLine() == "0" ?
-          client.ZRangeByScore("p:salary", 0, 99999) :
-          client.ZRangeByScore("p:age", 0, 9999);
+        Personnel[] result;
+
+        switch (ReadLine()) {
+        case "0": result = client.ZRangeByScore("p:salary", 0, 99999); break;
+        case "1": result = client.ZRangeByScore("p:sal_week", 0, 99999); break;
+        case "2": result = client.ZRangeByScore("p:age", 0, 99999); break;
+        default: continue;
+        }
 
         Array.ForEach(result, p => WriteLine(p.ToString()));
       }

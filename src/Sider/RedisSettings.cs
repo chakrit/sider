@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Globalization;
 using System.Text;
 
 namespace Sider
@@ -39,6 +40,7 @@ namespace Sider
     public Encoding ValueEncoding { get; private set; }
 
     public ISerializer SerializerOverride { get; private set; }
+    public CultureInfo CultureOverride { get; private set; }
 
     private RedisSettings()
     {
@@ -61,6 +63,7 @@ namespace Sider
       ValueEncoding = Encoding.UTF8;
 
       SerializerOverride = null;
+      CultureOverride = null;
     }
 
     public static Builder New() { return new Builder(); }
@@ -219,6 +222,12 @@ namespace Sider
       {
         // can be null
         _settings.SerializerOverride = serializer;
+        return this;
+      }
+
+      public Builder OverrideCulture(CultureInfo culture)
+      {
+        _settings.CultureOverride = culture;
         return this;
       }
     }

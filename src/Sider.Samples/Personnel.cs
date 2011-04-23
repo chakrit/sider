@@ -42,14 +42,14 @@ namespace Sider.Samples
         Name = "Jane Doe",
         Email = "jane@example.com",
         Age = 20,
-        Salary = 2000,
+        Salary = 2565,
       };
 
       yield return new Personnel {
         Name = "John Doe",
         Email = "john@example.com",
         Age = 19,
-        Salary = 4000,
+        Salary = 4096,
       };
 
       yield return new Personnel {

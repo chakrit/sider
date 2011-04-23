@@ -56,20 +56,26 @@ namespace Sider
     }
 
 
-    private static string formatDbl(double d)
+    private string formatDbl(double d)
     {
-      return double.IsPositiveInfinity(d) ? "+inf" :
-        double.IsNegativeInfinity(d) ? "-inf" :
-        d.ToString("0.0");
+      if (double.IsPositiveInfinity(d)) return "+inf";
+      if (double.IsNegativeInfinity(d)) return "-inf";
+
+      return _settings.CultureOverride == null ?
+        d.ToString("R") :
+        d.ToString("R", _settings.CultureOverride);
     }
 
-    private static double parseDouble(byte[] raw)
+    private double parseDouble(byte[] raw)
     {
       var str = Encoding.Default.GetString(raw);
 
-      return str == "inf" || str == "+inf" ? double.PositiveInfinity :
-        str == "-inf" ? double.NegativeInfinity :
-        double.Parse(str);
+      if (str == "inf" || str == "+inf") return double.PositiveInfinity;
+      if (str == "-inf") return double.NegativeInfinity;
+
+      return _settings.CultureOverride == null ?
+        double.Parse(str) :
+        double.Parse(str, _settings.CultureOverride);
     }
   }
 }
