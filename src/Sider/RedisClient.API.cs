@@ -143,6 +143,7 @@ namespace Sider
     }
 
     // TODO: public IObservable<string> Monitor()
+    // NOTE: SYNC ... ?
 
     public IEnumerable<KeyValuePair<string, string>> Info(string section = null)
     {
@@ -150,8 +151,7 @@ namespace Sider
       {
         writeCmd("INFO");
         var rawResult = readStrBulk()
-          .Split(new[] { '\r', '\n', ':' }, StringSplitOptions.RemoveEmptyEntries)
-          .ToArray();
+          .Split(new[] { '\r', '\n', ':' }, StringSplitOptions.RemoveEmptyEntries);
 
         var result = new KeyValuePair<string, string>[rawResult.Length / 2];
         var resultIdx = 0;
@@ -171,8 +171,6 @@ namespace Sider
         return readOk();
       });
     }
-
-    // NOTE: SYNC ... ?
 
     #endregion
 

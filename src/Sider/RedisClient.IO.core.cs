@@ -6,45 +6,16 @@ using System.Net.Sockets;
 
 namespace Sider
 {
-  // TODO: Maybe needs to convert this whole file into a class of its own
-  //   an IExecutionEngine with implementations for immediate/pipeline/transact
-  //   mode interchanged instead of switching on two booleans.
+  // TODO: May needs to convert this whole file into a class of its own
+  //   an IExecutionEngine with implementations for
+  //   immediate/pipeline/transact/observe mode switched to and fro instead of
+  //   using boolean switches. May make it easier to add IOCP later as well
   public partial class RedisClient<T>
   {
+    private Queue<Func<RedisReader, object>> _readsQueue;
     private bool _isPipelining;
     private bool _inTransaction;
 
-    private Queue<Func<RedisReader, object>> _readsQueue;
-
-
-    private IEnumerable<object> executePipeline(Action<IRedisClient<T>> pipelinedCalls,
-      int retryCount = 0)
-    {
-      try {
-        initReadsQueue();
-
-        // all writes executed immediately but reads are queued
-        _isPipelining = true;
-        pipelinedCalls(this);
-        _writer.Flush();
-        _isPipelining = false;
-
-        // reads out all the return values
-        return executeQueuedReads();
-      }
-      catch (Exception ex) {
-        if (!handleException(ex))
-          throw;
-
-        // TODO: multiple retries with pipeline maybe too dangerous
-        //   so will only retry once in pipeline mode.
-        if (_settings.ReissuePipelinedCallsOnReconnect &&
-          retryCount < 1)
-          return executePipeline(pipelinedCalls, retryCount + 1);
-
-        throw;
-      }
-    }
 
     private void beginMultiExec()
     {
@@ -83,6 +54,35 @@ namespace Sider
       return results;
     }
 
+
+    private IEnumerable<object> executePipeline(Action<IRedisClient<T>> pipelinedCalls,
+      int retryCount = 0)
+    {
+      try {
+        initReadsQueue();
+
+        // all writes executed immediately but reads are queued
+        _isPipelining = true;
+        pipelinedCalls(this);
+        _writer.Flush();
+        _isPipelining = false;
+
+        // reads out all the return values
+        return executeQueuedReads();
+      }
+      catch (Exception ex) {
+        if (!handleException(ex))
+          throw;
+
+        // TODO: multiple retries with pipeline maybe too dangerous
+        //   so will only retry once in pipeline mode.
+        if (_settings.ReissuePipelinedCallsOnReconnect &&
+          retryCount < 1)
+          return executePipeline(pipelinedCalls, retryCount + 1);
+
+        throw;
+      }
+    }
 
     private void execute(Action action)
     {
