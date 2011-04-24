@@ -44,7 +44,11 @@
     <Compile Include="..\..\SiderAssemblyInfo.cs">
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Commands\Params.cs" />
+    <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="Executors\IExecutor.cs" />
+    <Compile Include="Executors\ImmediateExecutor.cs" />
     <Compile Include="LimitingStream.cs">
       <SubType>Code</SubType>
     </Compile>
