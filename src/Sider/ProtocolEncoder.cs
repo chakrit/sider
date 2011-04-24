@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Sider
 {
+  // TODO: Add support for Encoding
   public class ProtocolEncoder : SettingsWrapper
   {
     protected const long UnixEpochL = 621355968000000000L; // 1st Jan 1970
@@ -59,14 +60,9 @@ namespace Sider
         t.TotalSeconds.ToString(Settings.CultureOverride);
     }
 
-    public TimeSpan DecodeTimeSpan(byte[] raw)
+    public TimeSpan DecodeTimeSpan(long value)
     {
-      var str = Encoding.Default.GetString(raw);
-      var seconds = Settings.CultureOverride == null ?
-        long.Parse(str) :
-        long.Parse(str, Settings.CultureOverride);
-
-      return TimeSpan.FromSeconds(seconds);
+      return TimeSpan.FromSeconds(value);
     }
 
 

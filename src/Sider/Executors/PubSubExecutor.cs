@@ -1,17 +1,16 @@
 ﻿
 namespace Sider.Executors
 {
-  public class ImmediateExecutor : ExecutorBase
+  public class PubSubExecutor : ExecutorBase
   {
-    public ImmediateExecutor(RedisSettings settings,
+    public PubSubExecutor(RedisSettings settings,
       ProtocolReader reader, ProtocolWriter writer) :
       base(settings, reader, writer) { }
 
 
     public override T Execute<T>(Invocation<T> invocation)
     {
-      invocation.WriteAction(Writer);
-      return invocation.ReadAction(Reader);
+      throw new System.NotImplementedException();
     }
   }
 }

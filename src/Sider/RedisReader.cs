@@ -36,6 +36,7 @@ namespace Sider
       return (ResponseType)b;
     }
 
+    // TODO: Respect culture? Revert to using int.Parse?
     public int ReadNumberLine()
     {
       bool negate = false;

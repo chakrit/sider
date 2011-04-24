@@ -45,6 +45,18 @@ namespace Sider
       return _reader.ReadNumberLine() == 1;
     }
 
+    public DateTime ReadDateTime()
+    {
+      readType(ResponseType.Integer);
+      return _encoder.DecodeDateTime(_reader.ReadNumberLine64());
+    }
+
+    public TimeSpan ReadTimeSpan()
+    {
+      readType(ResponseType.Integer);
+      return _encoder.DecodeTimeSpan(_reader.ReadNumberLine64());
+    }
+
     public string ReadStatus()
     {
       readType(ResponseType.SingleLine);
