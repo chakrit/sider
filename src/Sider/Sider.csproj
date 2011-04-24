@@ -53,7 +53,6 @@
     <Compile Include="Executors\PubSubExecutor.cs" />
     <Compile Include="Executors\TransactedExecutor.cs" />
     <Compile Include="Invocation.cs" />
-    <Compile Include="InvocationBuilder.API.cs" />
     <Compile Include="LimitingStream.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -62,11 +61,7 @@
     <Compile Include="ProtocolEncoder.cs" />
     <Compile Include="ProtocolWriter.cs" />
     <Compile Include="PubSubObservable.cs" />
-    <Compile Include="RedisClient.multiexec.cs" />
-    <Compile Include="RedisClient.observable.cs" />
-    <Compile Include="RedisClient.pipeline.cs" />
     <Compile Include="RedisReaderHelpers.cs" />
-    <Compile Include="InvocationBuilder.cs" />
     <Compile Include="Serialization\ObjectSerializer.cs" />
     <Compile Include="Serialization\SerializerBase.cs" />
     <Compile Include="SettingsWrapper.cs" />
@@ -81,9 +76,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>RedisClientPipeliningExtensions.tt</DependentUpon>
     </Compile>
-    <Compile Include="RedisClient.IO.reads.cs" />
-    <Compile Include="RedisClient.util.cs" />
-    <Compile Include="RedisClient.IO.writes.cs" />
     <Compile Include="RedisSettings.cs" />
     <Compile Include="RoundRobinPool.cs" />
     <Compile Include="SAssert.cs" />

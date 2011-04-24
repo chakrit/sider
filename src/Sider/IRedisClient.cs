@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Sider
 {
@@ -16,26 +15,29 @@ namespace Sider
 
 
     // NOTE: Please see the RedisClient.API.cs file for a proper sorted listing
-    //   that matches with commands on redis.io site.
-    //   as this file is extracted via a refactoring tool
-
+    //   that matches with commands on redis.io site as this file is
+    //   extracted via a refactoring tool
     int Append(string key, T value);
     bool Auth(string password);
-    bool BgRewriteAOF();
+    bool BgRewriteAof();
     bool BgSave();
-    KeyValuePair<string, T>? BLPop(int timeout, params string[] keys);
-    KeyValuePair<string, T>? BRPop(int timeout, params string[] keys);
+    System.Collections.Generic.KeyValuePair<string, T>? BLPop(int timeout, params string[] keys);
+    System.Collections.Generic.KeyValuePair<string, T>? BRPop(int timeout, params string[] keys);
     T BRPopLPush(string src, string dest, int timeout);
-    KeyValuePair<string, string>[] ConfigGet(string param);
+    System.Collections.Generic.KeyValuePair<string, string>[] ConfigGet(string param);
     bool ConfigResetStat();
     bool ConfigSet(string param, string value);
     int DbSize();
     string DebugObject(string key);
-    void DebugSegfault();
+    object DebugSegfault();
     long Decr(string key);
     long DecrBy(string key, long value);
     int Del(params string[] keys);
+    bool Discard();
+    void Dispose();
     string Echo(string msg);
+    T Echo(T msg);
+    System.Collections.Generic.IEnumerable<object> Exec();
     bool Exists(string key);
     bool Expire(string key, TimeSpan span);
     bool ExpireAt(string key, DateTime time);
@@ -45,31 +47,33 @@ namespace Sider
     int GetBit(string key, int offset);
     T GetRange(string key, int start, int end);
     byte[] GetRangeRaw(string key, int start, int end);
-    int GetRangeTo(string key, int start, int end, Stream source);
+    int GetRangeTo(string key, int start, int end, System.IO.Stream target);
     byte[] GetRaw(string key);
     T GetSet(string key, T value);
-    int GetTo(string key, Stream target);
+    int GetTo(string key, System.IO.Stream target);
     bool HDel(string key, string field);
     bool HExists(string key, string field);
     T HGet(string key, string field);
-    IEnumerable<KeyValuePair<string, T>> HGetAll(string key);
+    System.Collections.Generic.KeyValuePair<string, T>[] HGetAll(string key);
     byte[] HGetRaw(string key, string field);
-    int HGetTo(string key, string field, Stream target);
+    int HGetTo(string key, string field, System.IO.Stream target);
     long HIncrBy(string key, string field, long amount);
     string[] HKeys(string key);
     int HLen(string key);
     T[] HMGet(string key, params string[] fields);
-    bool HMSet(string key, IEnumerable<KeyValuePair<string, T>> mappings);
+    bool HMSet(string key, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> mappings);
     bool HSet(string key, string field, T value);
-    bool HSetFrom(string key, string field, Stream source, int count);
+    bool HSetFrom(string key, string field, System.IO.Stream source, int count);
     bool HSetNX(string key, string field, T value);
     bool HSetRaw(string key, string field, byte[] data);
     T[] HVals(string key);
     long Incr(string key);
     long IncrBy(string key, long value);
+    System.Collections.Generic.KeyValuePair<string, string>[] Info();
     string[] Keys(string pattern);
     DateTime LastSave();
     T LIndex(string key, int index);
+    int LInsert(string key, T pivot, T value, bool afterPivot = false);
     int LLen(string key);
     T LPop(string key);
     int LPush(string key, T value);
@@ -80,11 +84,12 @@ namespace Sider
     bool LTrim(string key, int minIncl, int maxIncl);
     T[] MGet(params string[] keys);
     bool Move(string key, int dbIndex);
-    bool MSet(IEnumerable<KeyValuePair<string, T>> mappings);
-    bool MSetNX(IEnumerable<KeyValuePair<string, T>> mappings);
+    bool MSet(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> mappings);
+    bool MSetNX(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> mappings);
+    bool Multi();
     bool Persist(string key);
     bool Ping();
-    void Quit();
+    object Quit();
     string RandomKey();
     bool Rename(string oldKey, string newKey);
     bool RenameNX(string oldKey, string newKey);
@@ -102,18 +107,20 @@ namespace Sider
     bool Set(string key, T value);
     int SetBit(string key, int offset, int value);
     bool SetEX(string key, TimeSpan ttl, T value);
-    bool SetFrom(string key, Stream source, int count);
+    bool SetFrom(string key, System.IO.Stream source, int count);
     bool SetNX(string key, T value);
     int SetRange(string key, int offset, T value);
-    int SetRangeFrom(string key, int offset, Stream source, int count);
+    int SetRangeFrom(string key, int offset, System.IO.Stream source, int count);
     int SetRangeRaw(string key, int offset, byte[] value);
     bool SetRaw(string key, byte[] raw);
-    void Shutdown();
+    object Shutdown();
     T[] SInter(params string[] keys);
     bool SInterStore(string destKey, params string[] keys);
     bool SIsMember(string key, T value);
+    bool SlaveOf(string host, int port);
     T[] SMembers(string key);
     bool SMove(string srcKey, string destKey, T value);
+    T[] Sort(string key, string byPattern = null, int? limitOffset = null, int? limitCount = null, string[] getPattern = null, bool descending = false, bool alpha = false, string store = null);
     T SPop(string key);
     T SRandMember(string key);
     bool SRem(string key, T value);
@@ -122,6 +129,8 @@ namespace Sider
     bool SUnionStore(string destKey, params string[] keys);
     TimeSpan TTL(string key);
     RedisType Type(string key);
+    bool Unwatch();
+    bool Watch(params string[] keys);
     bool ZAdd(string key, double score, T value);
     int ZCard(string key);
     int ZCount(string key, double minIncl, double maxIncl);

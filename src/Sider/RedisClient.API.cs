@@ -12,145 +12,90 @@ namespace Sider
   {
     public IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls)
     {
-      if (_inTransaction)
-        throw new InvalidOperationException(
-          "Cannot call .Pipeline() while inside a MULTI/EXEC transaction.");
-
-      // force-materialize the result to remove unwanted lazy-enumeration effect
-      return executePipeline(pipelinedCalls).ToArray();
+      throw new NotImplementedException();
     }
 
 
     #region Server
 
-    public bool BgRewriteAOF()
+    public bool BgRewriteAof()
     {
-      return execute(() =>
-      {
-        writeCmd("BGREWRITEAOF");
-        return readStatus("Background append only file rewriting started");
-      });
+      return invoke("BGREWRITEAOF",
+        r => r.ReadStatus("Background append only file rewriting started"));
     }
 
     public bool BgSave()
     {
-      return execute(() =>
-      {
-        writeCmd("BGSAVE");
-        return readStatus("Background saving started");
-      });
+      return invoke("BGSAVE", r => r.ReadStatus("Background saving started"));
     }
 
     public KeyValuePair<string, string>[] ConfigGet(string param)
     {
-      return execute(() =>
-      {
-        writeStrCmd("CONFIG", "GET", param);
-        return readStringKeyValues();
-      });
+      return invoke("CONFIG", 2,
+        w => { w.WriteArg("GET"); w.WriteArg(param); },
+        r => r.ReadStrKeyValues());
     }
 
     public bool ConfigSet(string param, string value)
     {
-      return execute(() =>
-      {
-        writeStrCmd("CONFIG", "SET", param, value);
-        return readOk();
-      });
+      return invoke("CONFIG", 3,
+        w => { w.WriteArg("SET"); w.WriteArg(param); w.WriteArg(value); },
+        r => r.ReadOk());
     }
 
     public bool ConfigResetStat()
     {
-      return execute(() =>
-      {
-        writeCmd("CONFIG", "RESETSTAT");
-        return readOk();
-      });
+      return invoke("CONFIG", "RESETSTAT", r => r.ReadOk());
     }
 
     public int DbSize()
     {
-      return execute(() =>
-      {
-        writeCmd("DBSIZE");
-        return readInt();
-      });
+      return invoke("DBSIZE", r => r.ReadInt());
     }
 
     public string DebugObject(string key)
     {
-      return execute(() =>
-      {
-        writeStrCmd("DEBUG", "OBJECT", key);
-        return readStatus();
-      });
+      return invoke("DEBUG", 2,
+        w => { w.WriteArg("OBJECT"); w.WriteArg(key); },
+        r => r.ReadStatus());
     }
 
-    public void DebugSegfault()
+    public object DebugSegfault()
     {
-      execute(() =>
-      {
-        writeCmd("DEBUG", "SEGFAULT");
-        Dispose();
-      });
+      return invoke("DEBUG", "SEGFAULT", r => (object)null);
     }
 
     public bool FlushAll()
     {
-      return execute(() =>
-      {
-        writeCmd("FLUSHALL");
-        return readBool();
-      });
+      return invoke("FLUSHALL", r => r.ReadOk());
     }
 
     public bool FlushDb()
     {
-      return execute(() =>
-      {
-        writeCmd("FLUSHDB");
-        return readOk();
-      });
+      return invoke("FLUSHDB", r => r.ReadOk());
     }
 
     public DateTime LastSave()
     {
-      return execute(() =>
-      {
-        writeCmd("LASTSAVE");
-        return readCore(ResponseType.Integer, r =>
-          parseDateTime(r.ReadNumberLine64()));
-      });
+      return invoke("LASTSAVE", r => r.ReadDateTime());
     }
 
     public bool Save()
     {
-      return execute(() =>
-      {
-        writeCmd("SAVE");
-        return readOk();
-      });
+      return invoke("SAVE", r => r.ReadOk());
     }
 
-    public void Shutdown()
+    public object Shutdown()
     {
-      execute(() =>
-      {
-        writeCmd("SHUTDOWN");
-        // TODO: Docs says error is possible but how to produce it?
-        Dispose();
-      });
+      return invoke("SHUTDOWN", r => (object)null);
     }
 
-    // TODO: public IObservable<string> Monitor()
-    // NOTE: SYNC ... ?
-
-    public IEnumerable<KeyValuePair<string, string>> Info(string section = null)
+    // TODO: section support
+    public KeyValuePair<string, string>[] Info()
     {
-      return execute(() =>
+      return invoke("INFO", r =>
       {
-        writeCmd("INFO");
-        var rawResult = readStrBulk()
+        var rawResult = r.ReadStrBulk()
           .Split(new[] { '\r', '\n', ':' }, StringSplitOptions.RemoveEmptyEntries);
 
         var result = new KeyValuePair<string, string>[rawResult.Length / 2];
@@ -165,11 +110,9 @@ namespace Sider
 
     public bool SlaveOf(string host, int port)
     {
-      return execute(() =>
-      {
-        writeStrCmd("SLAVEOF", host, port.ToString());
-        return readOk();
-      });
+      return invoke("SLAVEOF", 2,
+        w => { w.WriteArg(host); w.WriteArg(port); },
+        r => r.ReadOk());
     }
 
     #endregion
@@ -178,50 +121,39 @@ namespace Sider
 
     public bool Auth(string password)
     {
-      return execute(() =>
-      {
-        writeCmd("AUTH", password);
-        return readOk();
-      });
+      return invoke("AUTH", password, r => r.ReadOk());
     }
 
     public string Echo(string msg)
     {
-      return execute(() =>
-      {
-        writeCmd("ECHO", msg);
-        return readStrBulk();
-      });
+      return invoke("ECHO", msg, r => r.ReadStrBulk());
     }
 
-    // TODO: `T Echo(T msg)` overload ?
+    public T Echo(T msg)
+    {
+      return invoke("ECHO", 1,
+        w => w.WriteArg(_serializer, msg),
+        _readObj);
+    }
 
     public bool Ping()
     {
-      return execute(() =>
-      {
-        writeCmd("PING");
-        return readStatus("PONG");
-      });
+      return invoke("PING", 0,
+        w => { },
+        r => r.ReadStatus("PONG"));
     }
 
-    public void Quit()
+    public object Quit()
     {
-      execute(() =>
-      {
-        writeCmd("QUIT");
-        readOk();
-        Dispose();
-      });
+      // TODO: Dispose the client?
+      return invoke("QUIT", r => (object)null);
     }
 
     public bool Select(int dbIndex)
     {
-      return execute(() =>
-      {
-        writeCmd("SELECT", dbIndex.ToString());
-        return readOk();
-      });
+      return invoke("SELECT", 1,
+        w => w.WriteArg(dbIndex),
+        r => r.ReadOk());
     }
 
     #endregion
@@ -230,62 +162,32 @@ namespace Sider
 
     public bool Multi()
     {
-      if (_isPipelining)
-        throw new InvalidOperationException(
-          "Cannot call .Multi() while inside a .Pipeline() calls.\r\n" +
-          "MULTI/EXEC calls are automatically pipelined.");
-
-      return execute(() =>
-      {
-        writeCmd("MULTI");
-        var result = readOk();
-
-        beginMultiExec();
-        return result;
-      });
+      return invoke("MULTI", r => r.ReadOk());
     }
 
     public bool Discard()
     {
-      return execute(() =>
-      {
-        writeCmd("DISCARD");
-        endMultiExec();
-        return readOk();
-      });
+      return invoke("DISCARD", r => r.ReadOk());
     }
 
     public IEnumerable<object> Exec()
     {
-      return execute(() =>
+      return invoke<IEnumerable<object>>("EXEC", r =>
       {
-        writeCmd("EXEC");
-        endMultiExec();
-
-        var count = readCore(ResponseType.MultiBulk, r => r.ReadNumberLine());
-        SAssert.IsTrue(count == _readsQueue.Count,
-          () => new ResponseException("EXEC returned wrong number of bulks to read."));
-
-        return executeQueuedReads();
+        throw new Exception("EXEC requires a TransactedExecutor to function.");
       });
     }
 
     public bool Watch(params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("WATCH", keys);
-        return readOk();
-      });
+      return invoke("WATCH", keys.Length,
+        w => Array.ForEach(keys, w.WriteArg),
+        r => r.ReadOk());
     }
 
     public bool Unwatch()
     {
-      return execute(() =>
-      {
-        writeCmd("UNWATCH");
-        return readOk();
-      });
+      return invoke("UNWATCH", r => r.ReadOk());
     }
 
     #endregion
@@ -294,92 +196,64 @@ namespace Sider
 
     public int Del(params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("DEL", keys);
-        return readInt();
-      });
+      return invoke("DEL", keys.Length,
+        w => Array.ForEach(keys, w.WriteArg),
+        r => r.ReadInt());
     }
 
     public bool Exists(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("EXISTS", key);
-        return readBool();
-      });
+      return invoke("EXISTS", key, r => r.ReadBool());
     }
 
     public bool Expire(string key, TimeSpan span)
     {
-      return execute(() =>
-      {
-        writeStrCmd("EXPIRE", key, formatTimeSpan(span));
-        return readBool();
-      });
+      return invoke("EXPIRE", 2,
+        w => { w.WriteArg(key); w.WriteArg(span); },
+        r => r.ReadBool());
     }
 
     public bool ExpireAt(string key, DateTime time)
     {
-      return execute(() =>
-      {
-        writeStrCmd("EXPIREAT", key, formatDateTime(time));
-        return readBool();
-      });
+      return invoke("EXPIREAT", 2,
+        w => { w.WriteArg(key); w.WriteArg(time); },
+        r => r.ReadBool());
     }
 
     public string[] Keys(string pattern)
     {
-      return execute(() =>
-      {
-        writeCmd("KEYS", pattern);
-        return readStrMultiBulk();
-      });
+      return invoke("KEYS", pattern, r => r.ReadStrMultiBulk());
     }
 
     public bool Move(string key, int dbIndex)
     {
-      return execute(() =>
-      {
-        writeStrCmd("MOVE", key, dbIndex.ToString());
-        return readBool();
-      });
+      return invoke("MOVE", 2,
+        w => { w.WriteArg(key); w.WriteArg(dbIndex); },
+        r => r.ReadBool());
     }
 
     public bool Persist(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("PERSIST", key);
-        return readBool();
-      });
+      return invoke("PERSIST", r => r.ReadBool());
     }
 
     public string RandomKey()
     {
-      return execute(() =>
-      {
-        writeCmd("RANDOMKEY");
-        return readStrBulk();
-      });
+      return invoke("RANDOMKEY", r => r.ReadStrBulk());
     }
 
     public bool Rename(string oldKey, string newKey)
     {
-      return execute(() =>
-      {
-        writeStrCmd("RENAME", oldKey, newKey);
-        return readOk();
-      });
+      return invoke("RENAME", 2,
+        w => { w.WriteArg(oldKey); w.WriteArg(newKey); },
+        r => r.ReadOk());
     }
 
     public bool RenameNX(string oldKey, string newKey)
     {
-      return execute(() =>
-      {
-        writeStrCmd("RENAMENX", oldKey, newKey);
-        return readBool();
-      });
+      return invoke("RENAMENX", 2,
+        w => { w.WriteArg(oldKey); w.WriteArg(newKey); },
+        r => r.ReadBool());
     }
 
     // SORT key [BY pattern] [LIMIT offset count] [GET pattern [GET pattern ...]]
@@ -418,31 +292,19 @@ namespace Sider
         items.Add(store);
       }
 
-      return execute(() =>
-      {
-        writeCmd("SORT", items.ToArray());
-        return readMultiBulk();
-      });
+      return invoke("SORT", items.Count,
+        w => { items.ForEach(w.WriteArg); },
+        _readObjs);
     }
 
     public TimeSpan TTL(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("TTL", key);
-        return readCore(ResponseType.Integer,
-          r => TimeSpan.FromSeconds(r.ReadNumberLine64()));
-      });
+      return invoke("TTL", key, r => r.ReadTimeSpan());
     }
 
     public RedisType Type(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("TYPE", key);
-        return readCore(ResponseType.SingleLine, r =>
-          RedisTypes.Parse(r.ReadStatusLine()));
-      });
+      return invoke("TYPE", key, r => RedisTypes.Parse(r.ReadStatus()));
     }
 
     #endregion
@@ -451,236 +313,174 @@ namespace Sider
 
     public int Append(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("APPEND", key, value);
-        return readInt();
-      });
+      return invoke("APPEND", key, value, r => r.ReadInt());
     }
 
     public long Decr(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("DECR", key);
-        return readInt64();
-      });
+      return invoke("DECR", key, r => r.ReadInt64());
     }
 
     public long DecrBy(string key, long value)
     {
-      return execute(() =>
-      {
-        writeStrCmd("DECRBY", key, value.ToString());
-        return readInt64();
-      });
+      return invoke("DECRBY", 2,
+        w => { w.WriteArg(key); w.WriteArg(value); },
+        r => r.ReadInt64());
     }
 
     public T Get(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("GET", key);
-        return readBulk();
-      });
+      return invoke("GET", key, _readObj);
     }
 
     public byte[] GetRaw(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("GET", key);
-        return readBulkRaw();
-      });
+      return invoke("GET", key, r => r.ReadRawBulk());
     }
 
     public int GetTo(string key, Stream target)
     {
-      return execute(() =>
-      {
-        writeCmd("GET", key);
-        return readBulkTo(target);
-      });
+      return invoke("GET", key, r => r.ReadStreamedBulk(target));
     }
 
     public int GetBit(string key, int offset)
     {
-      return execute(() =>
-      {
-        writeStrCmd("GETBIT", key, offset.ToString());
-        return readInt();
-      });
+      return invoke("GETBIT", 2,
+        w => { w.WriteArg(key); w.WriteArg(offset); },
+        r => r.ReadInt());
     }
 
     public T GetRange(string key, int start, int end)
     {
-      return execute(() =>
-      {
-        writeStrCmd("GETRANGE", key, start.ToString(), end.ToString());
-        return readBulk();
-      });
+      return invoke("GETRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(start); w.WriteArg(end); },
+        _readObj);
     }
 
     public byte[] GetRangeRaw(string key, int start, int end)
     {
-      return execute(() =>
-      {
-        writeStrCmd("GETRANGE", key, start.ToString(), end.ToString());
-        return readBulkRaw();
-      });
+      return invoke("GETRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(start); w.WriteArg(end); },
+        r => r.ReadRawBulk());
     }
 
-    public int GetRangeTo(string key, int start, int end, Stream source)
+    public int GetRangeTo(string key, int start, int end, Stream target)
     {
-      return execute(() =>
-      {
-        writeStrCmd("GETRANGE", key, start.ToString(), end.ToString());
-        return readBulkTo(source);
-      });
+      return invoke("GETRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(start); w.WriteArg(end); },
+        r => r.ReadStreamedBulk(target));
     }
 
     public T GetSet(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("GETSET", key, value);
-        return readBulk();
-      });
+      return invoke("GETSET", key, value, _readObj);
     }
 
     public long Incr(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("INCR", key);
-        return readInt64();
-      });
+      return invoke("INCR", key, r => r.ReadInt64());
     }
 
     public long IncrBy(string key, long value)
     {
-      return execute(() =>
-      {
-        writeStrCmd("INCRBY", key, value.ToString());
-        return readInt64();
-      });
+      return invoke("INCRBY", 2,
+        w => { w.WriteArg(key); w.WriteArg(value); },
+        r => r.ReadInt64());
     }
 
     public T[] MGet(params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("MGET", keys);
-        return readMultiBulk();
-      });
+      return invoke("MGET", keys.Length,
+        w => Array.ForEach(keys, w.WriteArg),
+        _readObjs);
     }
 
     public bool MSet(IEnumerable<KeyValuePair<string, T>> mappings)
     {
-      return execute(() =>
-      {
-        writeCmd("MSET", mappings.ToArray());
-        return readOk();
-      });
+      var arr = mappings.ToArray();
+      return invoke("MSET", arr.Length * 2,
+        w => Array.ForEach(arr, kv =>
+        {
+          w.WriteArg(kv.Key);
+          w.WriteArg(_serializer, kv.Value);
+        }),
+        r => r.ReadOk());
     }
 
     public bool MSetNX(IEnumerable<KeyValuePair<string, T>> mappings)
     {
-      return execute(() =>
-      {
-        writeCmd("MSETNX", mappings.ToArray());
-        return readBool();
-      });
+      var arr = mappings.ToArray();
+      return invoke("MSETNX", arr.Length * 2,
+        w => Array.ForEach(arr, kv =>
+        {
+          w.WriteArg(kv.Key);
+          w.WriteArg(_serializer, kv.Value);
+        }),
+        r => r.ReadOk());
     }
 
     public bool Set(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("SET", key, value);
-        return readOk();
-      });
+      return invoke("SET", key, value, r => r.ReadOk());
     }
 
     public bool SetRaw(string key, byte[] raw)
     {
-      return execute(() =>
-      {
-        writeCmd("SET", key, raw);
-        return readOk();
-      });
+      return invoke("SET", 2,
+        w => { w.WriteArg(key); w.WriteArg(raw); },
+        r => r.ReadOk());
     }
 
     public bool SetFrom(string key, Stream source, int count)
     {
-      return execute(() =>
-      {
-        writeCmd("SET", key, source, count);
-        return readOk();
-      });
+      return invoke("SET", 2,
+        w => { w.WriteArg(key); w.WriteArg(source, count); },
+        r => r.ReadOk());
     }
 
     public int SetBit(string key, int offset, int value)
     {
-      return execute(() =>
-      {
-        writeStrCmd("SETBIT", key, offset.ToString(), value.ToString());
-        return readInt();
-      });
+      return invoke("SETBIT", 3,
+        w => { w.WriteArg(key); w.WriteArg(offset); w.WriteArg(value); },
+        r => r.ReadInt());
     }
 
     public bool SetEX(string key, TimeSpan ttl, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("SETEX", key, formatTimeSpan(ttl), value);
-        return readOk();
-      });
+      return invoke("SETEX", 3,
+        w => { w.WriteArg(key); w.WriteArg(ttl); w.WriteArg(_serializer, value); },
+        r => r.ReadOk());
     }
 
     public bool SetNX(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("SETNX", key, value);
-        return readBool();
-      });
+      return invoke("SETNX", key, value, r => r.ReadBool());
     }
 
     public int SetRange(string key, int offset, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("SETRANGE", key, offset.ToString(), value);
-        return readInt();
-      });
+      return invoke("SETRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(offset); w.WriteArg(_serializer, value); },
+        r => r.ReadInt());
     }
 
     public int SetRangeRaw(string key, int offset, byte[] value)
     {
-      return execute(() =>
-      {
-        writeCmd("SETRANGE", key, offset.ToString(), value);
-        return readInt();
-      });
+      return invoke("SETRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(offset); w.WriteArg(value); },
+        r => r.ReadInt());
     }
 
     public int SetRangeFrom(string key, int offset, Stream source, int count)
     {
-      return execute(() =>
-      {
-        writeCmd("SETRANGE", key, offset.ToString(), source, count);
-        return readInt();
-      });
+      return invoke("SETRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(offset); w.WriteArg(source, count); },
+        r => r.ReadInt());
     }
 
     public int Strlen(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("STRLEN", key);
-        return readInt();
-      });
+      return invoke("STRLEN", key, r => r.ReadInt());
     }
 
     #endregion
@@ -689,153 +489,115 @@ namespace Sider
 
     public bool HDel(string key, string field)
     {
-      return execute(() =>
-      {
-        writeStrCmd("HDEL", key, field);
-        return readBool();
-      });
+      return invoke("HDEL", 2,
+        w => { w.WriteArg(key); w.WriteArg(field); },
+        r => r.ReadBool());
     }
 
     public bool HExists(string key, string field)
     {
-      return execute(() =>
-      {
-        writeStrCmd("HEXISTS", key, field);
-        return readBool();
-      });
+      return invoke("HEXISTS", 2,
+        w => { w.WriteArg(key); w.WriteArg(field); },
+        r => r.ReadBool());
     }
 
     public T HGet(string key, string field)
     {
-      return execute(() =>
-      {
-        writeStrCmd("HGET", key, field);
-        return readBulk();
-      });
+      return invoke("HGET", 2,
+        w => { w.WriteArg(key); w.WriteArg(field); },
+        _readObj);
     }
 
     public byte[] HGetRaw(string key, string field)
     {
-      return execute(() =>
-      {
-        writeStrCmd("HGET", key, field);
-        return readBulkRaw();
-      });
+      return invoke("HGET", 2,
+        w => { w.WriteArg(key); w.WriteArg(field); },
+        r => r.ReadRawBulk());
     }
 
     public int HGetTo(string key, string field, Stream target)
     {
-      return execute(() =>
-      {
-        writeStrCmd("HGET", key, field);
-        return readCore(ResponseType.Bulk, r =>
-        {
-          var length = r.ReadNumberLine();
-          if (length > -1)
-            r.ReadBulkTo(target, length);
-
-          return length;
-        });
-      });
+      return invoke("HGET", 2,
+        w => { w.WriteArg(key); w.WriteArg(field); },
+        r => r.ReadStreamedBulk(target));
     }
 
-    public IEnumerable<KeyValuePair<string, T>> HGetAll(string key)
+    public KeyValuePair<string, T>[] HGetAll(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("HGETALL", key);
-        return readKeyValues();
-      });
+      return invoke("HGETALL", key, r => r.ReadSerializedKeyValues(_serializer));
     }
 
     public long HIncrBy(string key, string field, long amount)
     {
-      return execute(() =>
-      {
-        writeStrCmd("HINCRBY", key, field, amount.ToString());
-        return readInt64();
-      });
+      return invoke("HINCRBY", 3,
+        w => { w.WriteArg(key); w.WriteArg(field); w.WriteArg(amount); },
+        r => r.ReadInt64());
     }
 
     public string[] HKeys(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("HKEYS", key);
-        return readStrMultiBulk();
-      });
+      return invoke("HKEYS", key, r => r.ReadStrMultiBulk());
     }
 
     public int HLen(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("HLEN", key);
-        return readInt();
-      });
+      return invoke("HLEN", key, r => r.ReadInt());
     }
 
     public T[] HMGet(string key, params string[] fields)
     {
-      return execute(() =>
-      {
-        writeCmd("HMGET", key, fields);
-        return readMultiBulk();
-      });
+      return invoke("HMGET", fields.Length + 1,
+        w => { w.WriteArg(key); Array.ForEach(fields, w.WriteArg); },
+        _readObjs);
     }
 
     public bool HMSet(string key, IEnumerable<KeyValuePair<string, T>> mappings)
     {
-      return execute(() =>
-      {
-        writeCmd("HMSET", key, mappings.ToArray());
-        return readOk();
-      });
+      var arr = mappings.ToArray();
+      return invoke("HMSET", arr.Length * 2 + 1,
+        w =>
+        {
+          w.WriteArg(key);
+          Array.ForEach(arr, kv =>
+          {
+            w.WriteArg(kv.Key);
+            w.WriteArg(_serializer, kv.Value);
+          });
+        },
+        r => r.ReadOk());
     }
 
     public bool HSet(string key, string field, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("HSET", key, field, value);
-        return readBool();
-      });
+      return invoke("HSET", 3,
+        w => { w.WriteArg(key); w.WriteArg(field); w.WriteArg(_serializer, value); },
+        r => r.ReadBool());
     }
 
     public bool HSetRaw(string key, string field, byte[] data)
     {
-      return execute(() =>
-      {
-        writeCmd("HSET", key, field, data);
-        return readBool();
-      });
+      return invoke("HSET", 3,
+        w => { w.WriteArg(key); w.WriteArg(field); w.WriteArg(data); },
+        r => r.ReadBool());
     }
 
     public bool HSetFrom(string key, string field, Stream source, int count)
     {
-      return execute(() =>
-      {
-        writeCmd("HSET", key, field, source, count);
-        return readBool();
-      });
+      return invoke("HSET", 3,
+        w => { w.WriteArg(key); w.WriteArg(field); w.WriteArg(source, count); },
+        r => r.ReadBool());
     }
 
     public bool HSetNX(string key, string field, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("HSETNX", key, field, value);
-        return readBool();
-      });
+      return invoke("HSETNX", 3,
+        w => { w.WriteArg(key); w.WriteArg(field); w.WriteArg(_serializer, value); },
+        r => r.ReadBool());
     }
 
     public T[] HVals(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("HVALS", key);
-        return readMultiBulk();
-      });
+      return invoke("HVALS", key, _readObjs);
     }
 
     #endregion
@@ -845,164 +607,115 @@ namespace Sider
     // a slight variation from Redis doc since params array must be last
     public KeyValuePair<string, T>? BLPop(int timeout, params string[] keys)
     {
-      if (_inTransaction)
-        throw new InvalidOperationException(
-          "BLPOP cannot be issued while inside a MULTI/EXEC transaction.");
-
-      return execute(() =>
-      {
-        writeCmd("BLPOP", keys, timeout.ToString());
-        return readKeyValue();
-      });
+      return invoke("BLPOP", keys.Length + 1,
+        w => { w.WriteArg(timeout); Array.ForEach(keys, w.WriteArg); },
+        r => r.ReadSerializedKeyValue(_serializer));
     }
 
     public KeyValuePair<string, T>? BRPop(int timeout, params string[] keys)
     {
-      if (_inTransaction)
-        throw new InvalidOperationException(
-          "BRPOP cannot be issued while inside a MULTI/EXEC transaction.");
-
-      return execute(() =>
-      {
-        writeCmd("BRPOP", keys, timeout.ToString());
-        return readKeyValue();
-      });
+      return invoke("BRPOP", keys.Length + 1,
+        w => { w.WriteArg(timeout); Array.ForEach(keys, w.WriteArg); },
+        r => r.ReadSerializedKeyValue(_serializer));
     }
 
     public T BRPopLPush(string src, string dest, int timeout)
     {
-      if (_inTransaction)
-        throw new InvalidOperationException(
-          "BRPOPLPUSH cannot be issued while inside a MULTI/EXEC transaction.");
-
-      return execute(() =>
-      {
-        writeStrCmd("BRPOPLPUSH", src, dest, timeout.ToString());
-
-        // NOTE: There is inconsistency in redis protocol v < 2.2 which
-        //   returns a Multi-Bulk nil when the timeout occurs instead of a
-        //   bulk-nil, this should be fixed in 2.2 so I'm leaving this as-is
-        return readBulk();
-      });
+      return invoke("BRPOPLPUSH", 3,
+        w => { w.WriteArg(src); w.WriteArg(dest); w.WriteArg(timeout); },
+        _readObj);
     }
 
     public T LIndex(string key, int index)
     {
-      return execute(() =>
-      {
-        writeStrCmd("LINDEX", key, index.ToString());
-        return readBulk();
-      });
+      return invoke("LINDEX", 2,
+        w => { w.WriteArg(key); w.WriteArg(index); },
+        _readObj);
     }
 
     // TODO: Implement LInsert with complex args
+    public int LInsert(string key, T pivot, T value,
+      bool afterPivot = false)
+    {
+      return invoke("LINSERT", 4,
+        w =>
+        {
+          w.WriteArg(key);
+          w.WriteArg(afterPivot ? "AFTER" : "BEFORE");
+          w.WriteArg(_serializer, pivot);
+          w.WriteArg(_serializer, value);
+        },
+        r => r.ReadInt());
+    }
 
     public int LLen(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("LLEN", key);
-        return readInt();
-      });
+      return invoke("LLEN", key, r => r.ReadInt());
     }
 
     public T LPop(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("LPOP", key);
-        return readBulk();
-      });
+      return invoke("LPOP", key, _readObj);
     }
 
     public int LPush(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("LPUSH", key, value);
-        return readInt();
-      });
+      return invoke("LPUSH", key, value, r => r.ReadInt());
     }
 
     public int LPushX(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("LPUSHX", key, value);
-        return readInt();
-      });
+      return invoke("LPUSHX", key, value, r => r.ReadInt());
     }
 
     public T[] LRange(string key, int minIncl, int maxIncl)
     {
-      return execute(() =>
-      {
-        writeStrCmd("LRANGE", key, minIncl.ToString(), maxIncl.ToString());
-        return readMultiBulk();
-      });
+      return invoke("LRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl); },
+        _readObjs);
     }
 
     public int LRem(string key, int count, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("LREM", key, count.ToString(), value);
-        return readInt();
-      });
+      return invoke("LREM", 3,
+        w => { w.WriteArg(key); w.WriteArg(count); w.WriteArg(_serializer, value); },
+        r => r.ReadInt());
     }
 
     public bool LSet(string key, int index, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("LSET", key, index.ToString(), value);
-        return readOk();
-      });
+      return invoke("LSET", 3,
+        w => { w.WriteArg(key); w.WriteArg(index); w.WriteArg(_serializer, value); },
+        r => r.ReadOk());
     }
 
     public bool LTrim(string key, int minIncl, int maxIncl)
     {
-      return execute(() =>
-      {
-        writeStrCmd("LTRIM", key, minIncl.ToString(), maxIncl.ToString());
-        return readOk();
-      });
+      return invoke("LTRIM", 3,
+        w => { w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl); },
+        r => r.ReadOk());
     }
 
     public T RPop(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("RPOP", key);
-        return readBulk();
-      });
+      return invoke("RPOP", key, _readObj);
     }
 
     public T RPopLPush(string srcKey, string destKey)
     {
-      return execute(() =>
-      {
-        writeStrCmd("RPOPLPUSH", srcKey, destKey);
-        return readBulk();
-      });
+      return invoke("RPOPLPUSH", 2,
+        w => { w.WriteArg(srcKey); w.WriteArg(destKey); },
+        _readObj);
     }
 
     public int RPush(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("RPUSH", key, value);
-        return readInt();
-      });
+      return invoke("RPUSH", key, value, r => r.ReadInt());
     }
 
     public int RPushX(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("RPUSHX", key, value);
-        return readInt();
-      });
+      return invoke("RPUSHX", key, value, r => r.ReadInt());
     }
 
     #endregion
@@ -1011,128 +724,86 @@ namespace Sider
 
     public bool SAdd(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("SADD", key, value);
-        return readBool();
-      });
+      return invoke("SADD", key, value, r => r.ReadBool());
     }
 
     public int SCard(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("SCARD", key);
-        return readInt();
-      });
+      return invoke("SCARD", key, r => r.ReadInt());
     }
 
     public T[] SDiff(params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("SDIFF", keys);
-        return readMultiBulk();
-      });
+      return invoke("SDIFF", keys.Length,
+        w => Array.ForEach(keys, w.WriteArg),
+        _readObjs);
     }
 
     public bool SDiffStore(string destKey, params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("SDIFFSTORE", destKey, keys);
-        return readOk();
-      });
+      return invoke("SDIFFSTORE", keys.Length + 1,
+        w => { w.WriteArg(destKey); Array.ForEach(keys, w.WriteArg); },
+        r => r.ReadOk());
     }
 
     public T[] SInter(params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("SINTER", keys);
-        return readMultiBulk();
-      });
+      return invoke("SINTER", keys.Length,
+        w => Array.ForEach(keys, w.WriteArg),
+        _readObjs);
     }
 
     public bool SInterStore(string destKey, params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("SINTERSTORE", destKey, keys);
-        return readOk();
-      });
+      return invoke("SINTERSTORE", keys.Length + 1,
+        w => { w.WriteArg(destKey); Array.ForEach(keys, w.WriteArg); },
+        r => r.ReadOk());
     }
 
     public bool SIsMember(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("SISMEMBER", key, value);
-        return readBool();
-      });
+      return invoke("SISMEMBER", key, value, r => r.ReadBool());
     }
 
     public T[] SMembers(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("SMEMBERS", key);
-        return readMultiBulk();
-      });
+      return invoke("SMEMBERS", key, _readObjs);
     }
 
     public bool SMove(string srcKey, string destKey, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("SMOVE", srcKey, destKey, value);
-        return readBool();
-      });
+      return invoke("SMOVE", 3,
+        w => { w.WriteArg(srcKey); w.WriteArg(destKey); w.WriteArg(_serializer, value); },
+        r => r.ReadBool());
     }
 
     public T SPop(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("SPOP", key);
-        return readBulk();
-      });
+      return invoke("SPOP", key, _readObj);
     }
 
     public T SRandMember(string key)
     {
-      return execute(() =>
-      {
-        writeCmd("SRANDMEMBER", key);
-        return readBulk();
-      });
+      return invoke("SRANDMEMBER", key, _readObj);
     }
 
     public bool SRem(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("SREM", key, value);
-        return readBool();
-      });
+      return invoke("SREM", key, value, r => r.ReadBool());
     }
 
     public T[] SUnion(params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("SUNION", keys);
-        return readMultiBulk();
-      });
+      return invoke("SUNION", keys.Length,
+        w => Array.ForEach(keys, w.WriteArg),
+        _readObjs);
     }
 
     public bool SUnionStore(string destKey, params string[] keys)
     {
-      return execute(() =>
-      {
-        writeCmd("SUNIONSTORE", destKey, keys);
-        return readOk();
-      });
+      return invoke("SUNIONSTORE", keys.Length + 1,
+        w => { w.WriteArg(destKey); Array.ForEach(keys, w.WriteArg); },
+        r => r.ReadOk());
     }
 
     #endregion
@@ -1141,143 +812,106 @@ namespace Sider
 
     public bool ZAdd(string key, double score, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("ZADD", key, formatDbl(score), value);
-        return readBool();
-      });
+      return invoke("ZADD", 3,
+        w => { w.WriteArg(key); w.WriteArg(score); w.WriteArg(_serializer, value); },
+        r => r.ReadBool());
     }
 
     public int ZCard(string key)
     {
-      writeCmd("ZCARD", key);
-      return readInt();
+      return invoke("ZCARD", key, r => r.ReadInt());
     }
 
     public int ZCount(string key, double minIncl, double maxIncl)
     {
-      return execute(() =>
-      {
-        writeStrCmd("ZCOUNT", key, formatDbl(minIncl), formatDbl(maxIncl));
-        return readInt();
-      });
+      return invoke("ZCOUNT", 3,
+        w => { w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl); },
+        r => r.ReadInt());
     }
 
     public double ZIncrBy(string key, double amount, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("ZINCRBY", key, formatDbl(amount), value);
-        return readDouble();
-      });
+      return invoke("ZINCRBY", 3,
+        w => { w.WriteArg(key); w.WriteArg(amount); w.WriteArg(_serializer, value); },
+        r => r.ReadDouble());
     }
 
     public int ZInterStore(string destKey, params string[] srcKeys)
     {
-      return execute(() =>
-      {
-        writeCmd("ZINTERSTORE", destKey, srcKeys.Length.ToString(), srcKeys);
-        return readInt();
-      });
+      return invoke("ZINTERSTORE", srcKeys.Length + 1,
+        w => { w.WriteArg(destKey); Array.ForEach(srcKeys, w.WriteArg); },
+        r => r.ReadInt());
     }
 
     public T[] ZRange(string key, int startRank, int endRank)
     {
-      return execute(() =>
-      {
-        writeStrCmd("ZRANGE", key, startRank.ToString(), endRank.ToString());
-        return readMultiBulk();
-      });
+      return invoke("ZRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(startRank); w.WriteArg(endRank); },
+        _readObjs);
     }
+
+    // TODO: ZRangeWithScores
 
     public T[] ZRangeByScore(string key, double minIncl, double maxIncl)
     {
-      return execute(() =>
-      {
-        writeStrCmd("ZRANGEBYSCORE", key, formatDbl(minIncl), formatDbl(maxIncl));
-        return readMultiBulk();
-      });
+      return invoke("ZRANGEBYSCORE", 3,
+        w => { w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl); },
+        _readObjs);
     }
 
     public int ZRank(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("ZRANK", key, value);
-        return readInt();
-      });
+      return invoke("ZRANK", key, value, r => r.ReadInt());
     }
 
     public bool ZRem(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("ZREM", key, value);
-        return readBool();
-      });
+      return invoke("ZREM", key, value, r => r.ReadBool());
     }
 
     public int ZRemRangeByRank(string key, int startRank, int endRank)
     {
-      return execute(() =>
-      {
-        writeStrCmd("ZREMRANGEBYRANK", key, startRank.ToString(), endRank.ToString());
-        return readInt();
-      });
+      return invoke("ZRREMRANGEBYRANK", 3,
+        w => { w.WriteArg(key); w.WriteArg(startRank); w.WriteArg(endRank); },
+        r => r.ReadInt());
     }
 
     public int ZRemRangeByScore(string key, double minIncl, double maxIncl)
     {
-      return execute(() =>
-      {
-        writeStrCmd("ZREMRANGEBYSCORE", key, formatDbl(minIncl), formatDbl(maxIncl));
-        return readInt();
-      });
+      return invoke("ZREMRANGEBYSCORE", 3,
+        w => { w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl); },
+        r => r.ReadInt());
     }
 
     public T[] ZRevRange(string key, int startRank, int endRank)
     {
-      return execute(() =>
-      {
-        writeStrCmd("ZREVRANGE", key, startRank.ToString(), endRank.ToString());
-        return readMultiBulk();
-      });
+      return invoke("ZREVRANGE", 3,
+        w => { w.WriteArg(key); w.WriteArg(startRank); w.WriteArg(endRank); },
+        _readObjs);
     }
 
     public T[] ZRevRangeByScore(string key, double minIncl, double maxIncl)
     {
-      return execute(() =>
-      {
-        writeStrCmd("ZREVRANGE", key, formatDbl(minIncl), formatDbl(maxIncl));
-        return readMultiBulk();
-      });
+      return invoke("ZREVRANGEBYSCORE", 3,
+        w => { w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl); },
+        _readObjs);
     }
 
     public int ZRevRank(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("ZREVRANK", key, value);
-        return readInt();
-      });
+      return invoke("ZREVRANK", key, value, r => r.ReadInt());
     }
 
     public double ZScore(string key, T value)
     {
-      return execute(() =>
-      {
-        writeCmd("ZSCORE", key);
-        return readDouble();
-      });
+      return invoke("ZSCORE", key, value, r => r.ReadDouble());
     }
 
     public int ZUnionStore(string destKey, params string[] srcKeys)
     {
-      return execute(() =>
-      {
-        writeCmd("ZUNIONSTORE", destKey, srcKeys.Length.ToString(), srcKeys);
-        return readInt();
-      });
+      return invoke("ZUNIONSTORE", srcKeys.Length + 1,
+        w => { w.WriteArg(destKey); Array.ForEach(srcKeys, w.WriteArg); },
+        r => r.ReadInt());
     }
 
     #endregion
@@ -1294,5 +928,7 @@ namespace Sider
     // public bool Unsubscribe(string key);
 
     #endregion
+
+
   }
 }

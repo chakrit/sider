@@ -7,6 +7,8 @@ namespace Sider
 
     protected SettingsWrapper(RedisSettings settings)
     {
+      SAssert.ArgumentNotNull(() => settings);
+
       Settings = settings;
     }
   }

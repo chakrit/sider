@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using Sider.Executors;
 using Sider.Serialization;
 
 namespace Sider
@@ -20,17 +21,24 @@ namespace Sider
     public RedisClient(RedisSettings settings) : base(settings) { }
   }
 
-  public partial class RedisClient<T> : IRedisClient<T>
+  // TODO: Provide a way to safely configure ISerializer<T> 
+  //  (one should be selected on init, should not be settable while piplining etc.)
+  public partial class RedisClient<T> : SettingsWrapper, IRedisClient<T>
   {
-    // TODO: Provide a way to safely configure ISerializer<T> 
-    //  (one should be selected on init, should not be settable while piplining etc.)
-    private RedisSettings _settings;
-    private ISerializer<T> _serializer;
+    // frequently used delegates
+    private readonly Func<ProtocolReader, T> _readObj;
+    private readonly Func<ProtocolReader, T[]> _readObjs;
 
+    // infrastructure
     private Socket _socket;
     private Stream _stream;
-    private RedisReader _reader;
-    private RedisWriter _writer;
+    private ProtocolReader _reader;
+    private ProtocolWriter _writer;
+    private ProtocolEncoder _encoder;
+
+    private ISerializer<T> _serializer;
+    private IExecutor _executor;
+
 
     private byte[] _stringBuffer;
 
@@ -44,13 +52,11 @@ namespace Sider
       int port = RedisSettings.DefaultPort) :
       this(RedisSettings.New().Host(host).Port(port)) { }
 
-    public RedisClient(RedisSettings settings)
+    public RedisClient(RedisSettings settings) :
+      base(settings)
     {
-      SAssert.ArgumentNotNull(() => settings);
-
       _disposing = _disposed = false;
-      _settings = settings;
-      _stringBuffer = new byte[_settings.EncodingBufferSize];
+      _stringBuffer = new byte[Settings.EncodingBufferSize];
 
       if (settings.SerializerOverride != null) {
         _serializer = settings.SerializerOverride as ISerializer<T>;
@@ -60,21 +66,22 @@ namespace Sider
       else
         _serializer = Serializers.For<T>();
 
-      _serializer.Init(_settings);
+      _serializer.Init(Settings);
 
       // connect
       Reset();
     }
 
     // for testing only
-    internal RedisClient(Stream incoming, Stream outgoing)
+    internal RedisClient(Stream incoming, Stream outgoing) :
+      base(RedisSettings.Default)
     {
       _socket = null;
       _stream = null;
 
-      _settings = RedisSettings.Default;
-      _reader = new RedisReader(incoming);
-      _writer = new RedisWriter(outgoing);
+      _encoder = new ProtocolEncoder(Settings);
+      _reader = new ProtocolReader(Settings, _encoder, incoming);
+      _writer = new ProtocolWriter(Settings, _encoder, outgoing);
     }
 
     public void Reset()
@@ -85,15 +92,18 @@ namespace Sider
         SocketType.Stream,
         ProtocolType.Tcp);
 
-      _socket.ReceiveBufferSize = _settings.ReadBufferSize;
-      _socket.SendBufferSize = _settings.WriteBufferSize;
+      _socket.ReceiveBufferSize = Settings.ReadBufferSize;
+      _socket.SendBufferSize = Settings.WriteBufferSize;
       _socket.NoDelay = true;
 
-      _socket.Connect(_settings.Host, _settings.Port);
+      _socket.Connect(Settings.Host, Settings.Port);
 
       _stream = new NetworkStream(_socket, FileAccess.ReadWrite, true);
-      _reader = new RedisReader(_stream, _settings);
-      _writer = new RedisWriter(_stream, _settings);
+      _encoder = new ProtocolEncoder(Settings);
+      _reader = new ProtocolReader(Settings, _encoder, _stream);
+      _writer = new ProtocolWriter(Settings, _encoder, _stream);
+
+      _executor = new ImmediateExecutor(Settings, _reader, _writer);
     }
 
 

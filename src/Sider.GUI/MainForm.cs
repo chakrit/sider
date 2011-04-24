@@ -52,7 +52,7 @@ namespace Sider.GUI
 
     private void bgRewriteAOFButton_Click(object sender, EventArgs e)
     {
-      withClient(c => c.BgRewriteAOF(), true, "BGREWRITEAOF failed.");
+      withClient(c => c.BgRewriteAof(), true, "BGREWRITEAOF failed.");
     }
 
     private void shutdownButton_Click(object sender, EventArgs e)
