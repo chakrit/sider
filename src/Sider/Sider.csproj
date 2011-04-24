@@ -49,6 +49,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Observable.cs" />
+    <Compile Include="PubSubObservable.cs" />
+    <Compile Include="RedisClient.multiexec.cs" />
+    <Compile Include="RedisClient.observable.cs" />
+    <Compile Include="RedisClient.pipeline.cs" />
+    <Compile Include="RedisReaderHelpers.cs" />
     <Compile Include="Serialization\ObjectSerializer.cs" />
     <Compile Include="Serialization\SerializerBase.cs" />
     <None Include="RedisClientPipeliningExtensions.tt">

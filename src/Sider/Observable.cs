@@ -3,24 +3,33 @@ using System;
 
 namespace Sider
 {
-  internal class Observable<T> : IObservable<T>, IDisposable
+  internal abstract class Observable<T> : IObservable<T>, IDisposable
   {
     private bool _disposed;
-    private object _lock = new object();
+    private Action _disposeAction;
+    private object _lock;
 
     private event Action<T> OnNext;
     private event Action<Exception> OnError;
     private event Action OnCompleted;
 
 
-    public void Next(T obj) { if (OnNext != null) OnNext(obj); }
-    public void Error(Exception ex) { if (OnError != null) OnError(ex); }
-
-    public void Complete()
+    public Observable(Action disposeAction)
     {
-      if (OnCompleted == null) return;
+      _disposed = false;
+      _disposeAction = disposeAction;
+      _lock = new object();
+    }
 
-      OnCompleted();
+
+    protected void Next(T obj) { if (OnNext != null) OnNext(obj); }
+    protected void Error(Exception ex) { if (OnError != null) OnError(ex); }
+
+    protected void Complete()
+    {
+      if (OnCompleted != null)
+        OnCompleted();
+
       Dispose();
     }
 
@@ -44,7 +53,7 @@ namespace Sider
     }
 
 
-    public void Dispose()
+    public virtual void Dispose()
     {
       if (_disposed) return;
       _disposed = true;
