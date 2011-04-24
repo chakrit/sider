@@ -44,11 +44,10 @@
     <Compile Include="..\..\SiderAssemblyInfo.cs">
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Commands\Params.cs" />
-    <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Executors\IExecutor.cs" />
     <Compile Include="Executors\ImmediateExecutor.cs" />
+    <Compile Include="Invocation.cs" />
     <Compile Include="LimitingStream.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -61,6 +60,7 @@
     <Compile Include="RedisClient.observable.cs" />
     <Compile Include="RedisClient.pipeline.cs" />
     <Compile Include="RedisReaderHelpers.cs" />
+    <Compile Include="RedisCommands.cs" />
     <Compile Include="Serialization\ObjectSerializer.cs" />
     <Compile Include="Serialization\SerializerBase.cs" />
     <Compile Include="SettingsWrapper.cs" />

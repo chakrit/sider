@@ -16,15 +16,15 @@ namespace Sider
     public static RedisType Parse(string value)
     {
       switch (value) {
-        case "string": return RedisType.String;
-        case "list": return RedisType.List;
-        case "set": return RedisType.Set;
-        case "zset": return RedisType.ZSet;
-        case "hash": return RedisType.Hash;
+      case "string": return RedisType.String;
+      case "list": return RedisType.List;
+      case "set": return RedisType.Set;
+      case "zset": return RedisType.ZSet;
+      case "hash": return RedisType.Hash;
 
-        case "none":
-        default:
-          return RedisType.None;
+      case "none":
+      default:
+      return RedisType.None;
       }
     }
   }
