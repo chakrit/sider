@@ -24,16 +24,23 @@ namespace Sider
     public bool ReissueCommandsOnReconnect { get; private set; }
     public bool ReissuePipelinedCallsOnReconnect { get; private set; }
 
-    [Obsolete("Please ReissueCommandsOnReconnect instead which covers both read and write")]
+    [Obsolete("Please use ReissueCommandsOnReconnect instead.")]
     public bool ReissueWriteOnReconnect
     {
       get { return ReissueCommandsOnReconnect; }
       set { ReissueCommandsOnReconnect = value; }
     }
 
+    [Obsolete("Please use EncodingBufferSize instead.")]
+    public int StringBufferSize
+    {
+      get { return EncodingBufferSize; }
+      set { EncodingBufferSize = value; }
+    }
+
     public int ReadBufferSize { get; private set; }
     public int WriteBufferSize { get; private set; }
-    public int StringBufferSize { get; private set; }
+    public int EncodingBufferSize { get; private set; }
     public int SerializationBufferSize { get; private set; }
 
     public Encoding KeyEncoding { get; private set; }
@@ -56,7 +63,7 @@ namespace Sider
       // TODO: Use buffer pools? with growable buffers?
       ReadBufferSize = 4096;
       WriteBufferSize = 4096;
-      StringBufferSize = 256;
+      EncodingBufferSize = 256;
       SerializationBufferSize = 2048;
 
       KeyEncoding = Encoding.ASCII;
@@ -116,11 +123,20 @@ namespace Sider
         return this;
       }
 
+      [Obsolete("Please use EncodingBufferSize instead.")]
       public Builder StringBufferSize(int bufferSize)
       {
         SAssert.ArgumentPositive(() => bufferSize);
 
-        _settings.StringBufferSize = bufferSize;
+        _settings.EncodingBufferSize = bufferSize;
+        return this;
+      }
+
+      public Builder EncodingBufferSize(int bufferSize)
+      {
+        SAssert.ArgumentPositive(() => bufferSize);
+
+        _settings.EncodingBufferSize = bufferSize;
         return this;
       }
 

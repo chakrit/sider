@@ -27,7 +27,7 @@ namespace Sider
 
       _settings = settings;
       _stream = new BufferedStream(stream, _settings.WriteBufferSize);
-      _strBuffer = new byte[_settings.StringBufferSize];
+      _strBuffer = new byte[_settings.EncodingBufferSize];
     }
 
 

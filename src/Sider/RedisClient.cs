@@ -50,7 +50,7 @@ namespace Sider
 
       _disposing = _disposed = false;
       _settings = settings;
-      _stringBuffer = new byte[_settings.StringBufferSize];
+      _stringBuffer = new byte[_settings.EncodingBufferSize];
 
       if (settings.SerializerOverride != null) {
         _serializer = settings.SerializerOverride as ISerializer<T>;
