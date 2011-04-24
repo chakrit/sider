@@ -49,6 +49,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Observable.cs" />
+    <Compile Include="ProtocolReader.cs" />
+    <Compile Include="ProtocolEncoder.cs" />
+    <Compile Include="ProtocolWriter.cs" />
     <Compile Include="PubSubObservable.cs" />
     <Compile Include="RedisClient.multiexec.cs" />
     <Compile Include="RedisClient.observable.cs" />
@@ -56,6 +59,7 @@
     <Compile Include="RedisReaderHelpers.cs" />
     <Compile Include="Serialization\ObjectSerializer.cs" />
     <Compile Include="Serialization\SerializerBase.cs" />
+    <Compile Include="SettingsWrapper.cs" />
     <None Include="RedisClientPipeliningExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>RedisClientPipeliningExtensions.cs</LastGenOutput>
