@@ -7,15 +7,16 @@ namespace Sider.Executors
   public class PipelinedExecutor : ExecutorBase
   {
     private Queue<Func<object>> _readsQueue;
-    private IEnumerable<object> _result;
 
 
-    public IEnumerable<object> Result { get { return _result; } }
+    protected Queue<Func<object>> ReadsQueue { get { return _readsQueue; } }
 
-    public PipelinedExecutor(RedisSettings settings,
-      ProtocolReader reader, ProtocolWriter writer) :
-      base(settings, reader, writer)
+    public PipelinedExecutor(IExecutor another) :
+      base(another)
     {
+      if (another is PipelinedExecutor)
+        throw new InvalidOperationException("Already piplining.");
+
       _readsQueue = new Queue<Func<object>>();
     }
 
@@ -30,6 +31,7 @@ namespace Sider.Executors
 
     public virtual IEnumerable<object> Finish()
     {
+      Writer.Flush();
       while (_readsQueue.Count > 0)
         yield return _readsQueue.Dequeue()();
     }

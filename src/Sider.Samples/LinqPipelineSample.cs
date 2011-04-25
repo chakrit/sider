@@ -6,6 +6,9 @@ namespace Sider.Samples
 {
   public class LinqPipelineSample : Sample
   {
+    public const int CounterAmount = 1000;
+
+
     public override string Name
     {
       get { return "Linq + Pipelining."; }
@@ -24,7 +27,7 @@ namespace Sider.Samples
         .Pipeline(c =>
         {
           var rand = new Random();
-          for (var i = 0; i < 1000; i++)
+          for (var i = 0; i < CounterAmount; i++)
             c.Set("counter" + i.ToString(), rand.Next(100, 999));
         })
         .Cast<bool>()

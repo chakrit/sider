@@ -32,9 +32,6 @@ namespace Sider.Tests
           .WriteBufferSize(writerBufferSize.Value)) :
         new RedisWriter(stream);
 
-      // for testing purpose, we don't need to keep flushing all the time
-      writer.AutoFlush = true;
-
       return new WriterInfo {
         Writer = writer,
         Stream = stream,

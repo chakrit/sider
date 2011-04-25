@@ -13,8 +13,6 @@ namespace Sider
     private byte[] _strBuffer;
 
 
-    internal bool AutoFlush { get; set; }
-
     public RedisWriter(Stream stream) : this(stream, RedisSettings.Default) { }
 
     public RedisWriter(Stream stream, RedisSettings settings)
@@ -22,8 +20,6 @@ namespace Sider
       SAssert.ArgumentNotNull(() => stream);
       SAssert.ArgumentSatisfy(() => stream, s => s.CanWrite, "Stream must be writable.");
       SAssert.ArgumentNotNull(() => settings);
-
-      AutoFlush = false;
 
       _settings = settings;
       _stream = new BufferedStream(stream, _settings.WriteBufferSize);
@@ -63,7 +59,6 @@ namespace Sider
       // assuming writebuffersize >= 1 so fitInBuffer(1) == true
       // the else case is for testing purpose
       _stream.WriteByte((byte)type);
-      flushIfAuto();
     }
 
 
@@ -119,18 +114,11 @@ namespace Sider
       _stream.Flush();
     }
 
-    private void flushIfAuto()
-    {
-      if (AutoFlush) Flush();
-    }
-
 
     private void writeCrLf()
     {
       _stream.WriteByte(0x0D);
       _stream.WriteByte(0x0A);
-
-      flushIfAuto();
     }
 
   }

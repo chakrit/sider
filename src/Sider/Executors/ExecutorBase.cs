@@ -7,6 +7,9 @@ namespace Sider.Executors
     public ProtocolWriter Writer { get; private set; }
 
 
+    protected ExecutorBase(IExecutor another) :
+      this(another.Settings, another.Reader, another.Writer) { }
+
     protected ExecutorBase(RedisSettings settings,
       ProtocolReader reader, ProtocolWriter writer) :
       base(settings)
@@ -16,6 +19,7 @@ namespace Sider.Executors
     }
 
 
+    // TODO: Filter invalid commands
     public abstract T Execute<T>(Invocation<T> invocation);
   }
 }

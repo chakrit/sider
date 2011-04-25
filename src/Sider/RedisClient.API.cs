@@ -3,16 +3,27 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sider.Executors;
 
 namespace Sider
 {
-  // see the redis commands reference for more info:
-  // http://redis.io/commands
+  // REF: http://redis.io/commands
   public partial class RedisClient<T> : IRedisClient<T>
   {
+    // TODO: IOCP?
     public IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls)
     {
-      throw new NotImplementedException();
+      // switch to pipelined mode
+      var pe = new PipelinedExecutor(_executor);
+      _executor = pe;
+
+      // execute the pipeline
+      pipelinedCalls(this);
+      var result = pe.Finish().ToArray();
+
+      // revert to immediatemode
+      _executor = new ImmediateExecutor(pe);
+      return result;
     }
 
 
@@ -78,6 +89,16 @@ namespace Sider
     public DateTime LastSave()
     {
       return invoke("LASTSAVE", r => r.ReadDateTime());
+    }
+
+    public IObservable<string> Monitor()
+    {
+      invoke("MONITOR", r => (object)null);
+
+      var me = new MonitorExecutor(_executor);
+      _executor = me;
+
+      return me.BuildObservable();
     }
 
     public bool Save()
@@ -162,20 +183,38 @@ namespace Sider
 
     public bool Multi()
     {
-      return invoke("MULTI", r => r.ReadOk());
+      var result = invoke("MULTI", r => r.ReadOk());
+
+      _executor = new TransactedExecutor(_executor);
+      return result;
     }
 
     public bool Discard()
     {
+      var te = _executor as TransactedExecutor;
+      if (te != null) {
+        te.Discard();
+        _executor = new ImmediateExecutor(_executor);
+      }
+
       return invoke("DISCARD", r => r.ReadOk());
     }
 
     public IEnumerable<object> Exec()
     {
-      return invoke<IEnumerable<object>>("EXEC", r =>
-      {
-        throw new Exception("EXEC requires a TransactedExecutor to function.");
-      });
+      var te = _executor as TransactedExecutor;
+      if (te == null) {
+        // ReadStatus so error will be thrown, if any
+        invoke("EXEC", r => r.ReadStatus());
+        return null;
+      }
+
+      // executor automatically issue EXEC
+      var result = te.Finish();
+
+      // restore execution mode
+      _executor = new ImmediateExecutor(_executor);
+      return result;
     }
 
     public bool Watch(params string[] keys)

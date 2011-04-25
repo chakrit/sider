@@ -83,6 +83,7 @@ namespace Sider
     bool LSet(string key, int index, T value);
     bool LTrim(string key, int minIncl, int maxIncl);
     T[] MGet(params string[] keys);
+    IObservable<string> Monitor();
     bool Move(string key, int dbIndex);
     bool MSet(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> mappings);
     bool MSetNX(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> mappings);

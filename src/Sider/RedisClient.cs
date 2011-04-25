@@ -67,6 +67,8 @@ namespace Sider
         _serializer = Serializers.For<T>();
 
       _serializer.Init(Settings);
+      _readObj = r => r.ReadSerializedBulk(_serializer);
+      _readObjs = r => r.ReadSerializedMultiBulk(_serializer);
 
       // connect
       Reset();

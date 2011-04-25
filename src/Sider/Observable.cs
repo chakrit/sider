@@ -6,7 +6,6 @@ namespace Sider
   internal abstract class Observable<T> : IObservable<T>, IDisposable
   {
     private bool _disposed;
-    private Action _disposeAction;
     private object _lock;
 
     private event Action<T> OnNext;
@@ -14,10 +13,9 @@ namespace Sider
     private event Action OnCompleted;
 
 
-    public Observable(Action disposeAction)
+    public Observable()
     {
       _disposed = false;
-      _disposeAction = disposeAction;
       _lock = new object();
     }
 

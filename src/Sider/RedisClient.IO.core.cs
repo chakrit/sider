@@ -22,7 +22,7 @@ namespace Sider
     private TInv invoke<TInv>(string command, string key, T value,
       Func<ProtocolReader, TInv> readAction)
     {
-      return invoke<TInv>(command, 1,
+      return invoke<TInv>(command, 2,
         w => { w.WriteArg(key); w.WriteArg(_serializer, value); },
         readAction);
     }
@@ -36,10 +36,7 @@ namespace Sider
       {
         w.WriteCmdStart(command, numArgs);
         writeArgsAction(w);
-      }, r =>
-      {
-        return readAction(r);
-      }));
+      }, r => readAction(r)));
     }
 
 

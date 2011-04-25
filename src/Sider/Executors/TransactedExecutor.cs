@@ -1,30 +1,45 @@
 ﻿
+using System;
 using System.Collections.Generic;
 
 namespace Sider.Executors
 {
   public class TransactedExecutor : PipelinedExecutor
   {
-    public TransactedExecutor(RedisSettings settings,
-      ProtocolReader reader, ProtocolWriter writer) :
-      base(settings, reader, writer) { }
+    private IExecutor _executor;
 
-    /*      if (_inTransaction)
+    public TransactedExecutor(IExecutor another) :
+      base(another)
+    {
+      if (another is TransactedExecutor)
+        throw new InvalidOperationException("Cannot nest MULTI/EXEC.");
+
+      // TODO: Make possible.
+      if (another is PipelinedExecutor)
         throw new InvalidOperationException(
-          "BLPOP cannot be issued while inside a MULTI/EXEC transaction.");
-*/
+          "MULTI/EXEC cannot be called inside .Pipeline");
+    }
+
 
     public override T Execute<T>(Invocation<T> invocation)
     {
-      var result = base.Execute(invocation);
-      Reader.ReadQueued();
+      // TODO: Provide a settings to pipeline MultiExec automatically
+      var result = base.Execute(invocation); // invocation.Read should be queued
+      Writer.Flush(); // should flush? or wait for pipeline?
+      Reader.ReadQueued(); // read a +QUEUED
 
       return result;
     }
 
     public override IEnumerable<object> Finish()
     {
+      Writer.WriteCmdStart("EXEC", 0);
       return base.Finish();
+    }
+
+    public void Discard()
+    {
+      ReadsQueue.Clear();
     }
   }
 }
