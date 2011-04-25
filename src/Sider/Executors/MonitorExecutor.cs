@@ -41,8 +41,13 @@ namespace Sider.Executors
 
       private void monitorThread(object _)
       {
-        while (true)
-          Next(_parent.Reader.ReadStatus());
+        try {
+          while (!IsDisposed)
+            Next(_parent.Reader.ReadStatus());
+        }
+        catch (Exception e) { Error(e); }
+
+        Complete();
       }
 
 

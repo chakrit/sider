@@ -193,6 +193,48 @@ namespace Sider
     }
 
 
+    public Message<T> ReadMessage<T>(ISerializer<T> serializer)
+    {
+      readType(ResponseType.MultiBulk);
+      var count = _reader.ReadNumberLine();
+
+      var type = MessageTypes.Parse(ReadStrBulk());
+
+      switch (type) {
+      case MessageType.Message: {
+        return Message.Create(type, null, ReadStrBulk(), ReadSerializedBulk(serializer));
+      }
+      case MessageType.PMessage: {
+        return Message.Create(type, ReadStrBulk(), ReadStrBulk(),
+          ReadSerializedBulk(serializer));
+      }
+
+      case MessageType.Unsubscribe:
+      case MessageType.Subscribe: {
+        return Message.Create(type, null, ReadStrBulk(), default(T), ReadInt());
+      }
+
+      case MessageType.PUnsubscribe:
+      case MessageType.PSubscribe: {
+        var pattern = ReadStrBulk();
+        return Message.Create(type, pattern, null, default(T), ReadInt());
+      }
+
+      case MessageType.Unknown:
+      default: {
+
+        // maintain protocol even message type is unknown
+        // by reading out all the bulks redis told us is available
+        count--; // type field already read
+        for (var i = 0; i < count; i++)
+          ReadRawBulk();
+
+        return Message.Create(type, null, null, default(T));
+      }
+      }
+    }
+
+
     private void readType(ResponseType expectedType)
     {
       var type = _reader.ReadTypeChar();

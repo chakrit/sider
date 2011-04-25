@@ -90,7 +90,7 @@ namespace Sider
     bool Multi();
     bool Persist(string key);
     bool Ping();
-    object Quit();
+    void Quit();
     string RandomKey();
     bool Rename(string oldKey, string newKey);
     bool RenameNX(string oldKey, string newKey);

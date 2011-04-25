@@ -7,6 +7,11 @@ namespace Sider
 {
   public partial class RedisClient<T>
   {
+    private void invoke(string command)
+    {
+      invoke(command, r => (object)null);
+    }
+
     private TInv invoke<TInv>(string command,
       Func<ProtocolReader, TInv> readAction)
     {

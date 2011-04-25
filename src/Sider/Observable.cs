@@ -13,6 +13,8 @@ namespace Sider
     private event Action OnCompleted;
 
 
+    public bool IsDisposed { get { return _disposed; } }
+
     public Observable()
     {
       _disposed = false;

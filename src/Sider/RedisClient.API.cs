@@ -93,7 +93,7 @@ namespace Sider
 
     public IObservable<string> Monitor()
     {
-      invoke("MONITOR", r => (object)null);
+      invoke("MONITOR");
 
       var me = new MonitorExecutor(_executor);
       _executor = me;
@@ -108,7 +108,7 @@ namespace Sider
 
     public object Shutdown()
     {
-      return invoke("SHUTDOWN", r => (object)null);
+      return invoke("SHUTDOWN");
     }
 
     // TODO: section support
@@ -164,10 +164,11 @@ namespace Sider
         r => r.ReadStatus("PONG"));
     }
 
-    public object Quit()
+    public void Quit()
     {
       // TODO: Dispose the client?
-      return invoke("QUIT", r => (object)null);
+      invoke("QUIT");
+      Dispose();
     }
 
     public bool Select(int dbIndex)
@@ -957,14 +958,45 @@ namespace Sider
 
     #region TODO: Pub/Sub
 
-    // Could be done by using Observables
-    // the tricky part will be how to implement unsubscribe?
+    public IObservable<Message<T>> PSubscribe(params string[] keys)
+    {
+      return pubsubAction("PSUBSCRIBE", keys);
+    }
 
-    // public IObservable<T> PSubscribe(string key);
-    // public bool Publish(string channel, T msg);
-    // public bool PUnsubscribe(string key);
-    // public IObservable<T> Subscribe(string key);
-    // public bool Unsubscribe(string key);
+    public int Publish(string channel, T msg)
+    {
+      return invoke("PUBLISH", channel, msg, r => r.ReadInt());
+    }
+
+    public IObservable<Message<T>> PUnsubscribe(params string[] keys)
+    {
+      return pubsubAction("PUNSUBSCRIBE", keys);
+    }
+
+    public IObservable<Message<T>> Subscribe(params string[] keys)
+    {
+      return pubsubAction("SUBSCRIBE", keys);
+    }
+
+    public IObservable<Message<T>> Unsubscribe(params string[] keys)
+    {
+      return pubsubAction("UNSUBSCRIBE", keys);
+    }
+
+
+    public IObservable<Message<T>> pubsubAction(string command, params string[] keys)
+    {
+      invoke(command, keys.Length,
+        w => Array.ForEach(keys, w.WriteArg),
+        r => (object)null);
+
+      var pe = _executor as PubSubExecutor<T>;
+      if (pe == null)
+        _executor = new PubSubExecutor<T>(_executor, _serializer,
+          () => _executor = new ImmediateExecutor(_executor));
+
+      return pe.GetOrBuildObservable();
+    }
 
     #endregion
 
