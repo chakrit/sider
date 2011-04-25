@@ -19,7 +19,7 @@ namespace Sider.Executors
     }
 
 
-    public override T Execute<T>(Invocation<T> invocation)
+    public override TInv Execute<TInv>(Invocation<TInv> invocation)
     {
       switch (invocation.Command) {
       case "SUBSCRIBE":
@@ -28,7 +28,7 @@ namespace Sider.Executors
       case "PUNSUBSCRIBE":
       case "QUIT": {
         invocation.WriteAction(Writer);
-        return default(T);
+        return default(TInv);
       }
       }
 
@@ -46,13 +46,12 @@ namespace Sider.Executors
     private class PubSubObservable : Observable<Message<T>>
     {
       private PubSubExecutor<T> _parent;
-      int _channels;
+      private ManualResetEvent _event;
 
       public PubSubObservable(PubSubExecutor<T> parent)
       {
         _parent = parent;
-        _channels = 0;
-
+        _event = new ManualResetEvent(false);
         ThreadPool.QueueUserWorkItem(pubsubCore);
       }
 
@@ -66,14 +65,22 @@ namespace Sider.Executors
             if (msg.ChannelsCount == 0)
               break;
           }
+
+          Complete();
         }
         catch (Exception e) { Error(e); }
+        finally { _event.Set(); }
+      }
 
-        Complete();
-        Dispose();
+
+      public override void Dispose()
+      {
+        _event.WaitOne();
 
         if (_parent._onDone != null)
           _parent._onDone();
+
+        base.Dispose();
       }
     }
   }

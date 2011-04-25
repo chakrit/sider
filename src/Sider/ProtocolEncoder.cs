@@ -13,7 +13,7 @@ namespace Sider
 
     private byte[] _buffer;
 
-    public byte[] SharedBuffer { get; private set; }
+    public byte[] SharedBuffer { get { return _buffer; } }
 
     public ProtocolEncoder(RedisSettings settings) :
       base(settings)

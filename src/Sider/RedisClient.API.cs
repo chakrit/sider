@@ -71,9 +71,9 @@ namespace Sider
         r => r.ReadStatus());
     }
 
-    public object DebugSegfault()
+    public void DebugSegfault()
     {
-      return invoke("DEBUG", "SEGFAULT", r => (object)null);
+      invoke("DEBUG", "SEGFAULT", r => (object)null);
     }
 
     public bool FlushAll()
@@ -106,9 +106,9 @@ namespace Sider
       return invoke("SAVE", r => r.ReadOk());
     }
 
-    public object Shutdown()
+    public void Shutdown()
     {
-      return invoke("SHUTDOWN");
+      invoke("SHUTDOWN");
     }
 
     // TODO: section support
@@ -992,7 +992,7 @@ namespace Sider
 
       var pe = _executor as PubSubExecutor<T>;
       if (pe == null)
-        _executor = new PubSubExecutor<T>(_executor, _serializer,
+        _executor = pe = new PubSubExecutor<T>(_executor, _serializer,
           () => _executor = new ImmediateExecutor(_executor));
 
       return pe.GetOrBuildObservable();

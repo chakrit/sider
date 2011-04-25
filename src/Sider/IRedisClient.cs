@@ -29,7 +29,7 @@ namespace Sider
     bool ConfigSet(string param, string value);
     int DbSize();
     string DebugObject(string key);
-    object DebugSegfault();
+    void DebugSegfault();
     long Decr(string key);
     long DecrBy(string key, long value);
     int Del(params string[] keys);
@@ -114,7 +114,7 @@ namespace Sider
     int SetRangeFrom(string key, int offset, System.IO.Stream source, int count);
     int SetRangeRaw(string key, int offset, byte[] value);
     bool SetRaw(string key, byte[] raw);
-    object Shutdown();
+    void Shutdown();
     T[] SInter(params string[] keys);
     bool SInterStore(string destKey, params string[] keys);
     bool SIsMember(string key, T value);
@@ -148,5 +148,10 @@ namespace Sider
     int ZRevRank(string key, T value);
     double ZScore(string key, T value);
     int ZUnionStore(string destKey, params string[] srcKeys);
+    IObservable<Message<T>> PSubscribe(params string[] keys);
+    int Publish(string channel, T msg);
+    IObservable<Message<T>> PUnsubscribe(params string[] keys);
+    IObservable<Message<T>> Subscribe(params string[] keys);
+    IObservable<Message<T>> Unsubscribe(params string[] keys);
   }
 }
