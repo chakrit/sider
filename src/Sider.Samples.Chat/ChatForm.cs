@@ -19,6 +19,7 @@ namespace Sider.Samples.Chat
       var members = room + ":mems";
       var messages = room + ":msg";
 
+
       // needs 2 client, one for subscribing and one for publishing
       var msgClient = GetClient();
       SayButton.Click += (sender, e) =>
@@ -27,6 +28,7 @@ namespace Sider.Samples.Chat
       var client = GetClient();
       client.Publish(joins, name);
       client.SAdd(members, name);
+
 
       ParticipantList.Items.AddRange(client.SMembers(members));
 
@@ -47,8 +49,11 @@ namespace Sider.Samples.Chat
         client.PUnsubscribe(room + "*");
         obs.Dispose();
 
+        client.SRem(members, name);
         client.Publish(leaves, name);
         client.Dispose();
+
+        msgClient.Dispose();
       };
     }
   }

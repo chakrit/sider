@@ -33,18 +33,23 @@ namespace Sider.Executors
       }
       }
 
-      // check if the observable is done
+      // check if the observable is done since by the point user executes the next
+      // non-pubsub command the observable should have been disposed
+      // (i.e. user leaving PUBSUB mode)
       if (_observable.SubscribersCount > 0 || !_observable.IsDisposed) {
         _observable.Dispose();
         _observable = null;
-        if (_onDone != null)
-          _onDone();
 
         // execute the supplied command as we're leaving pub/sub
         invocation.WriteAction(Writer);
         Writer.Flush();
+        var result = invocation.ReadAction(Reader);
 
-        return invocation.ReadAction(Reader);
+        // run the stop delegate (supposedly switching out PubSubExecutor)
+        if (_onDone != null)
+          _onDone();
+
+        return result;
       }
 
       throw new InvalidOperationException(
