@@ -5,15 +5,17 @@ namespace Sider
 {
   internal abstract class Observable<T> : IObservable<T>, IDisposable
   {
+    protected event Action<T> OnNext;
+    protected event Action<Exception> OnError;
+    protected event Action OnCompleted;
+
+    private int _subscribers;
     private bool _disposed;
     private object _lock;
 
-    private event Action<T> OnNext;
-    private event Action<Exception> OnError;
-    private event Action OnCompleted;
-
 
     public bool IsDisposed { get { return _disposed; } }
+    public int SubscribersCount { get { return _subscribers; } }
 
     public Observable()
     {
@@ -24,15 +26,7 @@ namespace Sider
 
     protected void Next(T obj) { if (OnNext != null) OnNext(obj); }
     protected void Error(Exception ex) { if (OnError != null) OnError(ex); }
-
-    protected void Complete()
-    {
-      if (OnCompleted != null)
-        OnCompleted();
-
-      Dispose();
-    }
-
+    protected void Complete() { if (OnCompleted != null) OnCompleted(); }
 
     public IDisposable Subscribe(IObserver<T> observer)
     {
@@ -40,14 +34,18 @@ namespace Sider
         throw new ObjectDisposedException("Observable has been disposed.");
 
       lock (_lock) {
+        _subscribers++;
         OnNext += observer.OnNext;
         OnError += observer.OnError;
         OnCompleted += observer.OnCompleted;
         return new DisposableDelegate(() =>
         {
-          OnNext -= observer.OnNext;
-          OnError -= observer.OnError;
-          OnCompleted -= observer.OnCompleted;
+          lock (_lock) {
+            OnNext -= observer.OnNext;
+            OnError -= observer.OnError;
+            OnCompleted -= observer.OnCompleted;
+            _subscribers--;
+          }
         });
       }
     }
@@ -57,6 +55,7 @@ namespace Sider
     {
       if (_disposed) return;
       _disposed = true;
+      _subscribers = 0;
 
       OnNext = null;
       OnError = null;

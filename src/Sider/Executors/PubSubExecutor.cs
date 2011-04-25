@@ -28,8 +28,23 @@ namespace Sider.Executors
       case "PUNSUBSCRIBE":
       case "QUIT": {
         invocation.WriteAction(Writer);
+        Writer.Flush();
         return default(TInv);
       }
+      }
+
+      // check if the observable is done
+      if (_observable.SubscribersCount > 0 || !_observable.IsDisposed) {
+        _observable.Dispose();
+        _observable = null;
+        if (_onDone != null)
+          _onDone();
+
+        // execute the supplied command as we're leaving pub/sub
+        invocation.WriteAction(Writer);
+        Writer.Flush();
+
+        return invocation.ReadAction(Reader);
       }
 
       throw new InvalidOperationException(
@@ -69,7 +84,10 @@ namespace Sider.Executors
           Complete();
         }
         catch (Exception e) { Error(e); }
-        finally { _event.Set(); }
+        finally {
+          _event.Set();
+          Dispose();
+        }
       }
 
 
