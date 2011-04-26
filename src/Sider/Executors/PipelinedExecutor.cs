@@ -5,8 +5,7 @@ using System.Linq;
 
 namespace Sider.Executors
 {
-  // TODO: Add HandleException support
-  public class PipelinedExecutor : ExecutorBase
+  internal class PipelinedExecutor : ExecutorBase
   {
     private Queue<Func<object>> _readsQueue;
 

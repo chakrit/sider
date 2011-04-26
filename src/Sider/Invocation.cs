@@ -1,10 +1,12 @@
 ﻿
 using System;
+using System.Diagnostics;
 
 namespace Sider
 {
-  public sealed class Invocation
+  internal static class Invocation
   {
+    [DebuggerStepThrough]
     public static Invocation<TResult> New<TResult>(string command,
       Action<ProtocolWriter> writer,
       Func<ProtocolReader, TResult> reader)
@@ -13,7 +15,7 @@ namespace Sider
     }
   }
 
-  public class Invocation<TResult>
+  internal class Invocation<TResult>
   {
     public string Command { get; private set; }
 

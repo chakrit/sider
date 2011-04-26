@@ -3,7 +3,7 @@ using System;
 
 namespace Sider.Executors
 {
-  public interface IExecutor : IDisposable
+  internal interface IExecutor : IDisposable
   {
     RedisClientBase Client { get; }
 

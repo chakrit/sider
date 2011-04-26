@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Sider
 {
-  public class LimitingStream : Stream
+  internal class LimitingStream : Stream
   {
     private Stream _inner;
     private int _bytesLeft;

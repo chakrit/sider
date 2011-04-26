@@ -35,16 +35,21 @@ namespace Sider
       Action<ProtocolWriter> writeArgsAction,
       Func<ProtocolReader, TInv> readAction)
     {
+      return invoke(Invocation.New(command, w =>
+      {
+        w.WriteCmdStart(command, numArgs);
+        writeArgsAction(w);
+      }, r => readAction(r)));
+    }
+
+    private TInv invoke<TInv>(Invocation<TInv> invocation)
+    {
       if (IsDisposed)
         throw new ObjectDisposedException(
           "RedisClient instance has been disposed and is no longer usable.\r\n" +
           "You may reconnect by issuing a .Reset().");
 
-      return Executor.Execute(Invocation.New(command, w =>
-      {
-        w.WriteCmdStart(command, numArgs);
-        writeArgsAction(w);
-      }, r => readAction(r)));
+      return Executor.Execute(invocation);
     }
   }
 }

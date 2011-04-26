@@ -6,7 +6,7 @@ using Sider.Serialization;
 
 namespace Sider.Executors
 {
-  public class PubSubExecutor<T> : ExecutorBase
+  internal class PubSubExecutor<T> : ExecutorBase
   {
     private PubSubObservable _observable;
     private ISerializer<T> _serializer;

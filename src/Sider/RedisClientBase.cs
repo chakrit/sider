@@ -24,7 +24,7 @@ namespace Sider
     public bool IsDisposed { get { return _disposed; } }
     protected bool IsDisposing { get { return _disposing; } }
 
-    protected IExecutor Executor { get { return _executor; } }
+    internal IExecutor Executor { get { return _executor; } }
 
     // expose reader and writer to IExecutors
     internal ProtocolReader Reader { get { return _reader; } }
@@ -77,10 +77,10 @@ namespace Sider
     }
 
 
-    protected T SwitchExecutor<T>() where T : IExecutor, new()
+    internal T SwitchExecutor<T>() where T : IExecutor, new()
     { return SwitchExecutor(new T()); }
 
-    protected T SwitchExecutor<T>(T newExecutor)
+    internal T SwitchExecutor<T>(T newExecutor)
       where T : IExecutor
     {
       newExecutor.Init(previous: _executor);

@@ -6,7 +6,7 @@ using System.Net.Sockets;
 namespace Sider.Executors
 {
   // TODO: Filter invalid commands
-  public abstract class ExecutorBase : IExecutor
+  internal abstract class ExecutorBase : IExecutor
   {
     public RedisClientBase Client { get; private set; }
 

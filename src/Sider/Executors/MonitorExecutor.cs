@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Sider.Executors
 {
-  public class MonitorExecutor : ExecutorBase
+  internal class MonitorExecutor : ExecutorBase
   {
     private Observable<string> _observable;
 

@@ -3,7 +3,7 @@ using System;
 
 namespace Sider.Executors
 {
-  public class ImmediateExecutor : ExecutorBase
+  internal class ImmediateExecutor : ExecutorBase
   {
     public override T Execute<T>(Invocation<T> invocation)
     {

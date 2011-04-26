@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Sider.Executors
 {
-  public class TransactedExecutor : PipelinedExecutor
+  internal class TransactedExecutor : PipelinedExecutor
   {
     public override void Init(IExecutor previous)
     {
