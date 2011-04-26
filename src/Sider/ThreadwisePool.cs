@@ -59,7 +59,6 @@ namespace Sider
       var client = new RedisClient<T>(_settings);
 
       // TODO: Is there a better way than using a nullable here?
-      // TODO: Move db selection out of BuildClient
       if (_db.HasValue)
         client.Select(_db.Value);
 

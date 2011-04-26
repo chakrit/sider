@@ -167,8 +167,7 @@ namespace Sider
 
     public void Quit()
     {
-      // TODO: Dispose the client?
-      invoke("QUIT");
+      invoke("QUIT", r => r.ReadOk());
       Dispose();
     }
 
@@ -674,7 +673,6 @@ namespace Sider
         _readObj);
     }
 
-    // TODO: Implement LInsert with complex args
     public int LInsert(string key, T pivot, T value,
       bool afterPivot = false)
     {
@@ -893,6 +891,7 @@ namespace Sider
 
     // TODO: ZRangeWithScores
 
+    // TODO: Complex arguments support for ZRangeByScore
     public T[] ZRangeByScore(string key, double minIncl, double maxIncl)
     {
       return invoke("ZRANGEBYSCORE", 3,
@@ -948,6 +947,7 @@ namespace Sider
       return invoke("ZSCORE", key, value, r => r.ReadDouble());
     }
 
+    // complex arguments support for ZUnionStore
     public int ZUnionStore(string destKey, params string[] srcKeys)
     {
       return invoke("ZUNIONSTORE", srcKeys.Length + 1,
