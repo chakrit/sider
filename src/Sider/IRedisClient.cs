@@ -12,9 +12,9 @@ namespace Sider
 
     void Reset();
 
-    T Custom<T>(string command,
+    TReturn Custom<TReturn>(string command,
       Action<ProtocolWriter> writerAction,
-      Func<ProtocolReader, T> readAction);
+      Func<ProtocolReader, TReturn> readAction);
 
     IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls);
 
@@ -39,7 +39,6 @@ namespace Sider
     long DecrBy(string key, long value);
     int Del(params string[] keys);
     bool Discard();
-    void Dispose();
     string Echo(string msg);
     T Echo(T msg);
     System.Collections.Generic.IEnumerable<object> Exec();

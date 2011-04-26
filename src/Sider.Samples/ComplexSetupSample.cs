@@ -92,7 +92,7 @@ namespace Sider.Samples
         .Skip(1) // skip DEL result
         .All(b => (bool)b);
 
-      Debug.Assert(dataAdded);
+      Debug.Assert(dataAdded, "Data not properly added.");
 
       while (true) {
         WriteLine("0. List personnels sorted by yearly income.");

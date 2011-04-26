@@ -83,7 +83,7 @@ namespace Sider
       private RedisSettings _settings;
 
       public Builder() { _settings = new RedisSettings(); }
-      protected internal Builder(RedisSettings instance) { _settings = instance; }
+      internal Builder(RedisSettings instance) { _settings = instance; }
 
       public static implicit operator RedisSettings(Builder b)
       {
@@ -156,12 +156,12 @@ namespace Sider
           .WriteBufferSize(write);
       }
 
-      public Builder BufferSize(int read, int write, int str, int serialization)
+      public Builder BufferSize(int read, int write, int encoding, int serialization)
       {
         return this
           .ReadBufferSize(read)
           .WriteBufferSize(write)
-          .StringBufferSize(str)
+          .EncodingBufferSize(encoding)
           .SerializationBufferSize(serialization);
       }
 
@@ -187,7 +187,7 @@ namespace Sider
         SAssert.IsTrue(_settings.ReconnectOnIdle, () =>
           new ArgumentException("ReissueWriteOnReconnect requires ReconnectOnIdle"));
 
-        _settings.ReissueWriteOnReconnect = reissueWriteOnReconnect;
+        _settings.ReissueCommandsOnReconnect = reissueWriteOnReconnect;
         return this;
       }
 

@@ -22,12 +22,12 @@ namespace Sider
       return result;
     }
 
-    public T Custom<T>(string command, Action<ProtocolWriter> writeAction,
-      Func<ProtocolReader, T> readAction)
+    public TReturn Custom<TReturn>(string command,
+      Action<ProtocolWriter> writeAction,
+      Func<ProtocolReader, TReturn> readAction)
     {
       return invoke(Invocation.New(command, writeAction, readAction));
     }
-
 
 
     #region Server

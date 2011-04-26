@@ -23,7 +23,7 @@ namespace Sider.Executors
 
     public IObservable<string> BuildObservable()
     {
-      return new MonitorObservable(this);
+      return _observable = new MonitorObservable(this);
     }
 
 
