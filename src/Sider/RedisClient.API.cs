@@ -22,6 +22,13 @@ namespace Sider
       return result;
     }
 
+    public T Custom<T>(string command, Action<ProtocolWriter> writeAction,
+      Func<ProtocolReader, T> readAction)
+    {
+      return invoke(Invocation.New(command, writeAction, readAction));
+    }
+
+
 
     #region Server
 
@@ -978,7 +985,7 @@ namespace Sider
     }
 
 
-    public IObservable<Message<T>> pubsubAction(string command,
+    private IObservable<Message<T>> pubsubAction(string command,
       string[] keys, Func<PubSubExecutor<T>, Func<string, bool>> executorAct)
     {
       var pe = Executor as PubSubExecutor<T>;

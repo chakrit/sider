@@ -12,6 +12,10 @@ namespace Sider
 
     void Reset();
 
+    T Custom<T>(string command,
+      Action<ProtocolWriter> writerAction,
+      Func<ProtocolReader, T> readAction);
+
     IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls);
 
 
