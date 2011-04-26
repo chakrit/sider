@@ -4,6 +4,17 @@ using System.Threading;
 
 namespace Sider
 {
+  public class ThreadwisePool : ThreadwisePool<string>
+  {
+    public ThreadwisePool(string host = RedisSettings.DefaultHost,
+      int port = RedisSettings.DefaultPort,
+      int? db = null) :
+      base(host, port, db) { }
+
+    public ThreadwisePool(RedisSettings settings, int? db = null) :
+      base(settings, db) { }
+  }
+
   public class ThreadwisePool<T> : IClientsPool<T>
   {
     // TODO: proper LRU pruning instead of ThreadLocal<WeakReference>

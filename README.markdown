@@ -6,6 +6,10 @@ For the latest changes, please see the `CHANGES.markdown` file.
 Inspired by migueldeicaza's first stab at the problem (I used some of his
 algorithm) and ServiceStack.Redis (to take it a lot further).
 
+**If you have questions/feedbacks, please feel free to shoot it to
+[sider-lemonade@googlegroups.com](mailto:sider-lemonade@googlegroups.com) or
+ping me on Twitter [@chakrit](http://twitter.com/chakrit)**
+
 # INSTALLATION
 
 The quickest route to getting started with Redis using Sider is via
@@ -34,6 +38,7 @@ as much as possible which results in:
 * Simple API that maps closely to the Redis commands reference.
 * Easy to use, no gigantic class hierarchies to setup. No confusing naming
   convention that obfuscates the real command being sent to Redis.
+* Redis publish/subscribe via `IObservable`.
 * As fast as my limited networking skills and Redis itself will allow.
   (Which is already lightning-fast thanks to Redis!)
 * Supports reading from and writing data to user-supplied streams for GET/SET
@@ -41,8 +46,8 @@ as much as possible which results in:
   really large blobs (e.g. user-uploaded files) without huge buffers.
 * Delegate-based pipelining support.
 
-As of **DATE HERE**, all commands + all options as per Redis 2.2 are
-now implemented. Enjoy! :)
+As of **April 26th, 2011**, except for some complex arguments all commands as
+per Redis 2.2 are now implemented. Enjoy! :)
 
 # HOWTO
 
@@ -243,9 +248,9 @@ by passing a `RedisSettings` instance which are built like this:
 Please post any support request to
 [sider-lemonade](http://groups.google.com/group/sider-lemonade) google group.
 
-Or just shoot me an email at `service @ chakrit . net` (without the spaces) or if
-you use twitter, feel free to mention [@chakrit](http://twitter.com/chakrit) for
-help.
+Or just shoot me an email at `service @ chakrit . net` (without the spaces) or
+if you use twitter, feel free to mention [@chakrit](http://twitter.com/chakrit)
+for help.
 
 # LICENSE
 
