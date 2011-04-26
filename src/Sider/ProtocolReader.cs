@@ -88,6 +88,8 @@ namespace Sider
 
     public int ReadStreamedBulk(Stream stream)
     {
+      readType(ResponseType.Bulk);
+
       var length = _reader.ReadNumberLine();
       if (length > -1)
         _reader.ReadBulkTo(stream, length);

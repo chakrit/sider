@@ -34,8 +34,6 @@ namespace Sider.Executors
     {
       try {
         pipelinedCalls((IRedisClient<T>)Client);
-        Writer.Flush();
-
         return Finish();
       }
       catch (Exception ex) {

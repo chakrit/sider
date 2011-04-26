@@ -1,7 +1,9 @@
 ﻿
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Sider.Serialization;
 
 namespace Sider.Samples
@@ -65,10 +67,10 @@ namespace Sider.Samples
       var settings = RedisSettings.New()
         .ReadBufferSize(8192) // large reads
         .WriteBufferSize(256) // small writes
-        .StringBufferSize(32) // very short strings
+        .EncodingBufferSize(32) // encode small stuff
         .SerializationBufferSize(8192) // as large as reads
         .OverrideSerializer(new PersonnelSerializer()) // custom serializer
-        .OverrideCulture(CultureInfo.GetCultureInfo("fr-FR")) // non-default culture
+        .OverrideCulture(CultureInfo.GetCultureInfo("th-TH")) // non-default culture
         .ReconnectOnIdle(true) // auto reconnect on idle
         .ReissueCommandsOnReconnect(false); // never retry automatically
 
@@ -79,13 +81,18 @@ namespace Sider.Samples
       var client = new RedisClient<Personnel>(settings);
 
       // add personnels data to sorted set
-      client.Pipeline(c =>
-      {
-        client.Del("p:salary", "p:sal_week", "p:age"); // reset old values
-        Array.ForEach(personnels, p => c.ZAdd("p:salary", p.Salary, p));
-        Array.ForEach(personnels, p => c.ZAdd("p:sal_week", (double)p.Salary / 4.0, p));
-        Array.ForEach(personnels, p => c.ZAdd("p:age", p.Age, p));
-      });
+      var dataAdded = client
+        .Pipeline(c =>
+        {
+          client.Del("p:salary", "p:sal_week", "p:age"); // reset old values
+          Array.ForEach(personnels, p => c.ZAdd("p:salary", p.Salary, p));
+          Array.ForEach(personnels, p => c.ZAdd("p:sal_week", (double)p.Salary / 4.0, p));
+          Array.ForEach(personnels, p => c.ZAdd("p:age", p.Age, p));
+        })
+        .Skip(1) // skip DEL result
+        .All(b => (bool)b);
+
+      Debug.Assert(dataAdded);
 
       while (true) {
         WriteLine("0. List personnels sorted by yearly income.");
@@ -94,10 +101,13 @@ namespace Sider.Samples
 
         Personnel[] result;
 
+        var min = double.NegativeInfinity;
+        var max = double.PositiveInfinity;
+
         switch (ReadLine()) {
-        case "0": result = client.ZRangeByScore("p:salary", 0, 99999); break;
-        case "1": result = client.ZRangeByScore("p:sal_week", 0, 99999); break;
-        case "2": result = client.ZRangeByScore("p:age", 0, 99999); break;
+        case "0": result = client.ZRangeByScore("p:salary", min, max); break;
+        case "1": result = client.ZRangeByScore("p:sal_week", min, max); break;
+        case "2": result = client.ZRangeByScore("p:age", min, max); break;
         default: continue;
         }
 

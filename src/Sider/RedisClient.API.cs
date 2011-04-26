@@ -89,7 +89,7 @@ namespace Sider
 
     public IObservable<string> Monitor()
     {
-      invoke("MONITOR");
+      invoke("MONITOR", r => r.ReadOk());
 
       return SwitchExecutor<MonitorExecutor>()
         .BuildObservable();
