@@ -6,7 +6,7 @@
 * MULTI/EXEC support.
 * PUBLISH/SUBSCRIBE support via `IObservable`.
 * INFO/SLAVEOF/MONITOR support.
-* Complex arguments support for commands like `SORT` and `ZRANGEBYSCORE`
+* Complex arguments support for `SORT` ... other commands coming soon.
 * Refactored in a multi-mode Executor model for cleaner code and better future
   extensibility/optimization support (IOCP?)
 * `.Custom()` for introducing your own custom command and read/write action.
