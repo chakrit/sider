@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace Sider
+namespace Sider.Serialization
 {
   public abstract class SerializerBase<T> : ISerializer<T>
   {

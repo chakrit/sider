@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Moq;
 using NUnit.Framework;
+using Sider.Serialization;
 
 namespace Sider.Tests
 {

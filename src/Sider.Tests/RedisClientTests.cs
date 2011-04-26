@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using Moq;
 using NUnit.Framework;
+using Sider.Serialization;
 
 namespace Sider.Tests
 {

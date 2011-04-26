@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.IO;
+using Sider.Serialization;
 
 namespace Sider
 {

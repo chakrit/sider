@@ -1,6 +1,7 @@
 ﻿
 using System.IO;
 using NUnit.Framework;
+using Sider.Serialization;
 
 namespace Sider.Tests.Serialization
 {

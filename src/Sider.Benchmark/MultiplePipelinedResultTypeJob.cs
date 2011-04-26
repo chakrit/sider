@@ -17,8 +17,8 @@ namespace Sider.Benchmark
 
     public MultiplePipelinedResultTypeJob()
     {
-      _numKey = "NUM" + InstanceNumber.ToString();
-      _strKey = "HELLO" + InstanceNumber.ToString();
+      _numKey = "mprtj:NUM" + InstanceNumber.ToString();
+      _strKey = "mprtj:HELLO" + InstanceNumber.ToString();
     }
 
 
@@ -59,12 +59,7 @@ namespace Sider.Benchmark
 
     public override void AfterBenchmark()
     {
-      Client.Pipeline(c =>
-      {
-        c.Del(_numKey);
-        for (var i = 0; i < 100; i++)
-          c.Del(_strKey + i.ToString());
-      });
+      Client.Del(Client.Keys("mprtj:*"));
     }
   }
 }

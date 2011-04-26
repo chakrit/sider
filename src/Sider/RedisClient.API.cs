@@ -10,7 +10,7 @@ namespace Sider
   // REF: http://redis.io/commands
   public partial class RedisClient<T> : IRedisClient<T>
   {
-    // TODO: IOCP?
+    // TODO: IocpExecutor?
     public IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls)
     {
       // execute in pipelined mode

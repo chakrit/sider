@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Sider
+namespace Sider.Serialization
 {
   public class StringSerializer : SerializerBase<string>
   {

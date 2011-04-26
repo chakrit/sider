@@ -1,5 +1,6 @@
 ﻿
 using System.IO;
+using Sider.Serialization;
 
 namespace Sider.Tests.Serialization
 {

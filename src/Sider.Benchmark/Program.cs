@@ -18,10 +18,10 @@ namespace Sider.Benchmark
     {
       // configure benchmark parameters here:
       const int Instances = 3;
-      const int Iterations = 1000;
+      const int Iterations = 10000;
       const bool QuietMode = false; // turn to false to make it wait for key inputs
 
-      Func<Job> getJob = () => new SetWithStringSerializerJob();
+      Func<Job> getJob = () => new MultiplePipelinedResultTypeJob();
 
       _settings = RedisSettings.New()
         .ReconnectOnIdle(false);

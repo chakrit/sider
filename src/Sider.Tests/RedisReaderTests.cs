@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using Moq;
 using NUnit.Framework;
+using Sider.Serialization;
 
 namespace Sider.Tests
 {
