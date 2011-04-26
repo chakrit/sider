@@ -63,7 +63,6 @@ namespace Sider
     }
 
 
-    [Conditional("DEBUG")]
     public static void ResponseType(ResponseType expected, ResponseType actual,
       RedisReader reader = null)
     {

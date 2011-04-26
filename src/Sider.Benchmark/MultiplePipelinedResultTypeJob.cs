@@ -59,7 +59,17 @@ namespace Sider.Benchmark
 
     public override void AfterBenchmark()
     {
-      Client.Del(Client.Keys("mprtj:*"));
+      var keys = Client
+        .Pipeline(c =>
+        {
+          c.Keys(_numKey + "*");
+          c.Keys(_strKey + "*");
+        })
+        .Cast<string[]>()
+        .SelectMany(s => s)
+        .ToArray();
+
+      Client.Del(keys);
     }
   }
 }

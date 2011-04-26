@@ -17,7 +17,7 @@ namespace Sider.Benchmark
     public void Run()
     {
       // configure benchmark parameters here:
-      const int Instances = 3;
+      const int Instances = 7;
       const int Iterations = 10000;
       const bool QuietMode = false; // turn to false to make it wait for key inputs
 
