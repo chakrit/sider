@@ -6,18 +6,17 @@ namespace Sider.Executors
 {
   public class TransactedExecutor : PipelinedExecutor
   {
-    private IExecutor _executor;
-
-    public TransactedExecutor(IExecutor another) :
-      base(another)
+    public override void Init(IExecutor previous)
     {
-      if (another is TransactedExecutor)
+      if (previous is TransactedExecutor)
         throw new InvalidOperationException("Cannot nest MULTI/EXEC.");
 
       // TODO: Make possible.
-      if (another is PipelinedExecutor)
+      if (previous is PipelinedExecutor)
         throw new InvalidOperationException(
-          "MULTI/EXEC cannot be called inside .Pipeline");
+          "MULTI/EXEC cannot be called inside .Pipeline()");
+
+      base.Init(previous);
     }
 
 

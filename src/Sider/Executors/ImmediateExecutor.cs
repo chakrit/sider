@@ -1,22 +1,32 @@
 ﻿
+using System;
+
 namespace Sider.Executors
 {
   public class ImmediateExecutor : ExecutorBase
   {
-    public ImmediateExecutor(IExecutor another) :
-      base(another) { }
-
-    public ImmediateExecutor(RedisSettings settings,
-      ProtocolReader reader, ProtocolWriter writer) :
-      base(settings, reader, writer) { }
-
-
     public override T Execute<T>(Invocation<T> invocation)
     {
-      invocation.WriteAction(Writer);
-      Writer.Flush();
+      return execute(invocation, 0);
+    }
 
-      return invocation.ReadAction(Reader);
+    private T execute<T>(Invocation<T> invocation, int retryCount)
+    {
+      try { return ExecuteImmediate(invocation); }
+      catch (Exception ex) {
+        if (!HandleTimeout(ex))
+          throw;
+
+        // client/connection state ensured by this point
+        // will throw timeout exception if not set to retry,
+        // but client state remains usable despise the exception
+        if (!Settings.ReissueCommandsOnReconnect ||
+          retryCount >= Settings.MaxReconnectRetries)
+          throw new IdleTimeoutException(ex);
+
+        // retry
+        return execute(invocation, retryCount + 1);
+      }
     }
   }
 }

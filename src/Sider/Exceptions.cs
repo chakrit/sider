@@ -3,16 +3,10 @@ using System;
 
 namespace Sider
 {
-  public sealed class WriteException : Exception
+  public sealed class IdleTimeoutException : TimeoutException
   {
-    public WriteException(Exception innerException) :
-      base("Exception occurred while writing data to Redis.", innerException) { }
-  }
-
-  public sealed class ReadException : Exception
-  {
-    public ReadException(Exception innerException) :
-      base("Exception occurred while reading data from Redis.", innerException) { }
+    public IdleTimeoutException(Exception inner) :
+      base("Disconnection detected, possibly due to idle timeout.", inner) { }
   }
 
   public sealed class ResponseException : Exception

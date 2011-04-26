@@ -1,9 +1,11 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sider.Executors
 {
+  // TODO: Add HandleException support
   public class PipelinedExecutor : ExecutorBase
   {
     private Queue<Func<object>> _readsQueue;
@@ -11,12 +13,12 @@ namespace Sider.Executors
 
     protected Queue<Func<object>> ReadsQueue { get { return _readsQueue; } }
 
-    public PipelinedExecutor(IExecutor another) :
-      base(another)
+    public override void Init(IExecutor previous)
     {
-      if (another is PipelinedExecutor)
-        throw new InvalidOperationException("Already piplining.");
+      if (previous is PipelinedExecutor)
+        throw new InvalidOperationException("Already pipelining.");
 
+      base.Init(previous);
       _readsQueue = new Queue<Func<object>>();
     }
 
@@ -30,6 +32,11 @@ namespace Sider.Executors
     }
 
     public virtual IEnumerable<object> Finish()
+    {
+      return finishCore().ToArray();
+    }
+
+    private IEnumerable<object> finishCore()
     {
       Writer.Flush();
       while (_readsQueue.Count > 0)

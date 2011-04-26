@@ -14,15 +14,14 @@ namespace Sider
     public IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls)
     {
       // switch to pipelined mode
-      var pe = new PipelinedExecutor(_executor);
-      _executor = pe;
+      var pe = SwitchExecutor<PipelinedExecutor>();
 
       // execute the pipeline
       pipelinedCalls(this);
       var result = pe.Finish().ToArray();
 
-      // revert to immediatemode
-      _executor = new ImmediateExecutor(pe);
+      // revert to immediate mode
+      SwitchExecutor<ImmediateExecutor>();
       return result;
     }
 
@@ -95,10 +94,8 @@ namespace Sider
     {
       invoke("MONITOR");
 
-      var me = new MonitorExecutor(_executor);
-      _executor = me;
-
-      return me.BuildObservable();
+      return SwitchExecutor<MonitorExecutor>()
+        .BuildObservable();
     }
 
     public bool Save()
@@ -186,16 +183,16 @@ namespace Sider
     {
       var result = invoke("MULTI", r => r.ReadOk());
 
-      _executor = new TransactedExecutor(_executor);
+      SwitchExecutor<TransactedExecutor>();
       return result;
     }
 
     public bool Discard()
     {
-      var te = _executor as TransactedExecutor;
+      var te = Executor as TransactedExecutor;
       if (te != null) {
         te.Discard();
-        _executor = new ImmediateExecutor(_executor);
+        SwitchExecutor<ImmediateExecutor>();
       }
 
       return invoke("DISCARD", r => r.ReadOk());
@@ -203,7 +200,7 @@ namespace Sider
 
     public IEnumerable<object> Exec()
     {
-      var te = _executor as TransactedExecutor;
+      var te = Executor as TransactedExecutor;
       if (te == null) {
         // ReadStatus so error will be thrown, if any
         invoke("EXEC", r => r.ReadStatus());
@@ -214,7 +211,7 @@ namespace Sider
       var result = te.Finish();
 
       // restore execution mode
-      _executor = new ImmediateExecutor(_executor);
+      SwitchExecutor<ImmediateExecutor>();
       return result;
     }
 
@@ -960,7 +957,7 @@ namespace Sider
 
     public IObservable<Message<T>> PSubscribe(params string[] keys)
     {
-      return pubsubAction("PSUBSCRIBE", keys);
+      return pubsubAction("PSUBSCRIBE", keys, e => e.ActivePatterns.Add);
     }
 
     public int Publish(string channel, T msg)
@@ -970,30 +967,34 @@ namespace Sider
 
     public IObservable<Message<T>> PUnsubscribe(params string[] keys)
     {
-      return pubsubAction("PUNSUBSCRIBE", keys);
+      return pubsubAction("PUNSUBSCRIBE", keys, e => e.ActivePatterns.Remove);
     }
 
     public IObservable<Message<T>> Subscribe(params string[] keys)
     {
-      return pubsubAction("SUBSCRIBE", keys);
+      return pubsubAction("SUBSCRIBE", keys, e => e.ActiveChannels.Add);
     }
 
     public IObservable<Message<T>> Unsubscribe(params string[] keys)
     {
-      return pubsubAction("UNSUBSCRIBE", keys);
+      return pubsubAction("UNSUBSCRIBE", keys, e => e.ActivePatterns.Remove);
     }
 
 
-    public IObservable<Message<T>> pubsubAction(string command, params string[] keys)
+    public IObservable<Message<T>> pubsubAction(string command,
+      string[] keys, Func<PubSubExecutor<T>, Func<string, bool>> executorAct)
     {
+      var pe = Executor as PubSubExecutor<T>;
+      if (pe == null)
+        pe = SwitchExecutor(new PubSubExecutor<T>(_serializer,
+          () => SwitchExecutor<ImmediateExecutor>()));
+
+      Array.ForEach(keys, k => executorAct(pe)(k));
+
+
       invoke(command, keys.Length,
         w => Array.ForEach(keys, w.WriteArg),
         r => (object)null);
-
-      var pe = _executor as PubSubExecutor<T>;
-      if (pe == null)
-        _executor = pe = new PubSubExecutor<T>(_executor, _serializer,
-          () => _executor = new ImmediateExecutor(_executor));
 
       return pe.GetOrBuildObservable();
     }

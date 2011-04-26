@@ -8,15 +8,13 @@ namespace Sider.Executors
   {
     private Observable<string> _observable;
 
-    public MonitorExecutor(IExecutor another) :
-      base(another) { }
-
-
     public override T Execute<T>(Invocation<T> invocation)
     {
       if (invocation.Command == "QUIT") {
-        Writer.WriteCmdStart("QUIT", 0);
+        // QUIT issued by the observable automatically
         _observable.Dispose();
+        Client.Dispose();
+        return default(T);
       }
 
       throw new InvalidOperationException(
@@ -44,17 +42,16 @@ namespace Sider.Executors
         try {
           while (!IsDisposed)
             Next(_parent.Reader.ReadStatus());
+
+          Complete();
         }
         catch (Exception e) { Error(e); }
-
-        Complete();
       }
 
 
       public override void Dispose()
       {
-        _parent.Writer.WriteCmdStart("QUIT", 0);
-        _parent.Writer.Flush();
+        _parent.ExecuteImmediate(Invocation.New<object>("QUIT", w => { }, r => null));
       }
     }
   }

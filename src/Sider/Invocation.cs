@@ -5,11 +5,11 @@ namespace Sider
 {
   public sealed class Invocation
   {
-    public static Invocation<T> New<T>(string command,
+    public static Invocation<TResult> New<TResult>(string command,
       Action<ProtocolWriter> writer,
-      Func<ProtocolReader, T> reader)
+      Func<ProtocolReader, TResult> reader)
     {
-      return new Invocation<T>(command, writer, reader);
+      return new Invocation<TResult>(command, writer, reader);
     }
   }
 

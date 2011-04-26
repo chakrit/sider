@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Sider.Executors
@@ -9,13 +10,40 @@ namespace Sider.Executors
     private PubSubObservable _observable;
     private ISerializer<T> _serializer;
 
+    private bool _done;
     private Action _onDone;
 
-    public PubSubExecutor(IExecutor another, ISerializer<T> serializer, Action onDone) :
-      base(another)
+
+    public ISet<string> ActiveChannels { get; private set; }
+    public ISet<string> ActivePatterns { get; private set; }
+
+    public bool StillActive
+    {
+      get { return (ActiveChannels.Count + ActivePatterns.Count) > 0; }
+    }
+
+    public PubSubExecutor(ISerializer<T> serializer, Action onDone)
     {
       _serializer = serializer;
+      _done = false;
       _onDone = onDone;
+
+      ActiveChannels = new HashSet<string>();
+      ActivePatterns = new HashSet<string>();
+    }
+
+
+    public override void Init(IExecutor previous)
+    {
+      if (previous is PipelinedExecutor)
+        throw new InvalidOperationException(
+          "Cannot enter subscription mode inside .Pipeline()");
+
+      if (previous is TransactedExecutor)
+        throw new InvalidOperationException(
+          "Cannot enter subscription mode inside MULTI/EXEC block.");
+
+      base.Init(previous);
     }
 
 
@@ -25,41 +53,48 @@ namespace Sider.Executors
       case "SUBSCRIBE":
       case "PSUBSCRIBE":
       case "UNSUBSCRIBE":
-      case "PUNSUBSCRIBE":
-      case "QUIT": {
-        invocation.WriteAction(Writer);
-        Writer.Flush();
-        return default(TInv);
-      }
-      }
+      case "PUNSUBSCRIBE": {
+        var result = ExecuteImmediate(invocation);
 
-      // check if the observable is done since by the point user executes the next
-      // non-pubsub command the observable should have been disposed
-      // (i.e. user leaving PUBSUB mode)
-      if (_observable.SubscribersCount > 0 || !_observable.IsDisposed) {
-        _observable.Dispose();
-        _observable = null;
-
-        // execute the supplied command as we're leaving pub/sub
-        invocation.WriteAction(Writer);
-        Writer.Flush();
-        var result = invocation.ReadAction(Reader);
-
-        // run the stop delegate (supposedly switching out PubSubExecutor)
-        if (_onDone != null)
+        // run the done delegate (supposedly switching out PubSubExecutor)
+        // after unsubscribed from all tracked channels
+        if (!StillActive && _onDone != null) {
+          _done = true;
           _onDone();
+        }
 
         return result;
       }
+      case "QUIT": {
+        var result = ExecuteImmediate(invocation);
+
+        _observable.Dispose();
+        return result;
+      }
+      }
 
       throw new InvalidOperationException(
-        "Only (P)SUBSCRIBE/(P)UNSUBSCRIBE/QUIT allowed for a subscribing client.");
+        "Only (P)SUBSCRIBE/(P)UNSUBSCRIBE/QUIT allowed for a subscribing client.\r\n");
     }
 
 
     public IObservable<Message<T>> GetOrBuildObservable()
     {
+      if (_done) return null;
+
       return _observable ?? (_observable = new PubSubObservable(this));
+    }
+
+
+    public override void Dispose()
+    {
+      if (_observable != null && !_observable.IsDisposed && StillActive)
+        throw new InvalidOperationException(
+          "Cannot exit (P)SUBSCRIBE mode until (P)UNSUBSCRIBE-d from all channels.");
+
+      _observable.Dispose();
+      _observable = null;
+      base.Dispose();
     }
 
 
@@ -67,6 +102,7 @@ namespace Sider.Executors
     {
       private PubSubExecutor<T> _parent;
       private ManualResetEvent _event;
+
 
       public PubSubObservable(PubSubExecutor<T> parent)
       {
@@ -82,27 +118,20 @@ namespace Sider.Executors
             var msg = _parent.Reader.ReadMessage(_parent._serializer);
             Next(msg);
 
-            if (msg.ChannelsCount == 0)
+            if (msg.ChannelsCount.HasValue && msg.ChannelsCount.Value == 0)
               break;
           }
 
           Complete();
         }
         catch (Exception e) { Error(e); }
-        finally {
-          _event.Set();
-          Dispose();
-        }
+        finally { _event.Set(); }
       }
 
 
       public override void Dispose()
       {
         _event.WaitOne();
-
-        if (_parent._onDone != null)
-          _parent._onDone();
-
         base.Dispose();
       }
     }

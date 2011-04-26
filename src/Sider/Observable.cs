@@ -38,6 +38,7 @@ namespace Sider
         OnNext += observer.OnNext;
         OnError += observer.OnError;
         OnCompleted += observer.OnCompleted;
+
         return new DisposableDelegate(() =>
         {
           lock (_lock) {

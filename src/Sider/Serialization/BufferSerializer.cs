@@ -1,7 +1,7 @@
 ﻿
 using System.IO;
 
-namespace Sider
+namespace Sider.Serialization
 {
   public class BufferSerializer : SerializerBase<byte[]>
   {

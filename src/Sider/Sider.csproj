@@ -61,6 +61,7 @@
     <Compile Include="ProtocolReader.cs" />
     <Compile Include="ProtocolEncoder.cs" />
     <Compile Include="ProtocolWriter.cs" />
+    <Compile Include="RedisClientBase.cs" />
     <Compile Include="RedisReaderHelpers.cs" />
     <Compile Include="Serialization\ObjectSerializer.cs" />
     <Compile Include="Serialization\SerializerBase.cs" />

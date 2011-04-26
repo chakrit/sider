@@ -1,25 +1,69 @@
 ﻿
+using System;
+using System.IO;
+using System.Net.Sockets;
+
 namespace Sider.Executors
 {
-  public abstract class ExecutorBase : SettingsWrapper, IExecutor
+  // TODO: Filter invalid commands
+  public abstract class ExecutorBase : IExecutor
   {
-    public ProtocolReader Reader { get; private set; }
-    public ProtocolWriter Writer { get; private set; }
+    public RedisClientBase Client { get; private set; }
+
+    protected RedisSettings Settings { get { return Client.Settings; } }
+    protected ProtocolReader Reader { get { return Client.Reader; } }
+    protected ProtocolWriter Writer { get { return Client.Writer; } }
 
 
-    protected ExecutorBase(IExecutor another) :
-      this(another.Settings, another.Reader, another.Writer) { }
-
-    protected ExecutorBase(RedisSettings settings,
-      ProtocolReader reader, ProtocolWriter writer) :
-      base(settings)
+    public virtual void Init(RedisClientBase client)
     {
-      Reader = reader;
-      Writer = writer;
+      SAssert.ArgumentNotNull(() => client);
+      Client = client;
+    }
+
+    public virtual void Init(IExecutor previous)
+    {
+      SAssert.ArgumentNotNull(() => previous);
+      Client = previous.Client;
     }
 
 
-    // TODO: Filter invalid commands
     public abstract T Execute<T>(Invocation<T> invocation);
+
+    protected T ExecuteImmediate<T>(Invocation<T> invocation)
+    {
+      invocation.WriteAction(Writer);
+      Writer.Flush();
+
+      var result = invocation.ReadAction(Reader);
+
+      // handle connection state changes after some commands
+      if (invocation.Command == "QUIT" ||
+        invocation.Command == "SHUTDOWN")
+        Client.Dispose();
+
+      return result;
+    }
+
+
+    protected bool HandleTimeout(Exception ex)
+    {
+      // assumes Redis disconnected (thus the IOException/SocketException)
+      // due to idle timeout.
+      if (!(ex is IOException || ex is ObjectDisposedException ||
+        ex is SocketException))
+        return false;
+
+      Client.Dispose();
+      if (!Settings.ReconnectOnIdle)
+        throw new IdleTimeoutException(ex);
+
+      // reconnect client
+      Client.Reset();
+      return true;
+    }
+
+
+    public virtual void Dispose() { }
   }
 }

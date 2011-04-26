@@ -6,10 +6,11 @@ namespace Sider
 {
   // see the redis commands reference for more info:
   // http://redis.io/commands
-
   public interface IRedisClient<T> : IDisposable
   {
     bool IsDisposed { get; }
+
+    void Reset();
 
     IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls);
 
@@ -94,7 +95,6 @@ namespace Sider
     string RandomKey();
     bool Rename(string oldKey, string newKey);
     bool RenameNX(string oldKey, string newKey);
-    void Reset();
     T RPop(string key);
     T RPopLPush(string srcKey, string destKey);
     int RPush(string key, T value);
