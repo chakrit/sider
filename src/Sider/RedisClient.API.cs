@@ -13,14 +13,11 @@ namespace Sider
     // TODO: IOCP?
     public IEnumerable<object> Pipeline(Action<IRedisClient<T>> pipelinedCalls)
     {
-      // switch to pipelined mode
-      var pe = SwitchExecutor<PipelinedExecutor>();
+      // execute in pipelined mode
+      var result = SwitchExecutor<PipelinedExecutor>()
+        .ExecuteRange(pipelinedCalls);
 
-      // execute the pipeline
-      pipelinedCalls(this);
-      var result = pe.Finish().ToArray();
-
-      // revert to immediate mode
+      // end pipelined mode
       SwitchExecutor<ImmediateExecutor>();
       return result;
     }

@@ -23,6 +23,34 @@ namespace Sider.Executors
     }
 
 
+    public IEnumerable<object> ExecuteRange<T>(Action<IRedisClient<T>> pipelinedCalls)
+    {
+      return executeRange(pipelinedCalls, 0);
+    }
+
+    private IEnumerable<object> executeRange<T>(
+      Action<IRedisClient<T>> pipelinedCalls,
+      int retryCount)
+    {
+      try {
+        pipelinedCalls((IRedisClient<T>)Client);
+        Writer.Flush();
+
+        return Finish();
+      }
+      catch (Exception ex) {
+        if (!HandleTimeout(ex))
+          throw;
+
+        if (!Settings.ReissuePipelinedCallsOnReconnect ||
+          retryCount >= Settings.MaxReconnectRetries)
+          throw new IdleTimeoutException(ex);
+
+        return executeRange(pipelinedCalls, retryCount + 1);
+      }
+    }
+
+
     public override T Execute<T>(Invocation<T> invocation)
     {
       invocation.WriteAction(Writer);
@@ -31,12 +59,13 @@ namespace Sider.Executors
       return default(T);
     }
 
+
     public virtual IEnumerable<object> Finish()
     {
-      return finishCore().ToArray();
+      return finish().ToArray();
     }
 
-    private IEnumerable<object> finishCore()
+    private IEnumerable<object> finish()
     {
       Writer.Flush();
       while (_readsQueue.Count > 0)
