@@ -33,6 +33,7 @@ namespace Sider.Tests
           .WriteBufferSize(writerBufferSize.Value)) :
         new RedisWriter(stream);
 
+      writer.AutoFlush = true;
       return new WriterInfo {
         Writer = writer,
         Stream = stream,

@@ -35,6 +35,11 @@ namespace Sider
       Action<ProtocolWriter> writeArgsAction,
       Func<ProtocolReader, TInv> readAction)
     {
+      if (IsDisposed)
+        throw new ObjectDisposedException(
+          "RedisClient instance has been disposed and is no longer usable.\r\n" +
+          "You may reconnect by issuing a .Reset().");
+
       return Executor.Execute(Invocation.New(command, w =>
       {
         w.WriteCmdStart(command, numArgs);
