@@ -14,5 +14,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Sider.Tests")]
 
 #pragma warning disable 1607
-[assembly: AssemblyVersion("0.6.*")]
-[assembly: AssemblyFileVersion("0.6.*")]
+[assembly: AssemblyVersion("0.7.*")]
+[assembly: AssemblyFileVersion("0.7.*")]
