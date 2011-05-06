@@ -4,9 +4,10 @@
     <id>Sider</id>
     <version>0.7</version>
     <title>Sider</title>
-    <language>en-us</language>
     <authors>Chakrit Wichian (http://chakrit.net/)</authors>
+    <owners>chakrit</owners>
     <projectUrl>http://github.com/chakrit/sider</projectUrl>
+    <tags>sider redis net40</tags>
     <summary>
       Please see https://github.com/chakrit/sider/blob/master/CHANGES.markdown for the list of changes in this version. --
     </summary>
