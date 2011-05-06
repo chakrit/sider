@@ -3,13 +3,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Sider")]
-[assembly: AssemblyDescription("Sider, a redis client implementation in C#")]
+[assembly: AssemblyDescription("SIDER : REDIS bindings for C#/.NET 4.0 -- Redis client that sticks to the metal. Minimal, lightweight, easy to use, no fancy APIs, no gigantic class hierarchies. No ORM madness. Assumes knowledge of how Redis works. -- Sider works with Redis 2.2+.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("2nitedesign! Co., Ltd.")]
+[assembly: AssemblyCompany("Chakrit Wichian (http://chakrit.net/)")]
 [assembly: AssemblyProduct("Sider")]
-[assembly: AssemblyCopyright("Copyright ©  2010, Chakrit Wichian. All rights reserved.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
 
 [assembly: InternalsVisibleTo("Sider.Tests")]
 

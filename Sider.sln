@@ -6,7 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{0CE30014-2
 		CHANGES.markdown = CHANGES.markdown
 		README.markdown = README.markdown
 		Settings.StyleCop = Settings.StyleCop
-		Sider.nuspec = Sider.nuspec
+		src\Sider\Sider.nuspec = src\Sider\Sider.nuspec
 		SiderAssemblyInfo.cs = SiderAssemblyInfo.cs
 	EndProjectSection
 EndProject
