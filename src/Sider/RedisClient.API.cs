@@ -889,7 +889,25 @@ namespace Sider
         _readObjs);
     }
 
-    // TODO: ZRangeWithScores
+    public KeyValuePair<T, double>[] ZRange(string key,
+      int startRank, int endRank, bool withScores = true)
+    {
+      // revert to normal ZRange mode when withScores = false;
+      if (!withScores)
+        return ZRange(key, startRank, endRank)
+          .Select(obj => new KeyValuePair<T, double>(obj, default(double)))
+          .ToArray();
+
+      return invoke("ZRANGE", 4,
+        w =>
+        {
+          w.WriteArg(key);
+          w.WriteArg(startRank);
+          w.WriteArg(endRank);
+          w.WriteArg("WITHSCORES");
+        },
+        r => r.ReadSerializedWithScores(_serializer));
+    }
 
     // TODO: Complex arguments support for ZRangeByScore
     public T[] ZRangeByScore(string key, double minIncl, double maxIncl)
@@ -957,7 +975,7 @@ namespace Sider
 
     #endregion
 
-    #region TODO: Pub/Sub
+    #region Pub/Sub
 
     public IObservable<Message<T>> PSubscribe(params string[] keys)
     {

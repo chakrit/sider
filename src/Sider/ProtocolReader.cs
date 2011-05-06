@@ -195,6 +195,25 @@ namespace Sider
       return result;
     }
 
+    public KeyValuePair<T, double>[] ReadSerializedWithScores<T>(
+      ISerializer<T> serializer)
+    {
+      readType(ResponseType.MultiBulk);
+
+      var count = _reader.ReadNumberLine();
+      if (count == -1)
+        return null;
+
+      var result = new KeyValuePair<T, double>[count / 2];
+      for (var i = 0; i < result.Length; i++) {
+        result[i] = new KeyValuePair<T, double>(
+          ReadSerializedBulk(serializer),
+          ReadDouble());
+      }
+
+      return result;
+    }
+
 
     public Message<T> ReadMessage<T>(ISerializer<T> serializer)
     {
