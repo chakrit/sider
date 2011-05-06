@@ -303,37 +303,37 @@ namespace Sider
       string[] getPattern = null, bool descending = false,
       bool alpha = false, string store = null)
     {
-      var items = new List<string>();
-      items.Add(key);
+      var items = new LinkedList<string>();
+      items.AddLast(key);
 
       if (!string.IsNullOrEmpty(byPattern)) {
-        items.Add("BY");
-        items.Add(byPattern);
+        items.AddLast("BY");
+        items.AddLast(byPattern);
       }
 
       if (limitOffset.HasValue || limitCount.HasValue) {
-        items.Add("LIMIT");
-        items.Add(limitOffset.GetValueOrDefault(0).ToString());
-        items.Add(limitCount.GetValueOrDefault(int.MaxValue).ToString());
+        items.AddLast("LIMIT");
+        items.AddLast(limitOffset.GetValueOrDefault(0).ToString());
+        items.AddLast(limitCount.GetValueOrDefault(int.MaxValue).ToString());
       }
 
       if (getPattern != null) {
         foreach (var pattern in getPattern) {
-          items.Add("GET");
-          items.Add(pattern);
+          items.AddLast("GET");
+          items.AddLast(pattern);
         }
       }
 
-      if (descending) items.Add("DESC");
-      if (alpha) items.Add("ALPHA");
+      if (descending) items.AddLast("DESC");
+      if (alpha) items.AddLast("ALPHA");
 
       if (!string.IsNullOrEmpty(store)) {
-        items.Add("STORE");
-        items.Add(store);
+        items.AddLast("STORE");
+        items.AddLast(store);
       }
 
       return invoke("SORT", items.Count,
-        w => { items.ForEach(w.WriteArg); },
+        w => { foreach (var item in items) w.WriteArg(item); },
         _readObjs);
     }
 
@@ -894,27 +894,58 @@ namespace Sider
     {
       // revert to normal ZRange mode when withScores = false;
       if (!withScores)
-        return ZRange(key, startRank, endRank)
-          .Select(obj => new KeyValuePair<T, double>(obj, default(double)))
-          .ToArray();
+        return kvBox(ZRange(key, startRank, endRank));
 
       return invoke("ZRANGE", 4,
         w =>
         {
-          w.WriteArg(key);
-          w.WriteArg(startRank);
-          w.WriteArg(endRank);
+          w.WriteArg(key); w.WriteArg(startRank); w.WriteArg(endRank);
           w.WriteArg("WITHSCORES");
         },
         r => r.ReadSerializedWithScores(_serializer));
     }
 
-    // TODO: Complex arguments support for ZRangeByScore
-    public T[] ZRangeByScore(string key, double minIncl, double maxIncl)
+    public T[] ZRangeByScore(string key, double minIncl, double maxIncl,
+      int? limitOffset = null, int? limitCount = null)
     {
-      return invoke("ZRANGEBYSCORE", 3,
-        w => { w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl); },
+      var includeLimit = (limitOffset.HasValue || limitCount.HasValue);
+
+      return invoke("ZRANGEBYSCORE", (includeLimit ? 6 : 3),
+        w =>
+        {
+          w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl);
+          if (!includeLimit) return;
+
+          w.WriteArg("LIMIT");
+          w.WriteArg(limitOffset.GetValueOrDefault(0));
+          w.WriteArg(limitCount.GetValueOrDefault(int.MaxValue));
+        },
         _readObjs);
+    }
+
+    public KeyValuePair<T, double>[] ZRangeByScore(string key,
+      double minIncl, double maxIncl,
+      bool withScores = true,
+      int? limitOffset = null, int? limitCount = null)
+    {
+      // revert to normal ZRangeByScore when withScores = false
+      if (!withScores)
+        return kvBox(ZRangeByScore(key, minIncl, maxIncl, limitOffset, limitCount));
+
+      var includeLimit = (limitOffset.HasValue || limitCount.HasValue);
+
+      return invoke("ZRANGEBYSCORE", (includeLimit ? 7 : 4),
+        w =>
+        {
+          w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl);
+          w.WriteArg("WITHSCORES");
+          if (!includeLimit) return;
+
+          w.WriteArg("LIMIT");
+          w.WriteArg(limitOffset.GetValueOrDefault(0));
+          w.WriteArg(limitCount.GetValueOrDefault(int.MaxValue));
+        },
+        r => r.ReadSerializedWithScores(_serializer));
     }
 
     public int ZRank(string key, T value)
@@ -929,7 +960,7 @@ namespace Sider
 
     public int ZRemRangeByRank(string key, int startRank, int endRank)
     {
-      return invoke("ZRREMRANGEBYRANK", 3,
+      return invoke("ZREMRANGEBYRANK", 3,
         w => { w.WriteArg(key); w.WriteArg(startRank); w.WriteArg(endRank); },
         r => r.ReadInt());
     }
@@ -971,6 +1002,16 @@ namespace Sider
       return invoke("ZUNIONSTORE", srcKeys.Length + 1,
         w => { w.WriteArg(destKey); Array.ForEach(srcKeys, w.WriteArg); },
         r => r.ReadInt());
+    }
+
+
+    private KeyValuePair<T, double>[] kvBox(T[] values)
+    {
+      var box = new KeyValuePair<T, double>[values.Length];
+      for (var i = 0; i < values.Length; i++)
+        box[i] = new KeyValuePair<T, double>(values[i], default(double));
+
+      return box;
     }
 
     #endregion

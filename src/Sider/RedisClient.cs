@@ -22,7 +22,7 @@ namespace Sider
   //  (one should be selected on init, should not be settable while piplining etc.)
   public partial class RedisClient<T> : RedisClientBase, IRedisClient<T>
   {
-    // serialization stuff
+    // serialization stuff helper delegate
     private readonly Func<ProtocolReader, T> _readObj;
     private readonly Func<ProtocolReader, T[]> _readObjs;
 
