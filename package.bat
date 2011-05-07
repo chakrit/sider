@@ -14,7 +14,7 @@ if not errorlevel 0 goto error
 
 echo Building NuGet package...
 mkdir build\packages
-.\tools\NuGet.exe pack .\src\Sider\Sider.csproj -o build\packages -sym
+.\tools\NuGet.exe pack .\src\Sider\Sider.csproj -o build\packages -sym -c Release -e Sider.GUI -e Sider.Benchmark
 
 echo Packages built:
 dir build\packages /b/s
