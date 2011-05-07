@@ -44,6 +44,7 @@
     <Compile Include="..\..\SiderAssemblyInfo.cs">
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Aggregate.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Executors\ExecutorBase.cs" />
     <Compile Include="Executors\IExecutor.cs" />

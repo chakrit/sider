@@ -9,10 +9,15 @@
     <projectUrl>http://github.com/chakrit/sider</projectUrl>
     <tags>sider redis net40</tags>
     <summary>
-      Please see https://github.com/chakrit/sider/blob/master/CHANGES.markdown for the list of changes in this version. --
+      Please see https://github.com/chakrit/sider/blob/master/CHANGES.markdown
+      for the list of changes in this version. --
     </summary>
     <description>
-      SIDER : REDIS bindings for C#/.NET 4.0 -- Redis client that sticks to the metal. Minimal, lightweight, easy to use, no fancy APIs, no gigantic class hierarchies. No ORM madness. Assumes knowledge of how Redis works. -- Sider 0.6 works with Redis 2.2+.
+      SIDER : REDIS bindings for C#/.NET 4.0 --
+      Features clean API design that maps closely to actual Redis commands.
+      Assuming knowledge of Redis. Sider is a redis client that sticks to the
+      metal, minimal, lightweight, easy to use, no fancy method names,
+      no gigantic class hierarchies to setup.
     </description>
   </metadata>
 </package>

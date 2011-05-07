@@ -645,6 +645,7 @@ namespace Sider
     #region Lists
 
     // a slight variation from Redis doc since params array must be last
+    // TODO: Provide an overload that match with the redis doc?
     public KeyValuePair<string, T>? BLPop(int timeout, params string[] keys)
     {
       return invoke("BLPOP", keys.Length + 1,
@@ -882,6 +883,28 @@ namespace Sider
         r => r.ReadInt());
     }
 
+    public int ZInterStore(string destKey, string[] srcKeys,
+      int[] weights = null, Aggregate aggregate = Aggregate.None)
+    {
+      var items = new LinkedList<string>();
+      items.AddLast(destKey);
+      Array.ForEach(srcKeys, k => items.AddLast(k));
+
+      if (weights != null) {
+        items.AddLast("WEIGHTS");
+        Array.ForEach(weights, w => items.AddLast(w.ToString()));
+      }
+
+      if (aggregate != Aggregate.None) {
+        items.AddLast("AGGREGATE");
+        items.AddLast(aggregate.ToString());
+      }
+
+      return invoke("ZINTERSTORE", items.Count,
+        w => { foreach (var item in items) w.WriteArg(item); },
+        r => r.ReadInt());
+    }
+
     public T[] ZRange(string key, int startRank, int endRank)
     {
       return invoke("ZRANGE", 3,
@@ -979,11 +1002,60 @@ namespace Sider
         _readObjs);
     }
 
-    public T[] ZRevRangeByScore(string key, double minIncl, double maxIncl)
+    public KeyValuePair<T, double>[] ZRevRange(string key, int startRank, int endRank,
+      bool withScores)
     {
-      return invoke("ZREVRANGEBYSCORE", 3,
-        w => { w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl); },
+      if (!withScores)
+        return kvBox(ZRevRange(key, startRank, endRank));
+
+      return invoke("ZREVRANGE", 4,
+        w =>
+        {
+          w.WriteArg(key); w.WriteArg(startRank); w.WriteArg(endRank);
+          w.WriteArg("WITHSCORES");
+        },
+        r => r.ReadSerializedWithScores(_serializer));
+    }
+
+    public T[] ZRevRangeByScore(string key, double minIncl, double maxIncl,
+      int? limitOffset = null, int? limitCount = null)
+    {
+      var includeLimit = (limitOffset.HasValue || limitOffset.HasValue);
+
+      return invoke("ZREVRANGEBYSCORE", (includeLimit ? 6 : 3),
+        w =>
+        {
+          w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl);
+          if (!includeLimit) return;
+
+          w.WriteArg("LIMIT");
+          w.WriteArg(limitOffset.GetValueOrDefault(0));
+          w.WriteArg(limitCount.GetValueOrDefault(int.MaxValue));
+        },
         _readObjs);
+    }
+
+    public KeyValuePair<T, double>[] ZRevRangeByScore(string key,
+      double minIncl, double maxIncl,
+      bool withScores, int? limitOffset = null, int? limitCount = null)
+    {
+      if (!withScores)
+        return kvBox(ZRevRangeByScore(key, minIncl, maxIncl, limitOffset, limitCount));
+
+      var includeLimit = (limitOffset.HasValue || limitCount.HasValue);
+
+      return invoke("ZREVRANGEBYSCORE", (includeLimit ? 7 : 4),
+        w =>
+        {
+          w.WriteArg(key); w.WriteArg(minIncl); w.WriteArg(maxIncl);
+          w.WriteArg("WITHSCORES");
+          if (!includeLimit) return;
+
+          w.WriteArg("LIMIT");
+          w.WriteArg(limitOffset.GetValueOrDefault(0));
+          w.WriteArg(limitCount.GetValueOrDefault(int.MaxValue));
+        },
+        r => r.ReadSerializedWithScores(_serializer));
     }
 
     public int ZRevRank(string key, T value)
@@ -996,13 +1068,35 @@ namespace Sider
       return invoke("ZSCORE", key, value, r => r.ReadDouble());
     }
 
-    // complex arguments support for ZUnionStore
     public int ZUnionStore(string destKey, params string[] srcKeys)
     {
       return invoke("ZUNIONSTORE", srcKeys.Length + 1,
         w => { w.WriteArg(destKey); Array.ForEach(srcKeys, w.WriteArg); },
         r => r.ReadInt());
     }
+
+    public int ZUnionStore(string destKey, string[] srcKeys,
+      int[] weights = null, Aggregate aggregate = Aggregate.None)
+    {
+      var items = new LinkedList<string>();
+      items.AddLast(destKey);
+      Array.ForEach(srcKeys, k => items.AddLast(k));
+
+      if (weights != null) {
+        items.AddLast("WEIGHTS");
+        Array.ForEach(weights, w => items.AddLast(w.ToString()));
+      }
+
+      if (aggregate != Aggregate.None) {
+        items.AddLast("AGGREGATE");
+        items.AddLast(aggregate.ToString());
+      }
+
+      return invoke("ZUNIONSTORE", items.Count,
+        w => { foreach (var item in items) w.WriteArg(item); },
+        r => r.ReadInt());
+    }
+
 
 
     private KeyValuePair<T, double>[] kvBox(T[] values)

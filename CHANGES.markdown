@@ -3,7 +3,8 @@
 0.6 - 0.7
 ---
 
-* WITHSCORES support for ZRANGE
+* Complete API support for Redis 2.2 (if I left out any, please let me know)
+* Bug fixes
 
 0.5 - 0.6
 ---
