@@ -33,6 +33,9 @@ namespace Sider
       int port = RedisSettings.DefaultPort) :
       this(RedisSettings.New().Host(host).Port(port)) { }
 
+    public RedisClient(Func<RedisSettings.Builder, RedisSettings> settingsFunc) :
+      this(settingsFunc(RedisSettings.New())) { }
+
     public RedisClient(RedisSettings settings) :
       base(settings)
     {

@@ -5,6 +5,8 @@
 
 * Complete API support for Redis 2.2 (if I left out any, please let me know)
 * Bug fixes
+* You can now configure redis settings via the RedisClient constructor directly
+  using lambdas.
 
 0.5 - 0.6
 ---
