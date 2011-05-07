@@ -1,6 +1,9 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using Moq;
 using NUnit.Framework;
 using Sider.Serialization;
@@ -15,6 +18,11 @@ namespace Sider.Tests
       public Stream OutputStream { get; set; }
 
       public IRedisClient<string> Client { get; set; }
+
+      public RedisClient<string> ClientImpl
+      {
+        get { return (RedisClient<string>)Client; }
+      }
     }
 
     private ClientInfo createClient()
@@ -78,6 +86,7 @@ namespace Sider.Tests
         .OverrideSerializer(new Mock<ISerializer<string>>().Object)));
     }
 
+
     [Test]
     public void MostAPIMethods_AfterDispose_ShouldThrowException()
     {
@@ -104,6 +113,37 @@ namespace Sider.Tests
       test(c => c.GetTo("TEST", new MemoryStream()));
       test(c => c.Incr("ASADF"));
       test(c => c.MGet("SDF", "ASD"));
+    }
+
+
+    [Test]
+    public void AllAPIMethods_WhenInvoked_ShouldInvokeCommandWithSameName()
+    {
+      var exceptions = new HashSet<string> { 
+        "Pipeline", "Custom", "ConfigGet", "ConfigSet" 
+      };
+
+      var pack = createClient();
+
+      // setup an executor that could check for invoked commands
+      var exec = new MockExecutor();
+      pack.ClientImpl.SwitchExecutor(new MockExecutor());
+
+      // run the commands and verify that method names match the invoked commands
+      var methods = typeof(IRedisClient<string>)
+        .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+        .Where(m => !exceptions.Contains(m.Name));
+
+      foreach (var method in methods) {
+        var objs = new object[method.GetParameters().Length];
+        method.Invoke(pack.Client, objs);
+
+        Assert.That(exec.LastInvokedCommand.ToUpper(),
+          Is.EqualTo(method.Name.ToUpper()),
+          "Invoked commands doesn't match method name for: " + method.Name +
+          " (invoked: " + exec.LastInvokedCommand + ")");
+      }
+
     }
   }
 }
