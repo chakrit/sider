@@ -26,6 +26,7 @@ namespace Sider.Samples
 
       // hangs
       logThread.Join();
+      incrThread.Join();
     }
 
     private void logger()

@@ -33,7 +33,10 @@ namespace Sider.Executors
     public override IEnumerable<object> Finish()
     {
       Writer.WriteCmdStart("EXEC", 0);
-      return base.Finish();
+      Writer.Flush();
+
+      Reader.ReadMultiBulkHeader(); // read-out a multi-bulk header
+      return base.Finish(); // read out all the queued reads
     }
 
     public void Discard()

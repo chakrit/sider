@@ -136,6 +136,12 @@ namespace Sider
       return result;
     }
 
+    public int ReadMultiBulkHeader()
+    {
+      readType(ResponseType.MultiBulk);
+      return _reader.ReadNumberLine();
+    }
+
 
     public KeyValuePair<string, string>? ReadStrKeyValue()
     {
