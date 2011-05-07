@@ -64,7 +64,8 @@ namespace Sider.Samples
 
     public override void Run()
     {
-      var settings = RedisSettings.New()
+      // create and inline-configure a client that works with `Personnel` class
+      var client = new RedisClient<Personnel>(settings => settings
         .ReadBufferSize(8192) // large reads
         .WriteBufferSize(256) // small writes
         .EncodingBufferSize(32) // encode small stuff
@@ -72,15 +73,10 @@ namespace Sider.Samples
         .OverrideSerializer(new PersonnelSerializer()) // custom serializer
         .OverrideCulture(CultureInfo.GetCultureInfo("th-TH")) // non-default culture
         .ReconnectOnIdle(true) // auto reconnect on idle
-        .ReissueCommandsOnReconnect(false); // never retry automatically
+        .ReissueCommandsOnReconnect(false)); // never retry automatically
 
       // create some test data
       var personnels = Personnel.GetSamplePersonnels();
-
-      // create a client that works with `Personnel` class
-      var client = new RedisClient<Personnel>(settings);
-
-      // add personnels data to sorted set
       var dataAdded = client
         .Pipeline(c =>
         {
