@@ -47,6 +47,9 @@ namespace Sider
     internal RedisClientBase(Stream incoming, Stream outgoing) :
       base(RedisSettings.Default)
     {
+      _executor = new ImmediateExecutor();
+      _executor.Init(this);
+
       _socket = null;
       _stream = null;
 

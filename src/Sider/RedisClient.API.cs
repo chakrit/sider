@@ -1007,6 +1007,8 @@ namespace Sider
 
     private KeyValuePair<T, double>[] kvBox(T[] values)
     {
+      if (values == null) return null;
+
       var box = new KeyValuePair<T, double>[values.Length];
       for (var i = 0; i < values.Length; i++)
         box[i] = new KeyValuePair<T, double>(values[i], default(double));

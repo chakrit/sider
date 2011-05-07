@@ -5,6 +5,8 @@ namespace Sider
 {
   public partial class RedisClient<T>
   {
+
+
     private void invoke(string command)
     {
       invoke(command, r => (object)null);
@@ -49,7 +51,25 @@ namespace Sider
           "RedisClient instance has been disposed and is no longer usable.\r\n" +
           "You may reconnect by issuing a .Reset().");
 
+#if DEBUG
+      if (_cmdInterceptor != null) {
+        _cmdInterceptor(invocation.Command);
+        return default(TInv);
+      }
+#endif
+
       return Executor.Execute(invocation);
     }
+
+
+#if DEBUG
+    // extra hooks for testing commands in batch
+    private Action<string> _cmdInterceptor;
+
+    internal void InterceptCommands(Action<string> commandFilter)
+    {
+      _cmdInterceptor = commandFilter;
+    }
+#endif
   }
 }

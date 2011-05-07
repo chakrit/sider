@@ -119,29 +119,61 @@ namespace Sider.Tests
     [Test]
     public void AllAPIMethods_WhenInvoked_ShouldInvokeCommandWithSameName()
     {
-      var exceptions = new HashSet<string> { 
-        "Pipeline", "Custom", "ConfigGet", "ConfigSet" 
+      var exceptions = new HashSet<string> {
+        "Pipeline", "Custom", "Reset", "Quit", "Shutdown"
       };
 
       var pack = createClient();
 
-      // setup an executor that could check for invoked commands
-      var exec = new MockExecutor();
-      pack.ClientImpl.SwitchExecutor(new MockExecutor());
+      // setup command interception
+      var lastInvokedCommand = "___NONE___";
+      pack.ClientImpl.InterceptCommands(cmd => lastInvokedCommand = cmd);
 
       // run the commands and verify that method names match the invoked commands
       var methods = typeof(IRedisClient<string>)
         .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-        .Where(m => !exceptions.Contains(m.Name));
+        .Where(m => !(exceptions.Contains(m.Name) ||
+          m.IsSpecialName ||
+          m.Name.EndsWith("Raw") ||
+          m.Name.EndsWith("To") ||
+          m.Name.EndsWith("From") ||
+          m.Name.StartsWith("Debug") ||
+          m.Name.StartsWith("Config")));
 
       foreach (var method in methods) {
-        var objs = new object[method.GetParameters().Length];
-        method.Invoke(pack.Client, objs);
+        // setup proper invocation parameters
+        var methodParams = method.GetParameters();
+        var invokeParams = methodParams
+          .Select(p => p.ParameterType)
+          .Select(t =>
+          {
+            if (t.IsArray) return Array.CreateInstance(t.GetElementType(), 0);
+            if (t.IsValueType) return Activator.CreateInstance(t);
 
-        Assert.That(exec.LastInvokedCommand.ToUpper(),
+            if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+              return Array.CreateInstance(t.GetGenericArguments()[0], 0);
+
+            return null;
+          })
+          .Cast<object>()
+          .ToArray();
+
+        // invoke the method
+        Console.Write("Checking: ");
+        Console.Write(method.Name);
+        Console.Write("(");
+        Console.Write(string.Join(", ", invokeParams
+          .Select(p => p == null ? "null" : p.ToString())));
+        Console.WriteLine(")");
+
+        method.Invoke(pack.Client, invokeParams);
+
+        // check that invoked commands match the method name
+        Assert.That(string.IsNullOrEmpty(lastInvokedCommand), Is.False);
+        Assert.That(lastInvokedCommand.ToUpper(),
           Is.EqualTo(method.Name.ToUpper()),
           "Invoked commands doesn't match method name for: " + method.Name +
-          " (invoked: " + exec.LastInvokedCommand + ")");
+          " (invoked: " + lastInvokedCommand + ")");
       }
 
     }

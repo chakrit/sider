@@ -59,7 +59,6 @@
     <Compile Include="..\..\SiderAssemblyInfo.cs">
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="MockExecutor.cs" />
     <Compile Include="MyException.cs" />
     <Compile Include="RedisClientTests.cs" />
     <Compile Include="RedisReaderTests.cs" />

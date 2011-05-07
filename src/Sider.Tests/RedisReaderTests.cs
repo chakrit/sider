@@ -357,66 +357,66 @@ namespace Sider.Tests
       Assert.That(buffer, Is.EquivalentTo(data));
     }
 
-    [Test, Timeout(ReadBulkTestTimeout), Ignore]
     // TODO: Implement a Stream wrapper that does controllable chunking
     //       The method implemented in this test is not good enough
-    public void ReadBulk_LargeDataWithIntermittentStream_CorrectDataReturned()
-    {
-      // write data in small increments from another thread
-      // make sure total data size is large enough so the read will have to block
-      const int TotalSize = 1024 * 10;
-      const int ReadChunkSize = 1024;
+    //[Test, Timeout(ReadBulkTestTimeout), Ignore]
+    //public void ReadBulk_LargeDataWithIntermittentStream_CorrectDataReturned()
+    //{
+    //  // write data in small increments from another thread
+    //  // make sure total data size is large enough so the read will have to block
+    //  const int TotalSize = 1024 * 10;
+    //  const int ReadChunkSize = 1024;
 
-      var data = new byte[TotalSize];
-      var responseBuffer = new byte[data.Length + 2 /* for CRLF */];
+    //  var data = new byte[TotalSize];
+    //  var responseBuffer = new byte[data.Length + 2 /* for CRLF */];
 
-      (new Random()).NextBytes(data);
-      Buffer.BlockCopy(data, 0, responseBuffer, 0, data.Length);
+    //  (new Random()).NextBytes(data);
+    //  Buffer.BlockCopy(data, 0, responseBuffer, 0, data.Length);
 
-      // end with CRLF
-      responseBuffer[responseBuffer.Length - 2] = 0x0D;
-      responseBuffer[responseBuffer.Length - 1] = 0x0A;
+    //  // end with CRLF
+    //  responseBuffer[responseBuffer.Length - 2] = 0x0D;
+    //  responseBuffer[responseBuffer.Length - 1] = 0x0A;
 
-      // prepare a stream based on fixed memory, to simulate chunked response
-      var responseStream = Stream.Synchronized(new MemoryStream(responseBuffer));
-      var intermittentStream = Stream.Synchronized(new MemoryStream());
-      intermittentStream.SetLength(0);
+    //  // prepare a stream based on fixed memory, to simulate chunked response
+    //  var responseStream = Stream.Synchronized(new MemoryStream(responseBuffer));
+    //  var intermittentStream = Stream.Synchronized(new MemoryStream());
+    //  intermittentStream.SetLength(0);
 
-      var stream = new BufferedStream(intermittentStream);
-      var thread = new Thread(() =>
-      {
-        try {
-          // simulate "incoming" data by extending the memStream length
-          var tempBuffer = new byte[ReadChunkSize];
-          var bytesLeft = TotalSize + 2;
+    //  var stream = new BufferedStream(intermittentStream);
+    //  var thread = new Thread(() =>
+    //  {
+    //    try {
+    //      // simulate "incoming" data by extending the memStream length
+    //      var tempBuffer = new byte[ReadChunkSize];
+    //      var bytesLeft = TotalSize + 2;
 
-          // delay start
-          Thread.Sleep(1000);
+    //      // delay start
+    //      Thread.Sleep(1000);
 
-          while (bytesLeft > 0) {
-            var bytesRead = responseStream.Read(tempBuffer, 0, ReadChunkSize);
-            intermittentStream.Write(tempBuffer, 0, bytesRead);
+    //      while (bytesLeft > 0) {
+    //        var bytesRead = responseStream.Read(tempBuffer, 0, ReadChunkSize);
+    //        intermittentStream.Write(tempBuffer, 0, bytesRead);
 
-            bytesLeft -= bytesRead;
-            Thread.Sleep(100);
-          }
-        }
-        catch (Exception ex) { Log(ex.ToString()); }
-      });
+    //        bytesLeft -= bytesRead;
+    //        Thread.Sleep(100);
+    //      }
+    //    }
+    //    catch (Exception ex) { Log(ex.ToString()); }
+    //  });
 
-      // ensure the reader waits for all the data to arrives before returning
-      thread.Start();
+    //  // ensure the reader waits for all the data to arrives before returning
+    //  thread.Start();
 
-      var reader = createReader(stream);
-      var buffer = reader.ReadBulk(data.Length);
-      thread.Join();
+    //  var reader = createReader(stream);
+    //  var buffer = reader.ReadBulk(data.Length);
+    //  thread.Join();
 
-      Assert.That(buffer.Length, Is.EqualTo(data.Length));
-      Assert.That(buffer, Is.EquivalentTo(data));
+    //  Assert.That(buffer.Length, Is.EqualTo(data.Length));
+    //  Assert.That(buffer, Is.EquivalentTo(data));
 
-      // cleanup
-      stream.Dispose();
-    }
+    //  // cleanup
+    //  stream.Dispose();
+    //}
 
     [Test]
     public void ReadBulk_DataWithLotsOfCrLf_CorrectDataReturned()
