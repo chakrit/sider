@@ -890,7 +890,7 @@ namespace Sider
     }
 
     public KeyValuePair<T, double>[] ZRange(string key,
-      int startRank, int endRank, bool withScores = true)
+      int startRank, int endRank, bool withScores)
     {
       // revert to normal ZRange mode when withScores = false;
       if (!withScores)
@@ -925,7 +925,7 @@ namespace Sider
 
     public KeyValuePair<T, double>[] ZRangeByScore(string key,
       double minIncl, double maxIncl,
-      bool withScores = true,
+      bool withScores,
       int? limitOffset = null, int? limitCount = null)
     {
       // revert to normal ZRangeByScore when withScores = false

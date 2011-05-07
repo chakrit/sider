@@ -141,7 +141,9 @@ namespace Sider
     double ZIncrBy(string key, double amount, T value);
     int ZInterStore(string destKey, params string[] srcKeys);
     T[] ZRange(string key, int startRank, int endRank);
-    T[] ZRangeByScore(string key, double minIncl, double maxIncl);
+    KeyValuePair<T, double>[] ZRange(string key, int startRank, int endRank, bool withScores);
+    T[] ZRangeByScore(string key, double minIncl, double maxIncl, int? limitOffset = null, int? limitCount = null);
+    KeyValuePair<T, double>[] ZRangeByScore(string key, double minIncl, double maxIncl, bool withScores, int? limitOffset = null, int? limitCount = null);
     int ZRank(string key, T value);
     bool ZRem(string key, T value);
     int ZRemRangeByRank(string key, int startRank, int endRank);
