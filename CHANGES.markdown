@@ -1,5 +1,11 @@
 # CHANGES
 
+0.7 - 0.8
+---
+
+* Fix issue #1 reported by @rjlopes, ZScore now returns `double?`; `null` 
+  is returned when an element does not exists in the sorted set.
+
 0.6 - 0.7
 ---
 
