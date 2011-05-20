@@ -1063,9 +1063,9 @@ namespace Sider
       return invoke("ZREVRANK", key, value, r => r.ReadInt());
     }
 
-    public double ZScore(string key, T value)
+    public double? ZScore(string key, T value)
     {
-      return invoke("ZSCORE", key, value, r => r.ReadDouble());
+      return invoke("ZSCORE", key, value, r => r.ReadDoubleOrNull());
     }
 
     public int ZUnionStore(string destKey, params string[] srcKeys)

@@ -40,6 +40,12 @@ namespace Sider
       return _encoder.DecodeDouble(readBulk());
     }
 
+    public double? ReadDoubleOrNull()
+    {
+      var bulk = readBulk();
+      return bulk == null ? (double?)null : _encoder.DecodeDouble(bulk);
+    }
+
     public bool ReadBool()
     {
       readType(ResponseType.Integer);

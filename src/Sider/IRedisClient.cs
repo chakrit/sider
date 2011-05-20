@@ -154,7 +154,7 @@ namespace Sider
     T[] ZRevRangeByScore(string key, double minIncl, double maxIncl, int? limitOffset = null, int? limitCount = null);
     KeyValuePair<T, double>[] ZRevRangeByScore(string key, double minIncl, double maxIncl, bool withScores, int? limitOffset = null, int? limitCount = null);
     int ZRevRank(string key, T value);
-    double ZScore(string key, T value);
+    double? ZScore(string key, T value);
     int ZUnionStore(string destKey, params string[] srcKeys);
     int ZUnionStore(string destKey, string[] srcKeys, int[] weights = null, Aggregate aggregate = Aggregate.None);
     IObservable<Message<T>> PSubscribe(params string[] keys);
