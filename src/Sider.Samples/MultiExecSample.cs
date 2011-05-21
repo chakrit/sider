@@ -19,7 +19,7 @@ namespace Sider.Samples
       var incrThread = new Thread(incrementor);
 
       WriteLine("If MULTI EXEC is working values on the same line should" +
-        " always equal since INCR is done inside a MULTI/EXEC block");
+        " always equal since all INCRs is done inside a MULTI/EXEC block");
 
       logThread.Start();
       incrThread.Start();
@@ -50,6 +50,7 @@ namespace Sider.Samples
         foreach (var key in _keys)
           client.Incr(key);
         client.Exec();
+
         Thread.Sleep(250);
       }
     }

@@ -46,8 +46,8 @@ as much as possible which results in:
   really large blobs (e.g. user-uploaded files) without huge buffers.
 * Delegate-based pipelining support.
 
-As of **April 26th, 2011**, except for some complex arguments all commands as
-per Redis 2.2 are now implemented. Enjoy! :)
+As of **April 26th, 2011**, all commands as
+per Redis 2.2 are now implemented with all options. Enjoy! :)
 
 # HOWTO
 
@@ -221,6 +221,60 @@ buffers directly:
       Trace.Assert(result[i] == temp[i]);
 
 Just note the `-Raw` suffix.
+
+# TRANSACTIONS
+
+Transactions handling are automatic from the user persepective.
+Just issue a `MULTI` like you would do via `redis-cli` and the client
+will enter transaction mode automatically. While in transaction mode,
+please note the following points:
+
+After `MULTI` all non-trasaction commands will result in a `+QUEUED`
+response instead of the command's normal response. So return values
+from commands after `.Multi()` is meaningless.
+
+    var client = new RedisClient();
+
+    // Enter transaction mode
+    client.Multi();
+
+    // x is meaningless since Redis will returns a +QUEUED
+    var x = client.Get("X");
+
+    // (continued...)
+
+All command results will be recorded just like when you perform a
+`.Pipeline()` call. Recorded results will be read out after you
+issue an `EXEC` just like via `redis-cli`
+
+    // (continued...)
+    var result = client.Exec().ToArray();
+
+    // result contains 1 element since we've issued
+    // only 1 command so far in transaction mode
+    var actualXvalue = result[0]; // from .Get("X") above
+
+  That is `.Exec()` will returns an `IEnumerable<object>` with as much
+  elements as the number of commands you've issued since `.Multi()`
+
+Likewise, `DISCARD` discards all the commands recorded so far and simply
+exits transaction mode.
+
+    // set a sample value
+    client.Set("X", "Foobar!");
+
+    // perform an aborted transaction
+    client.Multi();
+    client.Set("X", "NO");
+    client.Discard();
+
+    // check result
+    var result = client.Get("X");
+
+    // X == "Foobar!"
+
+Please see the `MultiExecSample.cs` file in the `src\Sider.Samples`
+folder for a complete and working example.
  
 # CONFIGURATION
 
