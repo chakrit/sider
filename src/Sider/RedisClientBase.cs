@@ -33,7 +33,7 @@ namespace Sider
 
     public RedisClientBase(string host = RedisSettings.DefaultHost,
       int port = RedisSettings.DefaultPort) :
-      this(RedisSettings.New().Host(host).Port(port)) { }
+      this(RedisSettings.Build().Host(host).Port(port)) { }
 
     public RedisClientBase(RedisSettings settings) :
       base(settings)

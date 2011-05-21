@@ -23,7 +23,7 @@ namespace Sider.Benchmark
 
       Func<Job> getJob = () => new MultiplePipelinedResultTypeJob();
 
-      _settings = RedisSettings.New()
+      _settings = RedisSettings.Build()
         .ReconnectOnIdle(false);
 
       _pool = new RoundRobinPool<string>(_settings, Instances);

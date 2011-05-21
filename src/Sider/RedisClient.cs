@@ -31,10 +31,10 @@ namespace Sider
 
     public RedisClient(string host = RedisSettings.DefaultHost,
       int port = RedisSettings.DefaultPort) :
-      this(RedisSettings.New().Host(host).Port(port)) { }
+      this(RedisSettings.Build().Host(host).Port(port)) { }
 
     public RedisClient(Func<RedisSettings.Builder, RedisSettings> settingsFunc) :
-      this(settingsFunc(RedisSettings.New())) { }
+      this(settingsFunc(RedisSettings.Build())) { }
 
     public RedisClient(RedisSettings settings) :
       base(settings)

@@ -29,7 +29,7 @@ namespace Sider.Tests
       stream.SetLength(0);
 
       var writer = writerBufferSize.HasValue ?
-        new RedisWriter(stream, RedisSettings.New()
+        new RedisWriter(stream, RedisSettings.Build()
           .WriteBufferSize(writerBufferSize.Value)) :
         new RedisWriter(stream);
 

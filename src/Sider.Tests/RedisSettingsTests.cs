@@ -9,7 +9,7 @@ namespace Sider.Tests
     protected RedisSettings.Builder Builder { get; private set; }
 
     [SetUp]
-    public void Init() { Builder = RedisSettings.New(); }
+    public void Init() { Builder = RedisSettings.Build(); }
 
 
     [Test]
@@ -43,10 +43,10 @@ namespace Sider.Tests
     }
 
     [Test]
-    public void Ctor_TooLowStringBufferSize_ExceptionThrown()
+    public void Ctor_TooLowEncodingBufferSize_ExceptionThrown()
     {
-      throwsOutOfRange(() => Builder.StringBufferSize(0));
-      throwsOutOfRange(() => Builder.StringBufferSize(int.MinValue));
+      throwsOutOfRange(() => Builder.EncodingBufferSize(0));
+      throwsOutOfRange(() => Builder.EncodingBufferSize(int.MinValue));
     }
 
     [Test]

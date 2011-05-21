@@ -74,8 +74,14 @@ namespace Sider
       CultureOverride = null;
     }
 
+    [Obsolete("Please use .Build() instead.")]
     public static Builder New() { return new Builder(); }
+
+    [Obsolete("Please use .BuildCopy() instead.")]
     public Builder CopyNew() { return new Builder(this); }
+
+    public static Builder Build() { return new Builder(); }
+    public Builder BuildCopy() { return new Builder(this); }
 
 
     public sealed class Builder

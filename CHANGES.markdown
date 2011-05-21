@@ -5,6 +5,8 @@
 
 * Fix issue #1 reported by @rjlopes, ZScore now returns `double?`; `null` 
   is returned when an element does not exists in the sorted set.
+* `RedisSettings.New()` is now `RedisSettings.Build()`. The old method
+  is still there but `[Obsolete]`-ed
 
 0.6 - 0.7
 ---
@@ -39,7 +41,7 @@
 ---
 **Breaking changes:**
 
-* RedisSettings are now built using `RedisSettings.New()` see
+* RedisSettings are now built using `RedisSettings.Build()` see
   `/src/Sider.Samples/ComplexSetupSample.cs:78` for an example.
 * `RedisClient` now supports custom serialization method so the interface and
   class now has a type parameter: `IRedisClient<T>` and `RedisClient<T>`,

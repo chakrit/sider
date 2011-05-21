@@ -153,7 +153,7 @@ Sider like so:
     public class MyClass { }
     public class MySerializer : ISerializer<MyClass> { /* -snip- */ }
 
-    var settings = RedisSettings.New()
+    var settings = RedisSettings.Build()
       .OverrideSerializer(new MySerializer());
 
     var client = new RedisClient<MyClass>(settings);
@@ -281,7 +281,7 @@ folder for a complete and working example.
 You can fine-tune buffer sizes to your liking and provide custom serializers
 by passing a `RedisSettings` instance which are built like this:
 
-    var settings = new RedisSettings().New()
+    var settings = RedisSettings.Build()
       .Host("192.168.192.111")  // custom host
       .Port(9736)               // custom port
       .ReconnectOnIdle(false)   // manage timeouts manually

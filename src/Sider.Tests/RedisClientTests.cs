@@ -82,7 +82,7 @@ namespace Sider.Tests
     public void Ctor_IncompatibleSerializer_ExceptionThrown()
     {
       // use a string serializer for int clients
-      Assert.Throws<ArgumentException>(() => new RedisClient<int>(RedisSettings.New()
+      Assert.Throws<ArgumentException>(() => new RedisClient<int>(RedisSettings.Build()
         .OverrideSerializer(new Mock<ISerializer<string>>().Object)));
     }
 
