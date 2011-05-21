@@ -25,7 +25,9 @@ namespace Sider.Samples
         Console.Clear();
         Console.WriteLine("Select sample to run:");
         for (var i = 0; i < samples.Length; i++)
-          Console.WriteLine(" {0,2}. {1}", i, samples[i].Name);
+          Console.WriteLine(" {0,2}. {1} | {2}", i,
+            samples[i].GetType().Name.PadRight(20, ' '),
+            samples[i].Name);
 
         // get user selection
         var userInput = Console.ReadLine();
