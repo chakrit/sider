@@ -44,11 +44,15 @@ namespace Sider
     public int EncodingBufferSize { get; private set; }
     public int SerializationBufferSize { get; private set; }
 
+    [Obsolete("Please use EncodingOverride instead.")]
     public Encoding KeyEncoding { get; private set; }
+
+    [Obsolete("Please use EncodingOverride instead.")]
     public Encoding ValueEncoding { get; private set; }
 
     public ISerializer SerializerOverride { get; private set; }
     public CultureInfo CultureOverride { get; private set; }
+    public Encoding EncodingOverride { get; private set; }
 
     private RedisSettings()
     {
@@ -67,11 +71,9 @@ namespace Sider
       EncodingBufferSize = 256;
       SerializationBufferSize = 2048;
 
-      KeyEncoding = Encoding.ASCII;
-      ValueEncoding = Encoding.UTF8;
-
       SerializerOverride = null;
       CultureOverride = null;
+      EncodingOverride = null;
     }
 
     [Obsolete("Please use .Build() instead.")]
@@ -225,6 +227,7 @@ namespace Sider
         return this;
       }
 
+      [Obsolete("Please use EncodingOverride instead.")]
       public Builder ValueEncoding(Encoding encoding)
       {
         SAssert.ArgumentNotNull(() => encoding);
@@ -233,6 +236,7 @@ namespace Sider
         return this;
       }
 
+      [Obsolete("Please use EncodingOverride instead.")]
       public Builder KeyEncoding(Encoding encoding)
       {
         SAssert.ArgumentNotNull(() => encoding);
@@ -251,6 +255,12 @@ namespace Sider
       public Builder OverrideCulture(CultureInfo culture)
       {
         _settings.CultureOverride = culture;
+        return this;
+      }
+
+      public Builder OverrideEncoding(Encoding encoding)
+      {
+        _settings.EncodingOverride = encoding;
         return this;
       }
     }

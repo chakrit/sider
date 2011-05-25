@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Sider.Serialization;
 
 namespace Sider.Samples
@@ -72,6 +73,7 @@ namespace Sider.Samples
         .SerializationBufferSize(8192) // as large as reads
         .OverrideSerializer(new PersonnelSerializer()) // custom serializer
         .OverrideCulture(CultureInfo.GetCultureInfo("th-TH")) // non-default culture
+        .OverrideEncoding(Encoding.GetEncoding("tis-620")) // thai language encoding
         .ReconnectOnIdle(true) // auto reconnect on idle
         .ReissueCommandsOnReconnect(false)); // never retry automatically
 

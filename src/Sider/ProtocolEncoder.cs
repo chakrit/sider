@@ -4,7 +4,6 @@ using System.Text;
 
 namespace Sider
 {
-  // TODO: Add support for Encoding
   public class ProtocolEncoder : SettingsWrapper
   {
     protected const long UnixEpochL = 621355968000000000L; // 1st Jan 1970
@@ -12,6 +11,7 @@ namespace Sider
 
 
     private byte[] _buffer;
+    private Encoding _encoding;
 
     public byte[] SharedBuffer { get { return _buffer; } }
 
@@ -19,26 +19,26 @@ namespace Sider
       base(settings)
     {
       _buffer = new byte[settings.EncodingBufferSize];
+      _encoding = settings.EncodingOverride ?? Encoding.UTF8;
     }
 
 
     public ArraySegment<byte> Encode(string s)
     {
-      var bytesNeeded = Encoding.UTF8.GetByteCount(s);
+      var bytesNeeded = _encoding.GetByteCount(s);
       if (bytesNeeded <= _buffer.Length) {
-        var bytesWrote = Encoding.UTF8
-          .GetBytes(s, 0, s.Length, _buffer, 0);
+        var bytesWrote = _encoding.GetBytes(s, 0, s.Length, _buffer, 0);
 
         return new ArraySegment<byte>(_buffer, 0, bytesWrote);
       }
 
-      var buffer = Encoding.UTF8.GetBytes(s);
+      var buffer = _encoding.GetBytes(s);
       return new ArraySegment<byte>(buffer, 0, buffer.Length);
     }
 
     public string DecodeStr(ArraySegment<byte> buffer)
     {
-      return Encoding.UTF8.GetString(buffer.Array, buffer.Offset, buffer.Count);
+      return _encoding.GetString(buffer.Array, buffer.Offset, buffer.Count);
     }
 
 
