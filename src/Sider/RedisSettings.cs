@@ -20,8 +20,10 @@ namespace Sider
     public string Host { get; private set; }
     public int Port { get; private set; }
 
+    public int ConnectionTimeout { get; private set; }
     public bool ReconnectOnIdle { get; private set; }
     public int MaxReconnectRetries { get; private set; }
+
     public bool ReissueCommandsOnReconnect { get; private set; }
     public bool ReissuePipelinedCallsOnReconnect { get; private set; }
 
@@ -60,10 +62,12 @@ namespace Sider
       Host = "localhost";
       Port = 6379;
 
+      ConnectionTimeout = -1;
       ReconnectOnIdle = true;
+      MaxReconnectRetries = 10; // retry forever
+
       ReissueCommandsOnReconnect = true;
       ReissuePipelinedCallsOnReconnect = true;
-      MaxReconnectRetries = 10; // retry forever
 
       // TODO: Use buffer pools? with growable buffers?
       ReadBufferSize = 4096;
@@ -171,6 +175,12 @@ namespace Sider
           .WriteBufferSize(write)
           .EncodingBufferSize(encoding)
           .SerializationBufferSize(serialization);
+      }
+
+      public Builder ConnectionTimeout(int timeout)
+      {
+        _settings.ConnectionTimeout = timeout;
+        return this;
       }
 
       public Builder ReconnectOnIdle(bool reconnectOnIdle)

@@ -42,7 +42,8 @@ namespace Sider
       if (settings.SerializerOverride != null) {
         _serializer = settings.SerializerOverride as ISerializer<T>;
         if (_serializer == null)
-          throw new ArgumentException("Specified serializer is not compatible.");
+          throw new ArgumentException(
+            "Specified serializer is not compatible with type T.");
       }
       else
         _serializer = Serializers.For<T>();

@@ -71,6 +71,10 @@ namespace Sider
       _socket.SendBufferSize = Settings.WriteBufferSize;
       _socket.NoDelay = true;
 
+      // split timeout settings so both can be set separately
+      _socket.ReceiveTimeout = Settings.ConnectionTimeout;
+      _socket.SendTimeout = Settings.ConnectionTimeout;
+
       _socket.Connect(Settings.Host, Settings.Port);
       _stream = new NetworkStream(_socket, FileAccess.ReadWrite, true);
 
