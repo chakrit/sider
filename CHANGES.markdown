@@ -3,13 +3,17 @@
 0.7 - 0.8
 ---
 
-* Fix issue #1 reported by @rjlopes, ZScore now returns `double?`; `null` 
+* Fix issue #1 reported by @rjlopes, ZScore now returns `double?` -- `null` 
   is returned when an element does not exists in the sorted set.
 * `RedisSettings.New()` is now `RedisSettings.Build()`. The old method
   is still there but `[Obsolete]`-ed
+* You can now configure clients via the `ThreadwisePool` constructor using
+  lambda notation just like `RedisClient`.
 * Introduced `BLPOP\BRPOP` overloads that matches with redis docs.
 * Introduced `RedisSettings.Builder.OverrideEncoding` (access with
   `RedisSettings.EncodingOverride` to change string encodings used.
+* Introduced `RedisSettings.Builder.ConnectionTimeout` for overriding
+  internal socket connection timeout to help deal with socket timeout better.
 
 0.6 - 0.7
 ---

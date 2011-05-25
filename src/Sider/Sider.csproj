@@ -88,6 +88,7 @@
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Serialization\StringSerializer.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="SimpleThreadwisePool.cs" />
     <Compile Include="ThreadwisePool.cs" />
   </ItemGroup>
   <ItemGroup>
