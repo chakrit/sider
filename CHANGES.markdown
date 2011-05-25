@@ -12,8 +12,14 @@
 * Introduced `BLPOP\BRPOP` overloads that matches with redis docs.
 * Introduced `RedisSettings.Builder.OverrideEncoding` (access with
   `RedisSettings.EncodingOverride` to change string encodings used.
-* Introduced `RedisSettings.Builder.ConnectionTimeout` for overriding
+
+Experimental features:
+
+* `RedisSettings.Builder.ConnectionTimeout` for overriding
   internal socket connection timeout to help deal with socket timeout better.
+* `SimpleThreadwisePool` which activates client and disposes
+  it immediately when the thread exits. This helps greatly with redis timeout
+  issues in high-load environment.
 
 0.6 - 0.7
 ---
