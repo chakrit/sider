@@ -644,8 +644,10 @@ namespace Sider
 
     #region Lists
 
-    // a slight variation from Redis doc since params array must be last
-    // TODO: Provide an overload that match with the redis doc?
+    public KeyValuePair<string, T>? BLPop(string[] keys, int timeout)
+    { return BLPop(timeout, keys); }
+
+    // a slight variation from Redis doc since its easier to use params array
     public KeyValuePair<string, T>? BLPop(int timeout, params string[] keys)
     {
       return invoke("BLPOP", keys.Length + 1,
@@ -653,6 +655,10 @@ namespace Sider
         r => r.ReadSerializedKeyValue(_serializer));
     }
 
+    public KeyValuePair<string, T>? BRPop(string[] keys, int timeout)
+    { return BRPop(timeout, keys); }
+
+    // a slight variation from Redis doc since its easier to use params array
     public KeyValuePair<string, T>? BRPop(int timeout, params string[] keys)
     {
       return invoke("BRPOP", keys.Length + 1,

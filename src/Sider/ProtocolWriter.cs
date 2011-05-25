@@ -83,7 +83,6 @@ namespace Sider
       flushIfAuto();
     }
 
-    // TODO: Use the shared buffer?
     public void WriteArg(TimeSpan span) { WriteArg(_encoder.Encode(span)); }
     public void WriteArg(DateTime dt) { WriteArg(_encoder.Encode(dt)); }
 
