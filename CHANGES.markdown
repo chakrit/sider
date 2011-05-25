@@ -7,6 +7,9 @@
   is returned when an element does not exists in the sorted set.
 * `RedisSettings.New()` is now `RedisSettings.Build()`. The old method
   is still there but `[Obsolete]`-ed
+* Introduced `BLPOP\BRPOP` overloads that matches with redis docs.
+* Introduced `RedisSettings.Builder.OverrideEncoding` (access with
+  `RedisSettings.EncodingOverride` to change string encodings used.
 
 0.6 - 0.7
 ---
