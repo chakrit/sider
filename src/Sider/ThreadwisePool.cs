@@ -6,6 +6,10 @@ namespace Sider
 {
   public class ThreadwisePool : ThreadwisePool<string>
   {
+    public ThreadwisePool(
+      Func<RedisSettings.Builder, RedisSettings> settingsFunc) :
+      base(settingsFunc) { }
+
     public ThreadwisePool(string host = RedisSettings.DefaultHost,
       int port = RedisSettings.DefaultPort,
       int? db = null) :
@@ -27,6 +31,11 @@ namespace Sider
 
 
     protected RedisSettings Settings { get { return _settings; } }
+
+
+    public ThreadwisePool(
+      Func<RedisSettings.Builder, RedisSettings> settingsFunc) :
+      this(settingsFunc(RedisSettings.Build())) { }
 
     public ThreadwisePool(string host = RedisSettings.DefaultHost,
       int port = RedisSettings.DefaultPort,
@@ -51,10 +60,8 @@ namespace Sider
       var client = (IRedisClient<T>)weakRef.Target;
 
       // rebuild the client if it's disposed
-      if (client == null || client.IsDisposed) {
-        client = BuildClient();
-        _threadRef.Value = new WeakReference(client);
-      }
+      if (client == null || client.IsDisposed)
+        _threadRef.Value = buildClientInReference();
 
       return client;
     }
