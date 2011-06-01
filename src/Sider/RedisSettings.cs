@@ -62,7 +62,7 @@ namespace Sider
       Host = "localhost";
       Port = 6379;
 
-      ConnectionTimeout = -1;
+      ConnectionTimeout = 0;
       ReconnectOnIdle = true;
       MaxReconnectRetries = 10; // retry forever
 

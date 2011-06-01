@@ -71,7 +71,7 @@ namespace Sider
       _socket.SendBufferSize = Settings.WriteBufferSize;
       _socket.NoDelay = true;
 
-      // split timeout settings so both can be set separately
+      // TODO: split timeout settings so both can be set separately
       _socket.ReceiveTimeout = Settings.ConnectionTimeout;
       _socket.SendTimeout = Settings.ConnectionTimeout;
 

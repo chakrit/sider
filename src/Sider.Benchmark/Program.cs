@@ -21,7 +21,7 @@ namespace Sider.Benchmark
       const int Iterations = 10000;
       const bool QuietMode = false; // turn to false to make it wait for key inputs
 
-      Func<Job> getJob = () => new MultiplePipelinedResultTypeJob();
+      Func<Job> getJob = () => new PingJob();
 
       _settings = RedisSettings.Build()
         .ReconnectOnIdle(false);

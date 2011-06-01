@@ -60,8 +60,10 @@ namespace Sider
       var client = (IRedisClient<T>)weakRef.Target;
 
       // rebuild the client if it's disposed
-      if (client == null || client.IsDisposed)
-        _threadRef.Value = buildClientInReference();
+      if (client == null || client.IsDisposed) {
+        client = BuildClient();
+        _threadRef.Value = new WeakReference(client);
+      }
 
       return client;
     }

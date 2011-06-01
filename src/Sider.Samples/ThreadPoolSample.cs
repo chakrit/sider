@@ -50,7 +50,8 @@ namespace Sider.Samples
 
           // obtain an IRedisClient from the pool
           // and use it to INCR a key
-          pool.GetClient().Incr(key);
+          var client = pool.GetClient();
+          client.Incr(key);
         }))
         .ToArray());
 

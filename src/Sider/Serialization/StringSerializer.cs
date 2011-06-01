@@ -11,7 +11,7 @@ namespace Sider.Serialization
 
     protected override void OnInit()
     {
-      _encoding = Settings.ValueEncoding;
+      _encoding = Settings.EncodingOverride ?? Encoding.UTF8;
       _buffer = new byte[Settings.SerializationBufferSize];
     }
 
