@@ -15,8 +15,8 @@
     <description>
       SIDER : REDIS bindings for C#/.NET 4.0 --
       Features clean API design that maps closely to actual Redis commands.
-      Assuming knowledge of Redis. Sider is a redis client that sticks to the
-      metal, minimal, lightweight, easy to use, no fancy method names,
+      Assumes knowledge of Redis. Sider is a redis client that sticks to the
+      metal, minimal, lightweight, easy to use, no confusing method names,
       no gigantic class hierarchies to setup.
     </description>
   </metadata>

@@ -17,7 +17,7 @@ Experimental features:
 
 * `RedisSettings.Builder.ConnectionTimeout` for overriding
   internal socket connection timeout to help deal with socket timeout better.
-* `SimpleThreadwisePool` which activates client and disposes
+* `AutoActivatingPool` which activates client and disposes
   it immediately when the thread exits. This helps greatly with redis timeout
   issues in high-load environment.
 
