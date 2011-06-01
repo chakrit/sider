@@ -4,35 +4,35 @@ using System.Threading;
 
 namespace Sider
 {
-  public class SimpleThreadwisePool : SimpleThreadwisePool<string>
+  public class AutoActivatingPool : AutoActivatingPool<string>
   {
-    public SimpleThreadwisePool() :
+    public AutoActivatingPool() :
       base(RedisSettings.Default) { }
 
-    public SimpleThreadwisePool(
+    public AutoActivatingPool(
       Func<RedisSettings.Builder, RedisSettings> settingsFunc) :
       base(settingsFunc) { }
 
-    public SimpleThreadwisePool(RedisSettings settings) :
+    public AutoActivatingPool(RedisSettings settings) :
       base(settings) { }
   }
 
-  public class SimpleThreadwisePool<T> : SettingsWrapper, IClientsPool<T>
+  public class AutoActivatingPool<T> : SettingsWrapper, IClientsPool<T>
   {
-    private ThreadLocal<StpContext> _contextStore;
+    private ThreadLocal<PoolContext> _contextStore;
 
 
-    public SimpleThreadwisePool() :
+    public AutoActivatingPool() :
       this(RedisSettings.Default) { }
 
-    public SimpleThreadwisePool(
+    public AutoActivatingPool(
       Func<RedisSettings.Builder, RedisSettings> settingsFunc) :
       this(settingsFunc(RedisSettings.Build())) { }
 
-    public SimpleThreadwisePool(RedisSettings settings) :
+    public AutoActivatingPool(RedisSettings settings) :
       base(settings)
     {
-      _contextStore = new ThreadLocal<StpContext>();
+      _contextStore = new ThreadLocal<PoolContext>();
     }
 
 
@@ -40,7 +40,7 @@ namespace Sider
     {
       var context = _contextStore.Value;
       if (context == null) {
-        context = new StpContext();
+        context = new PoolContext();
         context.Client = buildClient();
         context.ClientThread = getCurrentThread();
 
@@ -55,7 +55,7 @@ namespace Sider
 
 
     // thread that waits until the main thread terminates so cleanup the context
-    private void waitingThread(StpContext refContext)
+    private void waitingThread(PoolContext refContext)
     {
       refContext.ClientThread.Join();
 
@@ -74,7 +74,7 @@ namespace Sider
       return new RedisClient<T>(Settings);
     }
 
-    private Thread startWaitingThread(StpContext context)
+    private Thread startWaitingThread(PoolContext context)
     {
       var t = new Thread(() => waitingThread(context));
       t.Start();
@@ -88,7 +88,7 @@ namespace Sider
     }
 
 
-    private class StpContext
+    private class PoolContext
     {
       public bool Disposed { get; set; }
 
