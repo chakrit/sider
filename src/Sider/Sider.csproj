@@ -44,6 +44,7 @@
     <Compile Include="Executors\ExecutorBase.cs" />
     <Compile Include="Executors\IExecutor.cs" />
     <Compile Include="Executors\ImmediateExecutor.cs" />
+    <Compile Include="Executors\IocpExecutor.cs" />
     <Compile Include="Executors\MonitorExecutor.cs" />
     <Compile Include="Executors\PipelinedExecutor.cs" />
     <Compile Include="Executors\PubSubExecutor.cs" />
