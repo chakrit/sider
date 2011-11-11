@@ -1,5 +1,16 @@
 # CHANGES
 
+0.8 - v0.9.0
+---
+
+* Now versioning semantically (http://semver.org/) (adding the "v" and a
+  revision number)
+* Backward-compatible variadic write overloads (returning `int` instead of
+  `bool`) for `SADD, HDEL, SREM, ZREM, ZADD, LPUSH` and `RPUSH`.
+  Available in Redis 2.4+.
+* Some methods were missing from the IRedisClient interface. It's now there.
+* Experimental `IocpExecutor` support.
+
 0.7 - 0.8
 ---
 
