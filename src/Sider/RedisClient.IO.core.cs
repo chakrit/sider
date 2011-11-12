@@ -5,8 +5,6 @@ namespace Sider
 {
   public partial class RedisClient<T>
   {
-
-
     private void invoke(string command)
     {
       invoke(command, r => (object)null);

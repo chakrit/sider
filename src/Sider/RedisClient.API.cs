@@ -534,6 +534,14 @@ namespace Sider
         r => r.ReadBool());
     }
 
+    [RedisVersion(2, 4, 0)]
+    public int HDel(string key, params string[] fields)
+    {
+      return invoke("HDEL", fields.Length + 1,
+        w => { w.WriteArg(key); Array.ForEach(fields, w.WriteArg); },
+        r => r.ReadInt());
+    }
+
     public bool HExists(string key, string field)
     {
       return invoke("HEXISTS", 2,
@@ -709,6 +717,14 @@ namespace Sider
       return invoke("LPUSH", key, value, r => r.ReadInt());
     }
 
+    [RedisVersion(2, 4, 0)]
+    public int LPush(string key, params T[] values)
+    {
+      return invoke("LPUSH", values.Length + 1,
+        w => { w.WriteArg(key); foreach (var v in values) w.WriteArg(_serializer, v); },
+        r => r.ReadInt());
+    }
+
     public int LPushX(string key, T value)
     {
       return invoke("LPUSHX", key, value, r => r.ReadInt());
@@ -759,6 +775,14 @@ namespace Sider
       return invoke("RPUSH", key, value, r => r.ReadInt());
     }
 
+    [RedisVersion(2, 4, 0)]
+    public int RPush(string key, params T[] values)
+    {
+      return invoke("RPUSH", values.Length + 1,
+        w => { w.WriteArg(key); foreach (var v in values) w.WriteArg(_serializer, v); },
+        r => r.ReadInt());
+    }
+
     public int RPushX(string key, T value)
     {
       return invoke("RPUSHX", key, value, r => r.ReadInt());
@@ -771,6 +795,14 @@ namespace Sider
     public bool SAdd(string key, T value)
     {
       return invoke("SADD", key, value, r => r.ReadBool());
+    }
+
+    [RedisVersion(2, 4, 0)]
+    public int SAdd(string key, params T[] values)
+    {
+      return invoke("SADD", values.Length + 1,
+        w => { w.WriteArg(key); foreach (var v in values) w.WriteArg(_serializer, v); },
+        r => r.ReadInt());
     }
 
     public int SCard(string key)
@@ -838,6 +870,14 @@ namespace Sider
       return invoke("SREM", key, value, r => r.ReadBool());
     }
 
+    [RedisVersion(2, 4, 0)]
+    public int SRem(string key, params T[] values)
+    {
+      return invoke("SREM", values.Length + 1,
+        w => { w.WriteArg(key); foreach (var v in values) w.WriteArg(_serializer, v); },
+        r => r.ReadInt());
+    }
+
     public T[] SUnion(params string[] keys)
     {
       return invoke("SUNION", keys.Length,
@@ -861,6 +901,20 @@ namespace Sider
       return invoke("ZADD", 3,
         w => { w.WriteArg(key); w.WriteArg(score); w.WriteArg(_serializer, value); },
         r => r.ReadBool());
+    }
+
+    [RedisVersion(2, 4, 0)]
+    public int ZAdd(string key, IEnumerable<KeyValuePair<double, T>> values)
+    {
+      var arr = values.ToArray();
+      return invoke("ZADD", arr.Length * 2 + 1, w =>
+      {
+        w.WriteArg(key);
+        foreach (var kv in arr) {
+          w.WriteArg(kv.Key);
+          w.WriteArg(_serializer, kv.Value);
+        }
+      }, r => r.ReadInt());
     }
 
     public int ZCard(string key)
@@ -985,6 +1039,14 @@ namespace Sider
     public bool ZRem(string key, T value)
     {
       return invoke("ZREM", key, value, r => r.ReadBool());
+    }
+
+    [RedisVersion(2, 4, 0)]
+    public int ZRem(string key, params T[] values)
+    {
+      return invoke("ZREM", values.Length + 1,
+        w => { w.WriteArg(key); foreach (var v in values) w.WriteArg(_serializer, v); },
+        r => r.ReadInt());
     }
 
     public int ZRemRangeByRank(string key, int startRank, int endRank)
