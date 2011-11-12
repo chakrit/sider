@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Moq;
 using NUnit.Framework;
+using Sider.Executors;
 using Sider.Serialization;
 
 namespace Sider.Tests
@@ -82,8 +83,14 @@ namespace Sider.Tests
     public void Ctor_IncompatibleSerializer_ExceptionThrown()
     {
       // use a string serializer for int clients
-      Assert.Throws<ArgumentException>(() => new RedisClient<int>(RedisSettings.Build()
-        .OverrideSerializer(new Mock<ISerializer<string>>().Object)));
+      var settings = RedisSettings.Build()
+        .OverrideSerializer(new Mock<ISerializer<string>>().Object);
+
+      // prevent Reset() from actually trying to connect to redis
+      var clientMock = new Mock<RedisClient<int>>();
+      clientMock.Setup(c => c.Reset()).Callback(() => { });
+
+      Assert.Throws<ArgumentException>(() => clientMock.Object.ToString());
     }
 
 
@@ -141,6 +148,9 @@ namespace Sider.Tests
           m.Name.StartsWith("Config")));
 
       foreach (var method in methods) {
+        // reset client state
+        ((RedisClientBase)pack.Client).SwitchExecutor<ImmediateExecutor>();
+
         // setup proper invocation parameters
         var methodParams = method.GetParameters();
         var invokeParams = methodParams
