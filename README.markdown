@@ -64,8 +64,9 @@ Here's how to use the lib:
 
     client.Dispose() // disconnect
 
-For ASP.NET/Web and/or multi-threaded concurrent access scenarios, you can use
-the `ThreadwisePool` like this:
+For ASP.NET/Web and/or multi-threaded concurrent access scenarios, it is
+recommended that you use an IoC container to help you with client activations
+or you can use the `ThreadwisePool` like this:
 
     // manages clients activations/disposal
     var pool = new ThreadwisePool();
@@ -298,6 +299,8 @@ by passing a `RedisSettings` instance which are built like this:
 ...
 
 # SUPPORT / CONTRIBUTE
+
+Any improvements to the code is totally welcome! :)
 
 Please post any support request to
 [sider-lemonade](http://groups.google.com/group/sider-lemonade) google group.
