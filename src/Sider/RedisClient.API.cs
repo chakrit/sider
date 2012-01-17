@@ -456,7 +456,7 @@ namespace Sider
           w.WriteArg(kv.Key);
           w.WriteArg(_serializer, kv.Value);
         }),
-        r => r.ReadOk());
+        r => r.ReadBool());
     }
 
     public bool Set(string key, T value)
