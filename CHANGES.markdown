@@ -1,5 +1,17 @@
 # CHANGES
 
+v0.9.0 - vNext
+---
+
+TODO:
+
+* Proper C# 4 mono build support (http://stackoverflow.com/questions/8181081/error-framework-netframework-4-0-client-profile-not-installed-for-monodevel)
+* Redis version detection mechanism (INFO?).
+* Untangle connection management from the client so we could do something like IOCP using a connection that's shared between clients.
+  (one pipelined connection for normal commands, another for pub/sub etc.)
+* Better clients pool interface.
+* More Redis protocol conformance tests (correct arguments/correct return values/correct command spelling).
+
 0.8 - v0.9.0
 ---
 
