@@ -3,7 +3,9 @@
 v0.9.0 - vNext
 ---
 
-TODO:
+* MSetNX should call ReadBool, not ReadOk ([@bokononlives](https://github.com/BokononLives) - [issue #3](https://github.com/chakrit/sider/pull/3)) 
+
+**TODO:**
 
 * Proper C# 4 mono build support (http://stackoverflow.com/questions/8181081/error-framework-netframework-4-0-client-profile-not-installed-for-monodevel)
 * Redis version detection mechanism (INFO?).
