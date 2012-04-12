@@ -13,6 +13,8 @@ v0.9.0 - vNext
   (one pipelined connection for normal commands, another for pub/sub etc.)
 * Better clients pool interface.
 * More Redis protocol conformance tests (correct arguments/correct return values/correct command spelling).
+* Update README for 2.4.
+* Start work for 2.6 support.
 
 0.8 - v0.9.0
 ---
