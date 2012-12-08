@@ -7,7 +7,8 @@ Inspired by migueldeicaza's first stab at the problem (I used some of his
 algorithm) and ServiceStack.Redis (to take it a lot further).
 
 **If you have questions/feedbacks, please feel free to shoot it to
-[sider-lemonade@googlegroups.com](mailto:sider-lemonade@googlegroups.com) or
+[sider-lemonade@googlegroups.com](mailto:sider-lemonade@googlegroups.com),
+open a [GitHub issue](https://github.com/chakrit/sider/issues/new) or
 ping me on Twitter [@chakrit](http://twitter.com/chakrit)**
 
 # INSTALLATION
@@ -27,7 +28,7 @@ Then in your `Program.cs` file, test it out with:
 
     Console.ReadKey();
 
-If Redis 2.2 is running on the default host/port and everything is working
+If Redis 2.4 is running on the default host/port and everything is working
 properly, you should see the string `"WORLD!!!!"` printed to your console.
 
 # ABOUT
