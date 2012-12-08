@@ -1,6 +1,7 @@
 ﻿
 using System;
-using System.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Concurrency;
 using System.Linq;
 
 namespace Sider.Samples.Chat
@@ -33,7 +34,7 @@ namespace Sider.Samples.Chat
       ParticipantList.Items.AddRange(client.SMembers(members));
 
       var obs = client.PSubscribe(room + "*")
-        .ObserveOn(Scheduler.Dispatcher)
+        .ObserveOn(Scheduler.Default)
         .Subscribe(m =>
         {
           if (m.SourceChannel == joins)
