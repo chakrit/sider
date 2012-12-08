@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Concurrency;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+
+using Scheduler = System.Reactive.Concurrency.Scheduler;
 
 namespace Sider.Samples
 {
@@ -46,7 +49,7 @@ namespace Sider.Samples
         .ObserveOn(Scheduler.NewThread)
         .SubscribeOn(Scheduler.CurrentThread)
         .Sample(TimeSpan.FromMilliseconds(PingStatInterval / PingStatWindow))
-        .BufferWithTime(TimeSpan.FromMilliseconds(PingStatInterval))
+        .Buffer(TimeSpan.FromMilliseconds(PingStatInterval))
         .Select(times => times.DefaultIfEmpty(0.0).Average())
         .Subscribe(logPingTime);
 
