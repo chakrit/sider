@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{0CE30014-2C41-4378-8208-0704781C0CA9}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGES.markdown = CHANGES.markdown
@@ -23,6 +23,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sider.Samples", "src\Sider.Samples\Sider.Samples.csproj", "{C34EA0A3-4FF8-4446-ADA4-C18AB979AF33}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sider.Samples.Chat", "src\Sider.Samples.Chat\Sider.Samples.Chat.csproj", "{2BFB74C2-DBD4-4F30-A672-71161D4BBCC6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{23283EE4-4DE5-4B6D-8CB7-28877B9C2CA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
