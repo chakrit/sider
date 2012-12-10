@@ -14,3 +14,4 @@ build.zip
 build\*.nupkg
 sider.all.zip
 sider.nupkg.zip
+.nuget
