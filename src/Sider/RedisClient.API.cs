@@ -659,7 +659,7 @@ namespace Sider
     public KeyValuePair<string, T>? BLPop(int timeout, params string[] keys)
     {
       return invoke("BLPOP", keys.Length + 1,
-        w => { w.WriteArg(timeout); Array.ForEach(keys, w.WriteArg); },
+        w => { Array.ForEach(keys, w.WriteArg); w.WriteArg(timeout); },
         r => r.ReadSerializedKeyValue(_serializer));
     }
 
@@ -670,7 +670,7 @@ namespace Sider
     public KeyValuePair<string, T>? BRPop(int timeout, params string[] keys)
     {
       return invoke("BRPOP", keys.Length + 1,
-        w => { w.WriteArg(timeout); Array.ForEach(keys, w.WriteArg); },
+        w => { Array.ForEach(keys, w.WriteArg); w.WriteArg(timeout); },
         r => r.ReadSerializedKeyValue(_serializer));
     }
 
