@@ -58,6 +58,7 @@
     <Compile Include="..\..\SiderAssemblyInfo.cs">
       <Link>Properties\SiderAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ClientListSample.cs" />
     <Compile Include="InfoSample.cs" />
     <Compile Include="MonitorSample.cs" />
     <Compile Include="SortSample.cs" />

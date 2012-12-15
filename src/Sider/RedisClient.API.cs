@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.IO;
 using System.Linq;
 using Sider.Executors;
@@ -41,6 +42,24 @@ namespace Sider
     public bool BgSave()
     {
       return invoke("BGSAVE", r => r.ReadStatus("Background saving started"));
+    }
+
+    public bool ClientKill(string ipAddress, int port)
+    {
+      return invoke("CLIENT KILL", "{0}:{1}".F(ipAddress, port),
+        r => r.ReadOk());
+    }
+
+    public IDictionary<string, string>[] ClientList()
+    {
+      return invoke("CLIENT LIST", r => r
+        .ReadStrBulk()
+        .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+        .Select(line => line
+          .Split(' ')
+          .Select(token => token.Split('='))
+          .ToDictionary(pair => pair[0], pair => pair[1]))
+        .ToArray());
     }
 
     public KeyValuePair<string, string>[] ConfigGet(string param)
@@ -118,7 +137,10 @@ namespace Sider
       return invoke("INFO", r =>
       {
         var rawResult = r.ReadStrBulk()
-          .Split(new[] { '\r', '\n', ':' }, StringSplitOptions.RemoveEmptyEntries);
+          .Split(new[] { '\r', '\n', ':' }, StringSplitOptions.RemoveEmptyEntries)
+          .Select(item => item.Trim())
+          .Where(item => !item.StartsWith("#"))
+          .ToArray();
 
         var result = new KeyValuePair<string, string>[rawResult.Length / 2];
         var resultIdx = 0;
