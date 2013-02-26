@@ -1,80 +1,407 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
+<html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Sider : SIDER : REDIS bindings for C#/.NET 4.0 -- Features clean API design that maps closely to actual Redis commands." />
 
-	<title>chakrit/sider @ GitHub</title>
-	
-	<style type="text/css">
-		body {
-  		margin-top: 1.0em;
-  		background-color: #5e871d;
-		  font-family: "Helvetica,Arial,FreeSans";
-  		color: #ffffff;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-		h1 { font-size: 3.8em; color: #a178e2; margin-bottom: 3px; }
-		h1 .small { font-size: 0.4em; }
-		h1 a { text-decoration: none }
-		h2 { font-size: 1.5em; color: #a178e2; }
-    h3 { text-align: center; color: #a178e2; }
-    a { color: #a178e2; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-		pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-	</style>
-	
-</head>
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-<body>
-  <a href="http://github.com/chakrit/sider"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+    <title>Sider</title>
+  </head>
 
-  <div id="container">
+  <body>
 
-    <div class="download">
-      <a href="http://github.com/chakrit/sider/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/chakrit/sider/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/chakrit/sider">View on GitHub</a>
+
+          <h1 id="project_title">Sider</h1>
+          <h2 id="project_tagline">SIDER : REDIS bindings for C#/.NET 4.0 -- Features clean API design that maps closely to actual Redis commands.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/chakrit/sider/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/chakrit/sider/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
     </div>
 
-    <h1><a href="http://github.com/chakrit/sider">sider</a>
-      <span class="small">by <a href="http://github.com/chakrit">chakrit</a></span></h1>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>SIDER : REDIS bindings for C#</h1>
 
-    <div class="description">
-      SIDER : REDIS bindings for C#/.NET ... still under development.
+<p>For the latest changes, please see the <code>CHANGES.markdown</code> file.</p>
+
+<p>Inspired by migueldeicaza's first stab at the problem (I used some of his
+algorithm) and ServiceStack.Redis (to take it a lot further).</p>
+
+<p><strong>If you have questions/feedbacks, please feel free to shoot it to
+<a href="mailto:sider-lemonade@googlegroups.com">sider-lemonade@googlegroups.com</a>,
+open a <a href="https://github.com/chakrit/sider/issues/new">GitHub issue</a> or
+ping me on Twitter <a href="http://twitter.com/chakrit">@chakrit</a></strong></p>
+
+<p><strong>NOTE:</strong> If you are going to run benchmarks against Sider codebase
+make sure you have these <a href="https://github.com/chakrit/sider/blob/master/src/Sider/SAssert.cs">assertions</a>
+turned off by running your test projects in RELEASE mode. Otherwise
+you might get strange benchmarking results.</p>
+
+<h1>INSTALLATION</h1>
+
+<p>The quickest route to getting started with Redis using Sider is via
+<a href="http://nuget.org">NuGet</a>. Create a new console application and then open the
+Package Manager Console (View -&gt; Other Windows -&gt; Package Manager Console) and
+type in:</p>
+
+<pre><code>install-package sider
+</code></pre>
+
+<p>Then in your <code>Program.cs</code> file, test it out with:</p>
+
+<pre><code>var client = new RedisClient();
+client.Set("HELLOOO", "WORLD!!!!");
+Console.WriteLine(client.Get("HELLOOO"));
+
+Console.ReadKey();
+</code></pre>
+
+<p>If Redis 2.4 is running on the default host/port and everything is working
+properly, you should see the string <code>"WORLD!!!!"</code> printed to your console.</p>
+
+<h1>ABOUT</h1>
+
+<p>This is a REDIS 2.2 bindings for C# 4.0 that try to <strong>stick to the metal</strong>
+as much as possible which results in:</p>
+
+<ul>
+<li>Simple API that maps closely to the Redis commands reference.</li>
+<li>Easy to use, no gigantic class hierarchies to setup. No confusing naming
+convention that obfuscates the real command being sent to Redis.</li>
+<li>Redis publish/subscribe via <code>IObservable</code>.</li>
+<li>As fast as my limited networking skills and Redis itself will allow.
+(Which is already lightning-fast thanks to Redis!)</li>
+<li>Supports reading from and writing data to user-supplied streams for GET/SET
+and other similar commands to allow Redis to be used to store really
+really large blobs (e.g. user-uploaded files) without huge buffers.</li>
+<li>Delegate-based pipelining support.</li>
+</ul><p>As of <strong>April 26th, 2011</strong>, all commands as
+per Redis 2.2 are now implemented with all options. Enjoy! :)</p>
+
+<h1>HOWTO</h1>
+
+<p>Here's how to use the lib:</p>
+
+<pre><code>// connects to redis
+var client = new RedisClient(); // default host:port
+client = new RedisClient("localhost", 6379); // custom host/port
+
+// redis commands are methods of the RedisClient class
+client.Set("HELLO", "World");
+var result = client.Get("HELLO");
+// result == "World";
+
+client.Dispose() // disconnect
+</code></pre>
+
+<p>For ASP.NET/Web and/or multi-threaded concurrent access scenarios, it is
+recommended that you use an IoC container to help you with client activations
+or you can use the <code>ThreadwisePool</code> like this:</p>
+
+<pre><code>// manages clients activations/disposal
+var pool = new ThreadwisePool();
+
+var client = pool.GetClient();
+var result = client.Get("HELLO") == "WORLD";
+</code></pre>
+
+<p>Internally, a .NET 40 <code>ThreadLocal&lt;T&gt;</code> is used. Both the client and the clients pool can be plugged into an IoC by using the respective
+<code>IRedisClient</code> and <code>IClientsPool</code> interface respectively.</p>
+
+<h1>PIPELINE</h1>
+
+<p>To perform multiple pipelined calls, wrap your commands in a <code>.Pipeline</code> call:</p>
+
+<pre><code>// issue ~ 2k commands in one go
+var result = client.Pipeline(c =&gt;
+{
+  for (var i = 0; i &lt; 1000; i++)
+    c.Set("HELLO" + i.ToString(), "WORLD" + i.ToString());
+
+  for (var i = 999; i &gt;= 0; i--)
+    c.Get("HELLO" + i.ToString()
+});
+
+// parse results
+var resultArr = result.ToArray();
+for (var i = 0; i &lt; 1000; i++)          // SET results
+  Debug.Assert((bool)resultArr[i]); 
+
+for (var i = 999; i &gt;= 0; i--) {        // GET results
+  Debug.Assert(resultArr[i] is string);
+  Debug.Assert("WORLD" + i.ToString() == (string)resultArr[i]);
+}
+</code></pre>
+
+<p>Results are returned as an <code>IEnumerable&lt;object&gt;</code> with as many elements as
+the number of calls you've made with each object having the same type as the
+corresponding pipelined call.</p>
+
+<p>Since its an <code>IEnumerable&lt;object&gt;</code>, it also works with LINQ. See the
+<code>LinqPipelineSample.cs</code> file in the <code>src/Sider.Samples</code> folder for a 
+sample implementation.</p>
+
+<p><strong>Strongly-typed extension</strong></p>
+
+<p>If you only need a fixed number of calls which you can determine at compile-time
+then you can use the extension method version of <code>.Pipeline</code> to help you with
+type-casting.</p>
+
+<p>Example, for a fixed number of calls:</p>
+
+<pre><code>// fixed number of calls &lt; 8
+// each delegate must call exactly 1 redis command (i.e. IRedisClient method)
+var result = client.Pipeline(
+  c =&gt; c.Get("KEY1"),
+  c =&gt; c.MGet("KEY2", "KEY3", "KEY4", "KEY5", "KEY6", "KEY7", "KEY8", "KEY9"),
+  c =&gt; c.Keys("MY_VERY_VERY_VERY_VERY_LONG_*_KEY_PTTRNS"));
+
+string getResult = result.Item1;
+string[] mGetResults = result.Item2;
+string[] keysResults = result.Item3;
+</code></pre>
+
+<p>The returned value of these extension methods is a strongly-typed <code>Tuple&lt;&gt;</code>.</p>
+
+<p><strong>NOTE</strong></p>
+
+<p>Note that pipeline results are not lazy as is usually the case with
+<code>IEnumerable</code> implementations -- All commands will be executed immediately as
+soon as you finish the <code>.Pipeline</code> call.</p>
+
+<h1>CUSTOM TYPE / SERIALIZERS</h1>
+
+<p>To use <code>RedisClient</code> with your own custom type to get automatic serialization,
+just add a type parameter like so:</p>
+
+<pre><code>var client = new RedisClient&lt;MyClass&gt;();
+client.Set("instance", new MyClass());
+
+var mc = client.Get("instance");
+// mc typed as MyClass
+</code></pre>
+
+<p>To provide your own serialization mechanism, create a class that implements
+<code>Sider.Serialization.ISerializer&lt;YourClassTypeHere&gt;</code> and supply it to
+Sider like so:</p>
+
+<pre><code>public class MyClass { }
+public class MySerializer : ISerializer&lt;MyClass&gt; { /* -snip- */ }
+
+var settings = RedisSettings.Build()
+  .OverrideSerializer(new MySerializer());
+
+var client = new RedisClient&lt;MyClass&gt;(settings);
+
+// instance serialized and deserialized using your custom serializer
+client.Set("instance", new MyClass());
+var value = client.Get("instance")
+</code></pre>
+
+<p>See the <code>ComplexSetupSample.cs</code> file in the <code>src/Sider.Samples</code> folder for
+a sample implementation.</p>
+
+<h1>BINARY DATA / STREAMING</h1>
+
+<p>Right now raw binary data / streaming is supported for commands with a single
+value input/output such as <code>Get\HGet\GetRange</code> etc. The command which provides
+raw/streamed mode will have a <code>Raw</code> and <code>To/From</code> prefix/suffix such as
+<code>GetRaw\SetRaw</code> for raw mode and <code>GetTo\SetFrom</code> for streamed mode.</p>
+
+<p>I assumed that you will want to work with raw/streamed data only when you really
+have large values transferring to and from a simple key (as opposed to a member
+of a set or a sorted set). To work exclusively with raw data, I recommend using
+<code>RedisClient&lt;byte[]&gt;</code> instead which uses an direct buffer read/write
+serializer internally.</p>
+
+<p><strong>Streaming</strong></p>
+
+<p>Instead of a normal string or the specified type, streamed mode commands
+accepts <code>System.IO.Stream</code> instead so you can send and receive data to and
+from streams such as <code>FileStream</code>, <code>NetworkStream</code> or ASP.NET <code>OutputStream</code>
+directly to and from Redis with minimal bufferring:</p>
+
+<pre><code>var client = new RedisClient();
+
+// load file content straight into redis
+var filename = @"C:\temp\really_really_large_file.txt";
+using (var fs = File.OpenRead(filename)) {
+  client.SetFrom("really_large_file", fs, (int)file.Length);
+  fs.Close();
+}
+
+// writes out the content of a key to a file
+using (var fs = File.OpenWrite(filename)) {
+  var bytesWrote = client.GetTo("really_large_file", fs);
+  Console.WriteLine("Written {0} bytes of key `{1}`'s content.",
+    bytesWrote, filename);
+}
+</code></pre>
+
+<p>See the <code>StreamingSample.cs</code> file in the <code>src/Sider.Samples</code> folder for
+a sample implementation.</p>
+
+<p><strong>Raw</strong></p>
+
+<p>Additionally, there are also raw data mode commands which accepts <code>byte[]</code>
+buffers directly:</p>
+
+<pre><code>// create random buffer
+var temp = new byte[4096];
+(new Random()).NextBytes(temp);
+
+// work with
+client.SetRaw("random", temp);
+
+var result = client.GetRaw("random");
+for (var i = 0; i &lt; result.Length; i++)
+  Trace.Assert(result[i] == temp[i]);
+</code></pre>
+
+<p>Just note the <code>-Raw</code> suffix.</p>
+
+<h1>TRANSACTIONS</h1>
+
+<p>Transactions handling are automatic from the user persepective.
+Just issue a <code>MULTI</code> like you would do via <code>redis-cli</code> and the client
+will enter transaction mode automatically. While in transaction mode,
+please note the following points:</p>
+
+<p>After <code>MULTI</code> all non-trasaction commands will result in a <code>+QUEUED</code>
+response instead of the command's normal response. So return values
+from commands after <code>.Multi()</code> is meaningless.</p>
+
+<pre><code>var client = new RedisClient();
+
+// Enter transaction mode
+client.Multi();
+
+// x is meaningless since Redis will returns a +QUEUED
+var x = client.Get("X");
+
+// (continued...)
+</code></pre>
+
+<p>All command results will be recorded just like when you perform a
+<code>.Pipeline()</code> call. Recorded results will be read out after you
+issue an <code>EXEC</code> just like via <code>redis-cli</code></p>
+
+<pre><code>// (continued...)
+var result = client.Exec().ToArray();
+
+// result contains 1 element since we've issued
+// only 1 command so far in transaction mode
+var actualXvalue = result[0]; // from .Get("X") above
+</code></pre>
+
+<p>That is <code>.Exec()</code> will returns an <code>IEnumerable&lt;object&gt;</code> with as much
+  elements as the number of commands you've issued since <code>.Multi()</code></p>
+
+<p>Likewise, <code>DISCARD</code> discards all the commands recorded so far and simply
+exits transaction mode.</p>
+
+<pre><code>// set a sample value
+client.Set("X", "Foobar!");
+
+// perform an aborted transaction
+client.Multi();
+client.Set("X", "NO");
+client.Discard();
+
+// check result
+var result = client.Get("X");
+
+// X == "Foobar!"
+</code></pre>
+
+<p>Please see the <code>MultiExecSample.cs</code> file in the <code>src\Sider.Samples</code>
+folder for a complete and working example.</p>
+
+<h1>CONFIGURATION</h1>
+
+<p>You can fine-tune buffer sizes to your liking and provide custom serializers
+by passing a <code>RedisSettings</code> instance which are built like this:</p>
+
+<pre><code>var settings = RedisSettings.Build()
+  .Host("192.168.192.111")  // custom host
+  .Port(9736)               // custom port
+  .ReconnectOnIdle(false)   // manage timeouts manually
+  .ReadBufferSize(256)      // optimize for small reads
+  .WriteBufferSize(65536)   // optimize for large writes
+
+// pass to pool so all clients use the supplied settings
+var pool = new ThreadwisePool(settings);
+var client = pool.GetClient();
+
+// or, pass directly to client
+client = new RedisClient(settings);
+</code></pre>
+
+<p>...</p>
+
+<h1>SUPPORT / CONTRIBUTE</h1>
+
+<p>Any improvements to the code is totally welcome! :)</p>
+
+<p>Please post any support request to
+<a href="http://groups.google.com/group/sider-lemonade">sider-lemonade</a> google group.</p>
+
+<p>Or just shoot me an email at <code>service @ chakrit . net</code> (without the spaces) or
+if you use twitter, feel free to mention <a href="http://twitter.com/chakrit">@chakrit</a>
+for help.</p>
+
+<h1>LICENSE</h1>
+
+<p>Copyright (c) 2011, Chakrit Wichian.
+All rights reserved.</p>
+
+<p>Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:</p>
+
+<p>Redistributions of source code must retain the above copyright notice, this list
+of conditions and the following disclaimer.</p>
+
+<p>Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.</p>
+
+<p>Neither the name of the Chakrit Wichian nor the names of its contributors may be
+used to endorse or promote products derived from this software without specific
+prior written permission.</p>
+
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+      </section>
     </div>
 
-    <h2>Authors</h2>
-<p>Chakrit Wichian (chakrit@2nitedesign.com)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Chakrit Wichian (buhtig@chakrit.net)<br/>      </p>
-
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/chakrit/sider/zipball/master">zip</a> or
-      <a href="http://github.com/chakrit/sider/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/chakrit/sider</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/chakrit/sider">chakrit/sider</a>
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Sider maintained by <a href="https://github.com/chakrit">chakrit</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
     </div>
 
-  </div>
+    
 
-  
-</body>
+  </body>
 </html>
