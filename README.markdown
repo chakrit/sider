@@ -11,6 +11,11 @@ algorithm) and ServiceStack.Redis (to take it a lot further).
 open a [GitHub issue](https://github.com/chakrit/sider/issues/new) or
 ping me on Twitter [@chakrit](http://twitter.com/chakrit)**
 
+**NOTE:** If you are going to run benchmarks against Sider codebase
+make sure you have these [assertions](https://github.com/chakrit/sider/blob/master/src/Sider/SAssert.cs)
+turned off by running your test projects in RELEASE mode. Otherwise
+you might get strange benchmarking results.
+
 # INSTALLATION
 
 The quickest route to getting started with Redis using Sider is via
