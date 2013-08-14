@@ -43,7 +43,7 @@ namespace Sider
     public double? ReadDoubleOrNull()
     {
       var bulk = readBulk();
-      return bulk == null ? (double?)null : _encoder.DecodeDouble(bulk);
+      return bulk.Count == 0 ? (double?)null : _encoder.DecodeDouble(bulk);
     }
 
     public bool ReadBool()
