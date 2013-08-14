@@ -39,7 +39,7 @@ namespace Sider
     {
       return _encoder.DecodeDouble(readBulk());
     }
-
+      
     public double? ReadDoubleOrNull()
     {
       var bulk = readBulk();
@@ -279,6 +279,13 @@ namespace Sider
     {
       readType(ResponseType.Bulk);
       var length = _reader.ReadNumberLine();
+
+      if (length == -1) {
+        // TODO: Should not be null, AFAIK the only case where this null is possible is
+        //   when doing ZSCORE with a non-existent member so we should be safe for a
+        //   0 count check as null for now.
+        return new ArraySegment<byte>(_encoder.SharedBuffer, 0, 0);
+      }
 
       // if fit in encoder buffer, use that
       if (length <= _encoder.SharedBuffer.Length) {
