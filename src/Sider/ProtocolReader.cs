@@ -42,8 +42,8 @@ namespace Sider
       
     public double? ReadDoubleOrNull()
     {
-      var bulk = readBulk();
-      return bulk.Count == 0 ? (double?)null : _encoder.DecodeDouble(bulk);
+      var bulk = readBulkOrNull();
+      return bulk.HasValue ? (double?)_encoder.DecodeDouble(bulk.Value) : null;
     }
 
     public bool ReadBool()
@@ -81,7 +81,8 @@ namespace Sider
 
     public string ReadStrBulk()
     {
-      return _encoder.DecodeStr(readBulk());
+      var bulk = readBulkOrNull();
+      return bulk.HasValue ? _encoder.DecodeStr(bulk.Value) : null;
     }
 
     public byte[] ReadRawBulk()
@@ -257,7 +258,7 @@ namespace Sider
       case MessageType.Unknown:
       default: {
 
-        // maintain protocol even message type is unknown
+        // maintain protocol even when message type is unknown
         // by reading out all the bulks redis told us is available
         count--; // type field already read
         for (var i = 0; i < count; i++)
@@ -280,15 +281,23 @@ namespace Sider
       readType(ResponseType.Bulk);
       var length = _reader.ReadNumberLine();
 
-      if (length == -1) {
-        // TODO: Should not be null, AFAIK the only case where this null is possible is
-        //   when doing ZSCORE with a non-existent member so we should be safe for a
-        //   0 count check as null for now.
-        return new ArraySegment<byte>(_encoder.SharedBuffer, 0, 0);
-      }
-
       // if fit in encoder buffer, use that
       if (length <= _encoder.SharedBuffer.Length) {
+        _reader.ReadBulk(_encoder.SharedBuffer, 0, length);
+        return new ArraySegment<byte>(_encoder.SharedBuffer, 0, length);
+      }
+
+      return new ArraySegment<byte>(_reader.ReadBulk(length));
+    }
+
+    private ArraySegment<byte>? readBulkOrNull()
+    {
+      readType(ResponseType.Bulk);
+      var length = _reader.ReadNumberLine();
+
+      if (length == -1) return null;
+      if (length <= _encoder.SharedBuffer.Length)
+      {
         _reader.ReadBulk(_encoder.SharedBuffer, 0, length);
         return new ArraySegment<byte>(_encoder.SharedBuffer, 0, length);
       }
