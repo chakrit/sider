@@ -1139,7 +1139,7 @@ namespace Sider
     public int ZUnionStore(string destKey, params string[] srcKeys)
     {
       return invoke("ZUNIONSTORE", srcKeys.Length + 1,
-        w => { w.WriteArg(destKey); Array.ForEach(srcKeys, w.WriteArg); },
+        w => { w.WriteArg(destKey); w.WriteArg(srcKeys.Length); Array.ForEach(srcKeys, w.WriteArg); },
         r => r.ReadInt());
     }
 
@@ -1148,6 +1148,7 @@ namespace Sider
     {
       var items = new LinkedList<string>();
       items.AddLast(destKey);
+      items.AddLast(srcKeys.Length.ToString());
       Array.ForEach(srcKeys, k => items.AddLast(k));
 
       if (weights != null) {
