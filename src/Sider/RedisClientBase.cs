@@ -61,8 +61,6 @@ namespace Sider
 
     public virtual void Reset()
     {
-      Debug.WriteLine("RESET");
-
       _disposing = _disposed = false;
       _socket = new Socket(AddressFamily.InterNetwork,
         SocketType.Stream, ProtocolType.Tcp);
