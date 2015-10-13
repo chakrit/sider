@@ -1,11 +1,7 @@
 # CHANGES
 
-v0.9.2 - vNext
+vNext (TODO)
 ---
-
-* MSetNX should call ReadBool, not ReadOk ([@bokononlives](https://github.com/BokononLives) - [issue #3](https://github.com/chakrit/sider/pull/3)) 
-
-**TODO:**
 
 * Proper C# 4 mono build support (http://stackoverflow.com/questions/8181081/error-framework-netframework-4-0-client-profile-not-installed-for-monodevel)
 * Redis version detection mechanism (INFO?).
@@ -13,8 +9,22 @@ v0.9.2 - vNext
   (one pipelined connection for normal commands, another for pub/sub etc.)
 * Better clients pool interface.
 * More Redis protocol conformance tests (correct arguments/correct return values/correct command spelling).
-* Update README for 2.4.
-* Start work for 2.6 support.
+* Full audit for 3.0 support
+
+v0.9.3 - vNext
+---
+
+* ZUnionStore missing number of keys ([@robertaves](https://github.com/robertaves) - [issue #10](https://github.com/chakrit/sider/pull/10))
+* ReadBulk never returns null ([@robertaves](https://github.com/robertaves) - [issue #10](https://github.com/chakrit/sider/pull/9))
+* Removed forgotten Debug println. ([@robertaves](https://github.com/robertaves) - [issue #10](https://github.com/chakrit/sider/pull/14))
+
+v0.9.2 - v0.9.3
+---
+
+* MSetNX should call ReadBool, not ReadOk ([@bokononlives](https://github.com/BokononLives) - [issue #3](https://github.com/chakrit/sider/pull/3)) 
+
+**TODO:**
+
 
 v0.9.0-v0.9.2
 ---
