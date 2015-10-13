@@ -23,9 +23,6 @@ v0.9.2 - v0.9.3
 
 * MSetNX should call ReadBool, not ReadOk ([@bokononlives](https://github.com/BokononLives) - [issue #3](https://github.com/chakrit/sider/pull/3)) 
 
-**TODO:**
-
-
 v0.9.0-v0.9.2
 ---
 
