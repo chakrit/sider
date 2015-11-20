@@ -8,8 +8,7 @@ For the latest changes, please see the `CHANGES.markdown` file.
 Inspired by migueldeicaza's first stab at the problem (I used some of his
 algorithm) and ServiceStack.Redis (to take it a lot further).
 
-**If you have questions/feedbacks, please feel free to shoot it to
-[sider-lemonade@googlegroups.com](mailto:sider-lemonade@googlegroups.com),
+**If you have questions/feedbacks, please feel free to pop on to Gitter (👆 click the badge),
 open a [GitHub issue](https://github.com/chakrit/sider/issues/new) or
 ping me on Twitter [@chakrit](http://twitter.com/chakrit)**
 
