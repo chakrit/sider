@@ -1,6 +1,8 @@
 SIDER : REDIS bindings for C#
 ====
 
+[![Join the chat at https://gitter.im/chakrit/sider](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/chakrit/sider?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 For the latest changes, please see the `CHANGES.markdown` file.
 
 Inspired by migueldeicaza's first stab at the problem (I used some of his
