@@ -29,6 +29,8 @@ namespace Sider
     private ISerializer<T> _serializer;
 
 
+    public Mode Mode { get { return Executor.Mode; } }
+    
     public RedisClient(string host = RedisSettings.DefaultHost,
       int port = RedisSettings.DefaultPort) :
       this(RedisSettings.Build().Host(host).Port(port)) { }

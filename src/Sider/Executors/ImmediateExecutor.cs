@@ -5,6 +5,8 @@ namespace Sider.Executors
 {
   internal class ImmediateExecutor : ExecutorBase
   {
+    public override Mode Mode { get { return Mode.Normal; } }
+    
     public override T Execute<T>(Invocation<T> invocation)
     {
       return execute(invocation, 0);

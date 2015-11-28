@@ -13,6 +13,10 @@ namespace Sider.Executors
     private Thread _writeThread;
     private Thread _readThread;
 
+   
+    // TODO: Actual mode.
+    public override Mode Mode { get { return Mode.Normal; } }    
+
     public IocpExecutor()
     {
       _writes = new ConcurrentQueue<IocpTask>();

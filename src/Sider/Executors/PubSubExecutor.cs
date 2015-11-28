@@ -15,6 +15,8 @@ namespace Sider.Executors
     private Action _onDone;
 
 
+    public override Mode Mode { get { return Mode.PubSub; } }
+    
     public ISet<string> ActiveChannels { get; private set; }
     public ISet<string> ActivePatterns { get; private set; }
 

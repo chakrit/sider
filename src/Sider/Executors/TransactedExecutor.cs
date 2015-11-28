@@ -6,6 +6,8 @@ namespace Sider.Executors
 {
   internal class TransactedExecutor : PipelinedExecutor
   {
+    public override Mode Mode { get { return Mode.MultiExec; } }
+    
     public override void Init(IExecutor previous)
     {
       if (previous is TransactedExecutor)

@@ -9,6 +9,7 @@ namespace Sider.Executors
   internal abstract class ExecutorBase : IExecutor
   {
     public RedisClientBase Client { get; private set; }
+    public abstract Mode Mode { get; }
 
     protected RedisSettings Settings { get { return Client.Settings; } }
     protected ProtocolReader Reader { get { return Client.Reader; } }

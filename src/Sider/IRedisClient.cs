@@ -8,6 +8,7 @@ namespace Sider
   // http://redis.io/commands
   public interface IRedisClient<T> : IDisposable
   {
+    Mode Mode { get; }
     bool IsDisposed { get; }
 
     void Reset();

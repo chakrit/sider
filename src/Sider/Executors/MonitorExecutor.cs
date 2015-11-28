@@ -7,6 +7,9 @@ namespace Sider.Executors
   internal class MonitorExecutor : ExecutorBase
   {
     private Observable<string> _observable;
+    
+    
+    public override Mode Mode { get { return Mode.Monitor;  } }
 
     public override T Execute<T>(Invocation<T> invocation)
     {

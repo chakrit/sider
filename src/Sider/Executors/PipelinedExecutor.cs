@@ -11,6 +11,8 @@ namespace Sider.Executors
 
 
     protected Queue<Func<object>> ReadsQueue { get { return _readsQueue; } }
+    
+    public override Mode Mode { get { return Mode.Pipelined; } }
 
     public override void Init(IExecutor previous)
     {
