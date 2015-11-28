@@ -11,14 +11,25 @@ vNext (TODO)
 * More Redis protocol conformance tests (correct arguments/correct return values/correct command spelling).
 * Full audit for 3.0 support
 
-v0.9.3 - vNext
+v0.9.5
+---
+
+* **FIXED** wrong Executor mode after RESET ([@cincauhangus](https://gitter.im/chakrit/sider?at=5656d7680d627297620ce230))
+* **NEW** `RedisClient.Mode` property so client can test for the current mode. ([@cincauhangus](https://github.com/chakrit/sider/issues/16))
+
+v0.9.4
+---
+
+* Remove leftover "RESET" debug printout ([@johanhelsing](https://github.com/chakrit/sider/pull/14))
+
+v0.9.3
 ---
 
 * ZUnionStore missing number of keys ([@robertaves](https://github.com/robertaves) - [issue #10](https://github.com/chakrit/sider/pull/10))
 * ReadBulk never returns null ([@robertaves](https://github.com/robertaves) - [issue #10](https://github.com/chakrit/sider/pull/9))
 * Removed forgotten Debug println. ([@robertaves](https://github.com/robertaves) - [issue #10](https://github.com/chakrit/sider/pull/14))
 
-v0.9.2 - v0.9.3
+v0.9.2
 ---
 
 * MSetNX should call ReadBool, not ReadOk ([@bokononlives](https://github.com/BokononLives) - [issue #3](https://github.com/chakrit/sider/pull/3)) 
@@ -31,7 +42,7 @@ v0.9.0-v0.9.2
 * Update nuget.
 * Update project files to VS2012 format.
 
-0.8 - v0.9.0
+0.8
 ---
 
 * Now versioning semantically (http://semver.org/) (adding the "v" and a
@@ -42,7 +53,7 @@ v0.9.0-v0.9.2
 * Some methods were missing from the IRedisClient interface. It's now there.
 * Experimental `IocpExecutor` support.
 
-0.7 - 0.8
+0.7
 ---
 
 * Fix issue #1 reported by @rjlopes, ZScore now returns `double?` -- `null` 
@@ -63,7 +74,7 @@ Experimental features:
   it immediately when the thread exits. This helps greatly with redis timeout
   issues in high-load environment.
 
-0.6 - 0.7
+0.6
 ---
 
 * Complete API support for Redis 2.2 (if I left out any, please let me know)
@@ -71,7 +82,7 @@ Experimental features:
 * You can now configure redis settings via the RedisClient constructor directly
   using lambdas.
 
-0.5 - 0.6
+0.5
 ---
 
 * MULTI/EXEC support.
@@ -83,7 +94,7 @@ Experimental features:
 * `.Custom()` for introducing your own custom command and read/write action.
   i.e. a command we've not yet to support.
 
-0.4 - 0.5
+0.4
 ---
 
 * Improved exception handling. Now defaults to always retry until connects to
@@ -92,7 +103,7 @@ Experimental features:
 * ThreadwisePool.BuildClient is now `protected virtual` so you can override it
   to roll your own `IRedisClient` implementation.
 
-0.3 - 0.4
+0.3
 ---
 **Breaking changes:**
 
