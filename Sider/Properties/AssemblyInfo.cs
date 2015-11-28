@@ -1,27 +1,12 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 
-// Information about this assembly is defined by the following attributes.
-// Change them to the values specific to your project.
-
 [assembly: AssemblyTitle("Sider")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("SIDER : REDIS bindings for C#/.NET 4.0 -- Redis client that sticks to the metal. Minimal, lightweight, easy to use, no fancy APIs, no gigantic class hierarchies. No ORM madness. Assumes knowledge of how Redis works. -- Sider works with Redis 2.2+.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("chakrit")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+[assembly: AssemblyCompany("Chakrit Wichian <service@chakrit.net> (http://chakrit.net/)")]
+[assembly: AssemblyProduct("Sider")]
 
-// The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
-// The form "{Major}.{Minor}.*" will automatically update the build and revision,
-// and "{Major}.{Minor}.{Build}.*" will update just the revision.
-
-[assembly: AssemblyVersion("1.0.*")]
-
-// The following attributes are used to specify the signing key for the assembly,
-// if desired. See the Mono documentation for more information about signing.
-
-//[assembly: AssemblyDelaySign(false)]
-//[assembly: AssemblyKeyFile("")]
-
+#pragma warning disable 1607
+[assembly: AssemblyVersion("0.9.5.*")]
+[assembly: AssemblyFileVersion("0.9.5.*")]

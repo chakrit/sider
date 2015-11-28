@@ -16,3 +16,4 @@ sider.all.zip
 sider.nupkg.zip
 .nuget
 packages/
+*.nupkg
