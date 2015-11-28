@@ -38,24 +38,21 @@ namespace Sider
     public RedisClientBase(RedisSettings settings) :
       base(settings)
     {
-      _executor = new ImmediateExecutor();
-      _executor.Init(this);
-
       Reset();
     }
 
     internal RedisClientBase(Stream incoming, Stream outgoing) :
       base(RedisSettings.Default)
     {
-      _executor = new ImmediateExecutor();
-      _executor.Init(this);
-
       _socket = null;
       _stream = null;
 
       _encoder = new ProtocolEncoder(Settings);
       _reader = new ProtocolReader(Settings, _encoder, incoming);
       _writer = new ProtocolWriter(Settings, _encoder, outgoing);
+
+      _executor = new ImmediateExecutor();
+      _executor.Init(this);
     }
 
 
@@ -79,6 +76,9 @@ namespace Sider
       _encoder = new ProtocolEncoder(Settings);
       _reader = new ProtocolReader(Settings, _encoder, _stream);
       _writer = new ProtocolWriter(Settings, _encoder, _stream);
+
+      _executor = new ImmediateExecutor();
+      _executor.Init(this);
     }
 
 
