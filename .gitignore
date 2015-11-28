@@ -1,0 +1,17 @@
+bin
+obj
+*.suo
+*.user
+*.userprefs
+*.cache
+*.Cache
+*.gpState
+*.pidb
+TestResults
+TestResult.*
+build
+build.zip
+build\*.nupkg
+sider.all.zip
+sider.nupkg.zip
+.nuget
