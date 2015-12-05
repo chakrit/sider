@@ -31,7 +31,6 @@ Global
 		$1.inheritsScope = text/plain
 		$1.scope = text/x-csharp
 		$0.CSharpFormattingPolicy = $2
-		$2.IndentBlocksInsideExpressions = True
 		$2.NamespaceBraceStyle = EndOfLine
 		$2.ClassBraceStyle = EndOfLine
 		$2.InterfaceBraceStyle = EndOfLine
@@ -40,10 +39,6 @@ Global
 		$2.MethodBraceStyle = EndOfLine
 		$2.ConstructorBraceStyle = EndOfLine
 		$2.DestructorBraceStyle = EndOfLine
-		$2.ElseNewLinePlacement = NewLine
-		$2.CatchNewLinePlacement = NewLine
-		$2.FinallyNewLinePlacement = NewLine
-		$2.WhileNewLinePlacement = DoNotCare
 		$2.EmbeddedStatementPlacement = SameLine
 		$2.ArrayInitializerWrapping = DoNotChange
 		$2.ArrayInitializerBraceStyle = NextLine
@@ -91,5 +86,8 @@ Global
 		$0.TextStylePolicy = $8
 		$8.inheritsSet = null
 		$8.scope = application/t4-template
+		$0.DotNetNamingPolicy = $9
+		$9.DirectoryNamespaceAssociation = None
+		$9.ResourceNamePolicy = FileFormatDefault
 	EndGlobalSection
 EndGlobal

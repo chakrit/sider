@@ -36,6 +36,8 @@
   <ItemGroup>
     <Compile Include="RedisSettingsTest.cs" />
     <Compile Include="SiderTestBase.cs" />
+    <Compile Include="InvocationTest.cs" />
+    <Compile Include="Util\Spy.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -46,5 +48,8 @@
       <Project>{4CAFD10B-6177-410A-A67F-C98C25FDBE49}</Project>
       <Name>Sider</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Util\" />
   </ItemGroup>
 </Project>
