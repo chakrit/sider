@@ -20,7 +20,7 @@ namespace Sider.Tests {
     [Test()]
     public void TestCloneable() {
       var s1 = RandomInstance();
-      var s2 = ((ICloneable)s1).Clone();
+      var s2 = s1.Clone();
       Assert.AreEqual(s1, s2);
     }
 

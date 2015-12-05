@@ -1,7 +1,7 @@
 ﻿<#@ template language="C#" hostspecific="true" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#
-	var configs = new Dictionary<string, object> {
+ var configs = new Dictionary<string, object> {
     { "Host", "localhost" },
     { "Port", 6379 },
   };
@@ -10,7 +10,7 @@
 using System;
 
 namespace Sider {
-  public partial class RedisSettings : ICloneable {
+  public partial class RedisSettings {
 <#foreach (var pair in configs) { #>
 <#  if (pair.Value is string) { #>
     public string <#= pair.Key #> { get; internal set; }
@@ -31,7 +31,7 @@ namespace Sider {
 <#} #>
     }
 
-    object ICloneable.Clone() {
+    public RedisSettings Clone() {
       return new RedisSettings()
       {
 <#foreach (var pair in configs) { #>

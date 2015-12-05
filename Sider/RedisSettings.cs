@@ -2,7 +2,7 @@
 using System;
 
 namespace Sider {
-  public partial class RedisSettings : ICloneable {
+  public partial class RedisSettings {
     public string Host { get; internal set; }
     public int Port { get; internal set; }
 
@@ -11,7 +11,7 @@ namespace Sider {
       Port = 6379;
     }
 
-    object ICloneable.Clone() {
+    public RedisSettings Clone() {
       return new RedisSettings()
       {
         Host = Host,

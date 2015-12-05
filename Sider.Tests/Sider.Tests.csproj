@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sider\Sider.csproj">
-      <Project>{CB61164B-E3B0-41BC-BDD2-CDD70B70D421}</Project>
+      <Project>{4CAFD10B-6177-410A-A67F-C98C25FDBE49}</Project>
       <Name>Sider</Name>
     </ProjectReference>
   </ItemGroup>

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.AccessControl;
 
 namespace Sider {
   public partial class RedisSettings {
@@ -30,7 +28,7 @@ namespace Sider {
       }
 
       internal Builder(RedisSettings existing) {
-        _settings = (RedisSettings)((ICloneable)existing).Clone();
+        _settings = existing.Clone();
       }
     }
 
