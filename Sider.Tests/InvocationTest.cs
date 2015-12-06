@@ -51,14 +51,6 @@ namespace Sider.Tests {
       inv.SetException(exception);
       Assert.AreEqual(exception, inv.Exception.InnerException);
     }
-
-    Invocation<object> BuildInvocation() {
-      return new Invocation<object>(
-        w => {
-        },
-        r => null
-      );
-    }
   }
 }
 

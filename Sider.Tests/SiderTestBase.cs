@@ -11,6 +11,14 @@ namespace Sider.Tests {
     protected int RandomInt() {
       return _random.Next();
     }
+
+    protected Invocation<object> BuildInvocation() {
+      return new Invocation<object>(
+        w => {
+        },
+        r => null
+      );
+    }
   }
 }
 

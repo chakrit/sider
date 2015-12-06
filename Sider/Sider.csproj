@@ -41,6 +41,8 @@
     <Compile Include="Invocation.cs" />
     <Compile Include="IConnectionPool.cs" />
     <Compile Include="RedisConnection.cs" />
+    <Compile Include="InvocationSink.cs" />
+    <Compile Include="InvocationPump.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
