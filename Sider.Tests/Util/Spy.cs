@@ -11,9 +11,12 @@ namespace Sider.Tests {
     public bool Called { get; private set; }
     public T Returns { get; set; }
 
+    public object[] CalledArgs { get; private set; }
+
     public Spy() {
       Called = false;
       Returns = null;
+      CalledArgs = new object[] { };
     }
 
     public Action Action() {
@@ -21,7 +24,10 @@ namespace Sider.Tests {
     }
 
     public Action<TArg> Action<TArg>() {
-      return _ => Called = true;
+      return arg => {
+        Called = true;
+        CalledArgs = new object[] { arg };
+      };
     }
 
     public Func<T> Func() {
@@ -32,8 +38,9 @@ namespace Sider.Tests {
     }
 
     public Func<TArg, T> Func<TArg>() {
-      return _ => {
+      return arg => {
         Called = true;
+        CalledArgs = new object[] { arg };
         return Returns;
       };
     }
