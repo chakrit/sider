@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Chakrit Wichian <service@chakrit.net> (http://chakrit.net/)")]
 [assembly: AssemblyProduct("Sider")]
+[assembly: InternalsVisibleTo("Sider.Tests")]
 
-#pragma warning disable 1607
 [assembly: AssemblyVersion("1.0.0")]
 [assembly: AssemblyFileVersion("1.0.0")]

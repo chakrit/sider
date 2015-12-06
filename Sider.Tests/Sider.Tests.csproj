@@ -40,6 +40,7 @@
     <Compile Include="Util\Spy.cs" />
     <Compile Include="InvocationSinkTest.cs" />
     <Compile Include="InvocationPumpTest.cs" />
+    <Compile Include="RedisConnectionTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
