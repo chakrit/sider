@@ -35,6 +35,30 @@ namespace Sider.Tests {
       Assert.IsTrue(readSpy.Called);
       Assert.AreEqual(readSpy.Returns, result);
     }
+
+    [Test]
+    public void TestSetResult() {
+      var inv = BuildInvocation();
+      var result = new object();
+      inv.SetResult(result);
+      Assert.AreEqual(result, inv.Result);
+    }
+
+    [Test]
+    public void TestSetException() {
+      var inv = BuildInvocation();
+      var exception = new AggregateException();
+      inv.SetException(exception);
+      Assert.AreEqual(exception, inv.Exception.InnerException);
+    }
+
+    Invocation<object> BuildInvocation() {
+      return new Invocation<object>(
+        w => {
+        },
+        r => null
+      );
+    }
   }
 }
 

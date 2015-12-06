@@ -7,7 +7,8 @@ namespace Sider {
     void Write(RedisWriter writer);
     object Read(RedisReader reader);
 
-    void Complete(object result, Exception exception);
+    void SetResult(object result);
+    void SetException(Exception exception);
   }
 
   public class Invocation<T> : IInvocation {
@@ -18,6 +19,10 @@ namespace Sider {
 
     public T Result {
       get { return source.Task.Result; }
+    }
+
+    public AggregateException Exception {
+      get { return source.Task.Exception; }
     }
 
     public Invocation(
@@ -38,12 +43,12 @@ namespace Sider {
       return ReadAction(reader);
     }
 
-    public void Complete(object result, Exception exception) {
-      if (exception != null) {
-        source.SetException(exception);
-      } else {
-        source.SetResult((T)result);
-      }
+    public void SetResult(object result) {
+      source.SetResult((T)result);
+    }
+
+    public void SetException(Exception exception) {
+      source.SetException(exception);
     }
   }
 }
