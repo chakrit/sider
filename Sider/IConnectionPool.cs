@@ -1,8 +1,8 @@
 ﻿namespace Sider {
-  public interface IConnector {
+  public interface IConnectionPool {
     RedisSettings Settings { get; }
 
-    IScope GetDefaultScope();
+    IScope GetSharedScope();
     IScope GetExclusiveScope();
   }
 }

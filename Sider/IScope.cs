@@ -2,7 +2,7 @@
 
 namespace Sider {
   public interface IScope : IDisposable {
-    IRedisConnection Connection { get; }
+    RedisConnection Connection { get; }
   }
 }
 

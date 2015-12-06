@@ -35,12 +35,12 @@
       <DependentUpon>RedisSettings.tt</DependentUpon>
     </Compile>
     <Compile Include="RedisSettings.base.cs" />
-    <Compile Include="IConnector.cs" />
-    <Compile Include="IRedisConnection.cs" />
     <Compile Include="RedisReader.cs" />
     <Compile Include="RedisWriter.cs" />
     <Compile Include="IScope.cs" />
     <Compile Include="Invocation.cs" />
+    <Compile Include="IConnectionPool.cs" />
+    <Compile Include="RedisConnection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
