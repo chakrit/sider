@@ -42,8 +42,8 @@ namespace Sider.Tests {
 
     [Test, Timeout(1000)]
     public void TestQueue_Multiple() {
-      var range = Enumerable.Range(0, 100).ToArray();
-      var pairs = range
+      var pairs = Enumerable
+        .Range(0, 100)
         .Select(num => new {
           Number = num,
           Invocation = new Invocation<int>(null, _ => num)
@@ -52,11 +52,18 @@ namespace Sider.Tests {
       
       var ms = new MemoryStream();
       var settings = RandomSettings();
-
-      using (var pump = new InvocationPump(ms, RandomSettings())) {
+      using (var pump = new InvocationPump(ms, settings)) {
         foreach (var pair in pairs) pump.Queue(pair.Invocation);
         foreach (var pair in pairs) Assert.AreEqual(pair.Number, pair.Invocation.Result);
       }
+    }
+
+    [Test, Timeout(1000)]
+    public void TestQueue_Dispose() {
+      var ms = new MemoryStream();
+      var settings = RandomSettings();
+      var pump = new InvocationPump(ms, settings);
+      pump.Dispose(); // should not deadlock.
     }
   }
 }
