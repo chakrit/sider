@@ -6,21 +6,6 @@ using NUnit.Framework;
 namespace Sider.Tests {
   [TestFixture]
   public class RedisConnectionTest : SiderTestBase {
-    [Test]
-    public void TestCtor() {
-      var ms = new MemoryStream();
-      var settings = RedisSettings.Default.Build()
-        .Host(RandomString())
-        .Build();
-
-      Assert.Throws<ArgumentNullException>(() => new RedisConnection(null, null));
-      Assert.Throws<ArgumentNullException>(() => new RedisConnection(ms, null));
-      Assert.Throws<ArgumentNullException>(() => new RedisConnection(null, settings));
-
-      var connection = new RedisConnection(ms, settings);
-      Assert.AreEqual(settings, connection.Settings);
-    }
-
     [Test, Timeout(1000)]
     public void TestConcurrentSubmit() {
       var ms = new MemoryStream();

@@ -6,11 +6,6 @@ namespace Sider.Tests {
   [TestFixture]
   public class InvocationSinkTest : SiderTestBase {
     [Test]
-    public void TestCtor() {
-      Assert.Throws<ArgumentNullException>(() => new InvocationSink(null));
-    }
-
-    [Test]
     public void TestQueue() {
       var spy = new Spy();
       var inv = new Invocation<object>(
@@ -19,7 +14,7 @@ namespace Sider.Tests {
                 );
 
       var stream = new MemoryStream();
-      var sink = new InvocationSink(stream);
+      var sink = new InvocationSink(stream, RandomSettings());
 
       sink.Queue(inv);
       Assert.IsTrue(spy.Called);

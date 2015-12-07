@@ -9,7 +9,13 @@ namespace Sider.Tests {
   public class InvocationPumpTest : SiderTestBase {
     [Test]
     public void TestCtor() {
-      Assert.Throws<ArgumentNullException>(() => new InvocationPump(null));
+      var ms = new MemoryStream();
+      var settings = RandomSettings();
+
+      Assert.Throws<ArgumentNullException>(() => new InvocationPump(null, null));
+      Assert.Throws<ArgumentNullException>(() => new InvocationPump(ms, null));
+      Assert.Throws<ArgumentNullException>(() => new InvocationPump(null, settings));
+      Assert.DoesNotThrow(() => new InvocationPump(ms, settings));
     }
 
     [Test, Timeout(1000)]
@@ -24,7 +30,7 @@ namespace Sider.Tests {
       spy.Returns = new object();
 
       var ms = new MemoryStream();
-      using (var pump = new InvocationPump(ms)) {
+      using (var pump = new InvocationPump(ms, RandomSettings())) {
         pump.Queue(inv);
         result = inv.Result;
       }
@@ -45,7 +51,9 @@ namespace Sider.Tests {
         .ToArray();
       
       var ms = new MemoryStream();
-      using (var pump = new InvocationPump(ms)) {
+      var settings = RandomSettings();
+
+      using (var pump = new InvocationPump(ms, RandomSettings())) {
         foreach (var pair in pairs) pump.Queue(pair.Invocation);
         foreach (var pair in pairs) Assert.AreEqual(pair.Number, pair.Invocation.Result);
       }
