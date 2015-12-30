@@ -13,8 +13,7 @@ namespace Sider {
     internal Action<IInvocation> TestSubmitHook { get; set; }
 
     public RedisConnection(Stream stream, RedisSettings settings)
-      : base(stream, settings)
-    {
+      : base(stream, settings) {
       sink = new InvocationSink(Stream, settings);
       pump = new InvocationPump(Stream, settings);
     }

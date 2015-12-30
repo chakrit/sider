@@ -17,8 +17,7 @@ namespace Sider.Tests {
       Assert.Throws<ArgumentNullException>(() => new RedisConnection(ms, null));
       Assert.Throws<ArgumentNullException>(() => new RedisConnection(null, settings));
 
-      var connection = new RedisConnection(ms, settings);
-      Assert.AreEqual(settings, connection.Settings);
+      Assert.DoesNotThrow(() => new RedisConnection(ms, settings));
     }
 
     [Test, Timeout(1000)]

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Dynamic;
-using System.Threading.Tasks;
-using System.IO;
 
 namespace Sider.Tests {
   public abstract class SiderTest {

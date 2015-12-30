@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.IO;
 using NUnit.Framework;
-using System.IO;
 
 namespace Sider.Tests {
   [TestFixture]

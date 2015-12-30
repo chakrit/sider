@@ -1,11 +1,10 @@
 ﻿using System;
 using NUnit.Framework;
 using System.IO;
-using System.Configuration;
 
 namespace Sider.Tests {
   [TestFixture]
-  public class StreamWrapperTest : SiderTestBase {
+  public class StreamWrapperTest : SiderTest {
     [Test]
     public void TestCtor() {
       var ms = new MemoryStream();
@@ -21,7 +20,7 @@ namespace Sider.Tests {
     }
 
     class DummyWrapper : StreamWrapper {
-      public new Stream Stream { get { return base.Stream; }}
+      public new Stream Stream { get { return base.Stream; } }
       public new RedisSettings Settings { get { return base.Settings; } }
 
       public DummyWrapper(Stream stream, RedisSettings settings)

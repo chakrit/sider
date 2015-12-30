@@ -1,7 +1,5 @@
 ﻿using System;
 using NUnit.Framework;
-using System.Runtime.Remoting.Messaging;
-using System.CodeDom;
 
 namespace Sider.Tests {
   [TestFixture]

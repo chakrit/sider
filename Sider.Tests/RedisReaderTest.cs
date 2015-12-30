@@ -1,19 +1,14 @@
 ﻿using System;
-using NUnit.Framework;
-using System.Text;
-using System.IO;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Linq;
+using System.IO;
+using System.Text;
+using NUnit.Framework;
 
 namespace Sider.Tests {
   [TestFixture]
   public class RedisReaderTest : SiderTest {
     [Test]
     public void TestCtor() {
-      Assert.Throws<ArgumentNullException>(() => new RedisReader(null));
-
-        // added from other branch
       var ms = new MemoryStream();
       var settings = RandomSettings();
 
@@ -149,7 +144,7 @@ namespace Sider.Tests {
     protected RedisReader BuildReader(string input) {
       var buffer = Encoding.UTF8.GetBytes(input);
       var stream = new MemoryStream(buffer);
-      return new RedisReader(stream);
+      return new RedisReader(stream, RedisSettings.Default);
     }
 
     protected void AssertProtocolException(string inputLine, Action<RedisReader> readAction) {

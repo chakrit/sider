@@ -1,7 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Sider;
-using System;
-using System.Runtime.Remoting;
 
 namespace Sider.Tests {
   [TestFixture()]

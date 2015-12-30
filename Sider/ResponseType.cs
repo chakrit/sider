@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Sider {
+﻿namespace Sider {
   public enum ResponseType {
     Error = '-',
     SingleLine = '+',

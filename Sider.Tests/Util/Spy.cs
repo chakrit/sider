@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using System;
-using Microsoft.Win32;
-using System.Runtime.InteropServices;
+﻿using System;
 
 namespace Sider.Tests {
   public class Spy : Spy<object> {
