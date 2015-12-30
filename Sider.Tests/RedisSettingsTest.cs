@@ -5,7 +5,7 @@ using System.Runtime.Remoting;
 
 namespace Sider.Tests {
   [TestFixture()]
-  public class RedisSettingsTest : SiderTestBase {
+  public class RedisSettingsTest : SiderTest {
     [Test()]
     public void TestDefault() {
       var def = RedisSettings.Default;

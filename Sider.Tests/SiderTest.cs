@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Sider.Tests {
-  public abstract class SiderTestBase {
+  public abstract class SiderTest {
     static readonly Random _random = new Random();
 
     protected string RandomString() {

@@ -5,7 +5,7 @@ using System.CodeDom;
 
 namespace Sider.Tests {
   [TestFixture]
-  public class InvocationTest : SiderTestBase {
+  public class InvocationTest : SiderTest {
     [Test]
     public void TestCtor() {
       Action<RedisWriter> write = w => {

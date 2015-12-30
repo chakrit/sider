@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Sider.Tests {
   [TestFixture]
-  public class InvocationSinkTest : SiderTestBase {
+  public class InvocationSinkTest : SiderTest {
     [Test]
     public void TestCtor() {
       Assert.Throws<ArgumentNullException>(() => new InvocationSink(null));

@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Sider.Tests {
   [TestFixture]
-  public class RedisConnectionTest : SiderTestBase {
+  public class RedisConnectionTest : SiderTest {
     [Test]
     public void TestCtor() {
       var ms = new MemoryStream();

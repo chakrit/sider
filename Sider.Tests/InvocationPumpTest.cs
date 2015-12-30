@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Sider.Tests {
   [TestFixture]
-  public class InvocationPumpTest : SiderTestBase {
+  public class InvocationPumpTest : SiderTest {
     [Test]
     public void TestCtor() {
       Assert.Throws<ArgumentNullException>(() => new InvocationPump(null));

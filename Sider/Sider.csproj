@@ -43,7 +43,8 @@
     <Compile Include="RedisConnection.cs" />
     <Compile Include="InvocationSink.cs" />
     <Compile Include="InvocationPump.cs" />
-    <Compile Include="ConcurrentAccessException.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="ResponseType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

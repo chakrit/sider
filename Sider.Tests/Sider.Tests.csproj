@@ -35,12 +35,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RedisSettingsTest.cs" />
-    <Compile Include="SiderTestBase.cs" />
     <Compile Include="InvocationTest.cs" />
     <Compile Include="Util\Spy.cs" />
     <Compile Include="InvocationSinkTest.cs" />
     <Compile Include="InvocationPumpTest.cs" />
     <Compile Include="RedisConnectionTest.cs" />
+    <Compile Include="RedisReaderTest.cs" />
+    <Compile Include="SiderTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
