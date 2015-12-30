@@ -9,7 +9,13 @@ namespace Sider.Tests {
   public class InvocationPumpTest : SiderTest {
     [Test]
     public void TestCtor() {
-      Assert.Throws<ArgumentNullException>(() => new InvocationPump(null));
+      var ms = new MemoryStream();
+      var settings = RandomSettings();
+
+      Assert.Throws<ArgumentNullException>(() => new InvocationPump(null, null));
+      Assert.Throws<ArgumentNullException>(() => new InvocationPump(ms, null));
+      Assert.Throws<ArgumentNullException>(() => new InvocationPump(null, settings));
+      Assert.DoesNotThrow(() => new InvocationPump(ms, settings));
     }
 
     [Test, Timeout(1000)]
@@ -24,7 +30,7 @@ namespace Sider.Tests {
       spy.Returns = new object();
 
       var ms = new MemoryStream();
-      using (var pump = new InvocationPump(ms)) {
+      using (var pump = new InvocationPump(ms, RandomSettings())) {
         pump.Queue(inv);
         result = inv.Result;
       }
@@ -36,8 +42,8 @@ namespace Sider.Tests {
 
     [Test, Timeout(1000)]
     public void TestQueue_Multiple() {
-      var range = Enumerable.Range(0, 100).ToArray();
-      var pairs = range
+      var pairs = Enumerable
+        .Range(0, 100)
         .Select(num => new {
           Number = num,
           Invocation = new Invocation<int>(null, _ => num)
@@ -45,10 +51,19 @@ namespace Sider.Tests {
         .ToArray();
       
       var ms = new MemoryStream();
-      using (var pump = new InvocationPump(ms)) {
+      var settings = RandomSettings();
+      using (var pump = new InvocationPump(ms, settings)) {
         foreach (var pair in pairs) pump.Queue(pair.Invocation);
         foreach (var pair in pairs) Assert.AreEqual(pair.Number, pair.Invocation.Result);
       }
+    }
+
+    [Test, Timeout(1000)]
+    public void TestQueue_Dispose() {
+      var ms = new MemoryStream();
+      var settings = RandomSettings();
+      var pump = new InvocationPump(ms, settings);
+      pump.Dispose(); // should not deadlock.
     }
   }
 }

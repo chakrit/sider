@@ -12,6 +12,16 @@ namespace Sider.Tests {
     [Test]
     public void TestCtor() {
       Assert.Throws<ArgumentNullException>(() => new RedisReader(null));
+
+        // added from other branch
+      var ms = new MemoryStream();
+      var settings = RandomSettings();
+
+      Assert.Throws<ArgumentNullException>(() => new RedisReader(null, null));
+      Assert.Throws<ArgumentNullException>(() => new RedisReader(ms, null));
+      Assert.Throws<ArgumentNullException>(() => new RedisReader(null, settings));
+
+      Assert.DoesNotThrow(() => new RedisReader(ms, settings));
     }
 
     [Test]

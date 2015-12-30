@@ -45,6 +45,8 @@
     <Compile Include="InvocationPump.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="ResponseType.cs" />
+    <Compile Include="ConcurrentAccessException.cs" />
+    <Compile Include="StreamWrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

@@ -2,12 +2,11 @@
 using System.IO;
 
 namespace Sider {
-  public class InvocationSink : IDisposable {
+  public class InvocationSink : StreamWrapper {
     readonly RedisWriter writer;
 
-    public InvocationSink(Stream stream) {
-      if (stream == null) throw new ArgumentNullException("stream");
-
+    public InvocationSink(Stream stream, RedisSettings settings)
+      : base(stream, settings) {
       writer = new RedisWriter(stream);
     }
 
@@ -15,8 +14,7 @@ namespace Sider {
       invocation.Write(writer);
     }
 
-    public void Dispose() {
-      
+    public override void Dispose() {
     }
   }
 }

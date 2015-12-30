@@ -4,17 +4,19 @@ using System.IO;
 using System.Threading;
 
 namespace Sider {
-  public class InvocationPump : IDisposable {
+  public class InvocationPump : StreamWrapper {
     readonly RedisReader reader;
     readonly Queue<IInvocation> reads;
 
     readonly ManualResetEvent stopSignal;
     readonly ManualResetEvent stoppedSignal;
 
-    public InvocationPump(Stream stream) {
+    public InvocationPump(Stream stream, RedisSettings settings)
+      : base(stream, settings) {
       if (stream == null) throw new ArgumentNullException("stream");
+      if (settings == null) throw new ArgumentNullException("settings");
 
-      reader = new RedisReader(stream);
+      reader = new RedisReader(stream, settings);
       reads = new Queue<IInvocation>();
 
       stopSignal = new ManualResetEvent(false);
@@ -22,7 +24,7 @@ namespace Sider {
       ThreadPool.QueueUserWorkItem(state => ProcessQueue());
     }
 
-    public void Dispose() {
+    public override void Dispose() {
       stopSignal.Set();
       lock (reads) Monitor.Pulse(reads);
       stoppedSignal.WaitOne();

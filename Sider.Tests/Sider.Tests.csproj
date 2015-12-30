@@ -42,6 +42,7 @@
     <Compile Include="RedisConnectionTest.cs" />
     <Compile Include="RedisReaderTest.cs" />
     <Compile Include="SiderTest.cs" />
+    <Compile Include="StreamWrapperTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

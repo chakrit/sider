@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Dynamic;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace Sider.Tests {
   public abstract class SiderTest {
@@ -10,6 +13,13 @@ namespace Sider.Tests {
 
     protected int RandomInt() {
       return _random.Next();
+    }
+
+    protected RedisSettings RandomSettings() {
+      return RedisSettings.Default.Build()
+        .Host(RandomString())
+        .Port(RandomInt())
+        .Build();
     }
 
     protected Invocation<object> BuildInvocation() {

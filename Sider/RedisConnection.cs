@@ -6,30 +6,23 @@ namespace Sider {
   // RedisConnection controls a Single connection to a Redis server.
   // The connection may only be used by a single thread at a time to avoid
   // unnecessary locks when synchronizing between read and write threads.
-  public class RedisConnection : IDisposable {
-    readonly Stream stream;
+  public class RedisConnection : StreamWrapper {
     readonly InvocationSink sink;
     readonly InvocationPump pump;
 
     internal Action<IInvocation> TestSubmitHook { get; set; }
 
-    public RedisSettings Settings { get; private set; }
-    
-    public RedisConnection(Stream stream, RedisSettings settings) {
-      if (stream == null) throw new ArgumentNullException("stream");
-      if (settings == null) throw new ArgumentNullException("settings");
-
-      this.stream = stream;
-      sink = new InvocationSink(stream);
-      pump = new InvocationPump(stream);
-
-      Settings = settings;
+    public RedisConnection(Stream stream, RedisSettings settings)
+      : base(stream, settings)
+    {
+      sink = new InvocationSink(Stream, settings);
+      pump = new InvocationPump(Stream, settings);
     }
 
-    public void Dispose() {
+    public override void Dispose() {
       sink.Dispose();
       pump.Dispose();
-      stream.Dispose();
+      Stream.Dispose();
     }
 
     public void Submit(IInvocation invocation) {
