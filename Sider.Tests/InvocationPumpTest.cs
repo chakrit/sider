@@ -40,7 +40,7 @@ namespace Sider.Tests {
     }
 
     [Test, Timeout(1000)]
-    public void TestQueue_Multiple() {
+    public void TestQueueMultiple() {
       var pairs = Enumerable
         .Range(0, 100)
         .Select(num => new {
@@ -58,7 +58,7 @@ namespace Sider.Tests {
     }
 
     [Test, Timeout(1000)]
-    public void TestQueue_Dispose() {
+    public void TestQueueDispose() {
       var ms = new MemoryStream();
       var settings = RandomSettings();
       var pump = new InvocationPump(ms, settings);
