@@ -271,7 +271,25 @@ namespace Sider
         w => { w.WriteArg(key); w.WriteArg(dbIndex); },
         r => r.ReadBool());
     }
+	
+	public bool Migrate(string host, int port, string key, int dbIndex, int timeout, bool copy, bool replace)
+	{
+		int argCount = 5 + (copy ? 1 : 0) + (replace ? 1 : 0);
 
+		return invoke("MIGRATE", 
+		argCount, 
+		w => {
+			w.WriteArg(host);
+			w.WriteArg(port);
+			w.WriteArg(key);
+			w.WriteArg(dbIndex);
+			w.WriteArg(timeout);
+			if (copy) w.WriteArg("COPY");
+			if (replace) w.WriteArg("REPLACE");
+		}, 
+		r => r.ReadOk());
+	}
+	
     public bool Persist(string key)
     {
       return invoke("PERSIST", r => r.ReadBool());
