@@ -11,6 +11,11 @@ vNext (TODO)
 * More Redis protocol conformance tests (correct arguments/correct return values/correct command spelling).
 * Full audit for 3.0 support
 
+v0.9.6
+---
+
+* **NEW** Support for `MIGRATE` command ([@myGuruPitka](https://github.com/chakrit/sider/pull/18))
+
 v0.9.5
 ---
 
