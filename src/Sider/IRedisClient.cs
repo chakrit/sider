@@ -93,8 +93,8 @@ namespace Sider
     bool LTrim(string key, int minIncl, int maxIncl);
     T[] MGet(params string[] keys);
     IObservable<string> Monitor();
-		bool Move(string key, int dbIndex);
-		bool Migrate(string host, int port, string key, int dbIndex, int timeout, bool copy, bool replace);
+    bool Move(string key, int dbIndex);
+    bool Migrate(string host, int port, string key, int dbIndex, int timeout, bool copy, bool replace);
     bool MSet(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> mappings);
     bool MSetNX(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> mappings);
     bool Multi();
