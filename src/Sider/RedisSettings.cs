@@ -62,7 +62,7 @@ namespace Sider
       // set defaults
       Host = "localhost";
       Port = 6379;
-      Password = string.Empty;
+      Password = null;
 
       ConnectionTimeout = 0;
       ReconnectOnIdle = true;
