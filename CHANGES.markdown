@@ -11,6 +11,12 @@ vNext (TODO)
 * More Redis protocol conformance tests (correct arguments/correct return values/correct command spelling).
 * Full audit for 3.0 support
 
+v0.10.0
+---
+
+* Automatic `Auth` option for `ThreadwisePool` ([@myGuruPitka](https://github.com/chakrit/sider/pull/19))
+* Experimental `TrackedThreadwisePool` that can be `Dispose()`-ed.
+
 v0.9.6
 ---
 
