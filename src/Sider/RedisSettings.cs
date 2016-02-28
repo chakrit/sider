@@ -19,6 +19,7 @@ namespace Sider
 
     public string Host { get; private set; }
     public int Port { get; private set; }
+    public string Password { get; private set; }
 
     public int ConnectionTimeout { get; private set; }
     public bool ReconnectOnIdle { get; private set; }
@@ -61,6 +62,7 @@ namespace Sider
       // set defaults
       Host = "localhost";
       Port = 6379;
+      Password = null;
 
       ConnectionTimeout = 0;
       ReconnectOnIdle = true;
@@ -117,6 +119,15 @@ namespace Sider
         SAssert.ArgumentBetween(() => port, 1, 65535);
 
         _settings.Port = port;
+        return this;
+      }
+
+      public Builder Auth(string password)
+      {
+        SAssert.IsTrue(!string.IsNullOrEmpty(password), () =>
+         new ArgumentException("Auth password should be a valid string", "password"));
+
+        _settings.Password = password;
         return this;
       }
 

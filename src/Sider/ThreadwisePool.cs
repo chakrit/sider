@@ -78,6 +78,9 @@ namespace Sider
     {
       var client = new RedisClient<T>(_settings);
 
+      if (!string.IsNullOrEmpty(_settings.Password))
+        client.Auth(_settings.Password);
+
       // TODO: Is there a better way than using a nullable here?
       if (_db.HasValue)
         client.Select(_db.Value);
