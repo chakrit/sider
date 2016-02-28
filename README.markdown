@@ -283,7 +283,35 @@ exits transaction mode.
 
 Please see the `MultiExecSample.cs` file in the `src\Sider.Samples`
 folder for a complete and working example.
- 
+
+# CUSTOM COMMANDS
+
+To run a shiny new command not yet implemented by Sider, issue the `.Custom()` call to get
+access to the underlying protocol writer/reader directly.
+
+1. Invoke `.Custom()` with the command name.
+2. Inside the writer block, invoke `WriteCmdStart("CUSTOM", 5)` with the name of the
+   command and the number of arguments that must follow.
+3. Inside the writer block, Invoke `writer.WriteArg(arg)` for each argument needed for the
+   command.
+4. Inside the reader block, invoke the right read method depending on what result you are
+   expecting from the command. This result will be used as the return value for the
+   `.Custom()` call in 1.
+
+Example:
+
+    var ok = client.Custom("SHINYNEWCMD",
+      w =>
+      {
+        w.WriteCmdStart("SHINYNEWCMD", 3);
+        w.WriteArg("uno");
+        w.WriteArg("dos");
+        w.WriteArg("tres");
+      },
+      r => {
+        return r.ReadOk();
+      });
+
 # CONFIGURATION
 
 You can fine-tune buffer sizes to your liking and provide custom serializers
