@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Threading;
 
 namespace Sider
@@ -47,7 +46,7 @@ namespace Sider
       SAssert.ArgumentNotNull(() => settings);
 
       _settings = settings;
-      _threadRef = new ThreadLocal<WeakReference>(buildClientInReference);
+      _threadRef = new ThreadLocal<WeakReference>(BuildWeakReferenceClient);
 
       _db = db;
     }
@@ -69,7 +68,7 @@ namespace Sider
     }
 
 
-    private WeakReference buildClientInReference()
+    protected virtual WeakReference BuildWeakReferenceClient()
     {
       return new WeakReference(BuildClient());
     }
