@@ -121,11 +121,13 @@ namespace Sider
         _settings.Port = port;
         return this;
       }
-
+        
+      // Authentication settings for thread-wise pool, unused elsewhere.
+      // TODO: Probably better to move this to the pool itself.
       public Builder Auth(string password)
       {
-        SAssert.IsTrue(!string.IsNullOrEmpty(password), () =>
-         new ArgumentException("Auth password should be a valid string", "password"));
+        SAssert.ArgumentSatisfy(() => password, v => !string.IsNullOrEmpty(v),
+          "Password cannot be null or empty.");
 
         _settings.Password = password;
         return this;
