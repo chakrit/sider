@@ -5,10 +5,14 @@ namespace Sider {
   public partial class RedisSettings {
     public string Host { get; internal set; }
     public int Port { get; internal set; }
+    public int MaxBufferPoolSize { get; internal set; }
+    public int MaxBufferSize { get; internal set; }
 
     public RedisSettings() {
       Host = "localhost";
       Port = 6379;
+      MaxBufferPoolSize = 8388608;
+      MaxBufferSize = 1048576;
     }
 
     public RedisSettings Clone() {
@@ -16,6 +20,8 @@ namespace Sider {
       {
         Host = Host,
         Port = Port,
+        MaxBufferPoolSize = MaxBufferPoolSize,
+        MaxBufferSize = MaxBufferSize,
       };
     }
 
@@ -23,6 +29,8 @@ namespace Sider {
       int hash = 17;
       hash = hash * 23 + Host.GetHashCode();
       hash = hash * 23 + Port.GetHashCode();
+      hash = hash * 23 + MaxBufferPoolSize.GetHashCode();
+      hash = hash * 23 + MaxBufferSize.GetHashCode();
 
       return hash;
     }
@@ -36,6 +44,8 @@ namespace Sider {
       var eq = true;
       eq = eq && object.Equals(Host, settings.Host);
       eq = eq && object.Equals(Port, settings.Port);
+      eq = eq && object.Equals(MaxBufferPoolSize, settings.MaxBufferPoolSize);
+      eq = eq && object.Equals(MaxBufferSize, settings.MaxBufferSize);
 
       return eq;
     }
@@ -50,6 +60,16 @@ namespace Sider {
 
       public Builder Port(int value) {
         _settings.Port = value;
+        return this;
+      }
+
+      public Builder MaxBufferPoolSize(int value) {
+        _settings.MaxBufferPoolSize = value;
+        return this;
+      }
+
+      public Builder MaxBufferSize(int value) {
+        _settings.MaxBufferSize = value;
         return this;
       }
 
