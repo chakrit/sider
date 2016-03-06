@@ -7,6 +7,15 @@ using NUnit.Framework;
 namespace Sider.Tests {
   [TestFixture]
   public class RedisReaderTest : SiderTest {
+    internal static readonly IDictionary<string, ResponseType> ResponseTypes = new Dictionary<string, ResponseType>
+    {
+      { "-", ResponseType.Error },
+      { "+", ResponseType.SingleLine },
+      { "$", ResponseType.Bulk },
+      { "*", ResponseType.MultiBulk },
+      { ":", ResponseType.Integer },
+    };
+   
     [Test]
     public void TestCtor() {
       var ms = new MemoryStream();
@@ -30,17 +39,8 @@ namespace Sider.Tests {
 
     [Test]
     public void TestReadType() {
-      var typeMaps = new Dictionary<string, ResponseType>
-      {
-        { "-", ResponseType.Error },
-        { "+", ResponseType.SingleLine },
-        { "$", ResponseType.Bulk },
-        { "*", ResponseType.MultiBulk },
-        { ":", ResponseType.Integer },
-      };
-
       AssertProtocolException("x", r => r.ReadType());
-      foreach (var pair in typeMaps) {
+      foreach (var pair in ResponseTypes) {
         AssertReads(pair.Key, pair.Value, r => r.ReadType());
       }
     }
@@ -83,6 +83,7 @@ namespace Sider.Tests {
         { "+00001\r\n", 1 },
         { "-0003\r\n", -3 },
         { "\r\n", 0 },
+        { "\r\n33", 0 },
       };
 
       foreach (var pair in goodLines) {
@@ -117,11 +118,11 @@ namespace Sider.Tests {
       }
 
       // TODO: Needs timeout handling machinery.
-//      Assert.Throws<EndOfStreamException>(() => {
-//        using (var reader = BuildReader("short")) {
-//          reader.ReadBulk(new byte[16], 0, 16);
-//        }
-//      });
+      Assert.Throws<EndOfStreamException>(() => {
+        using (var reader = BuildReader(new TestStream("short"))) {
+          reader.ReadBulk(new byte[16], 0, 16);
+        }
+      });
 
       var reads = new Tuple<string, int, string>[]
       {
@@ -143,7 +144,10 @@ namespace Sider.Tests {
 
     protected RedisReader BuildReader(string input) {
       var buffer = Encoding.UTF8.GetBytes(input);
-      var stream = new MemoryStream(buffer);
+      return BuildReader(new MemoryStream(buffer));
+    }
+
+    protected RedisReader BuildReader(Stream stream) {
       return new RedisReader(stream, RedisSettings.Default);
     }
 

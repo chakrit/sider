@@ -6,7 +6,7 @@ namespace Sider {
 
     public InvocationSink(Stream stream, RedisSettings settings)
       : base(stream, settings) {
-      writer = new RedisWriter(stream);
+      writer = new RedisWriter(stream, settings);
     }
 
     public void Queue(IInvocation invocation) {

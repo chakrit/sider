@@ -22,7 +22,7 @@ namespace Sider {
     public ResponseType ReadType() {
       var b = stream.ReadByte();
       if (!Enum.IsDefined(typeof(ResponseType), b)) {
-        throw new ProtocolException("type specifier", new string(new char[] { (char)b }));
+        throw new ProtocolException("type specifier", new string(new[] { (char)b }));
       }
 
       return (ResponseType)b;
