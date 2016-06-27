@@ -122,7 +122,7 @@ namespace Sider
 
         var result = new KeyValuePair<string, string>[rawResult.Length / 2];
         var resultIdx = 0;
-        for (var i = 0; i < rawResult.Length; i += 2)
+        for (var i = 0; i < rawResult.Length-1; i += 2)
           result[resultIdx++] = new KeyValuePair<string, string>(
             rawResult[i], rawResult[i + 1]);
 
