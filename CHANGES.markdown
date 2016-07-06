@@ -11,6 +11,18 @@ vNext (TODO)
 * More Redis protocol conformance tests (correct arguments/correct return values/correct command spelling).
 * Full audit for 3.0 support
 
+v0.10.2
+---
+
+* Rebuilt on Windows due to package corruption issue with OS X NuGet. (ZIP archive
+  contains unsupported data structures.)
+  ([@NareshBanala](https://github.com/chakrit/sider/issues/23))
+
+v0.10.1
+---
+
+* INFO parsing fix. ([@NareshBanala](https://github.com/chakrit/sider/pull/21))
+
 v0.10.0
 ---
 
