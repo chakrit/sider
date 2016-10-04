@@ -250,7 +250,7 @@ namespace Sider
         return this;
       }
 
-      [Obsolete("Please use EncodingOverride instead.")]
+      [Obsolete("Please use OverrideEncoding instead.")]
       public Builder ValueEncoding(Encoding encoding)
       {
         SAssert.ArgumentNotNull(() => encoding);
@@ -259,7 +259,7 @@ namespace Sider
         return this;
       }
 
-      [Obsolete("Please use EncodingOverride instead.")]
+      [Obsolete("Please use OverrideEncoding instead.")]
       public Builder KeyEncoding(Encoding encoding)
       {
         SAssert.ArgumentNotNull(() => encoding);
