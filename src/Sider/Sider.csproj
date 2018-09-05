@@ -1,109 +1,42 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{F0E53E17-3112-4B16-8717-3D5D220C4FD9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Sider</RootNamespace>
-    <AssemblyName>Sider</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\build\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\build\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+    <PackageId>Sider</PackageId>
+    <Title>Sider</Title>
+    <Authors>Chakrit Wichian &lt;service@chakrit.net&gt; (http://chakrit.net/)</Authors>
+    <Owners>Chakrit Wichian &lt;service@chakrit.net&gt; (http://chakrit.net/)</Owners>
+    <Description>SIDER : REDIS bindings for C#/.NET 4.0 -- Redis client that sticks to the metal. Minimal, lightweight, easy to use, no fancy APIs, no gigantic class hierarchies. No ORM madness. Assumes knowledge of how Redis works. -- Sider works with Redis 2.2+.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <Compile Include="..\..\SiderAssemblyInfo.cs" Link="Properties\SiderAssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\SiderAssemblyInfo.cs">
-      <Link>Properties\SiderAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="Aggregate.cs" />
-    <Compile Include="Exceptions.cs" />
-    <Compile Include="Executors\ExecutorBase.cs" />
-    <Compile Include="Executors\IExecutor.cs" />
-    <Compile Include="Executors\ImmediateExecutor.cs" />
-    <Compile Include="Executors\IocpExecutor.cs" />
-    <Compile Include="Executors\MonitorExecutor.cs" />
-    <Compile Include="Executors\PipelinedExecutor.cs" />
-    <Compile Include="Executors\PubSubExecutor.cs" />
-    <Compile Include="Executors\TransactedExecutor.cs" />
-    <Compile Include="Invocation.cs" />
-    <Compile Include="LimitingStream.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="MessageType.cs" />
-    <Compile Include="Observable.cs" />
-    <Compile Include="ProtocolReader.cs" />
-    <Compile Include="ProtocolEncoder.cs" />
-    <Compile Include="ProtocolWriter.cs" />
-    <Compile Include="RedisClientBase.cs" />
-    <Compile Include="RedisVersionAttribute.cs" />
-    <Compile Include="Serialization\ObjectSerializer.cs" />
-    <Compile Include="Serialization\SerializerBase.cs" />
-    <Compile Include="SettingsWrapper.cs" />
-    <None Include="RedisClientPipeliningExtensions.tt">
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="RedisClientPipeliningExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>RedisClientPipeliningExtensions.cs</LastGenOutput>
     </None>
-    <Compile Include="Serialization\BufferSerializer.cs" />
-    <Compile Include="Serialization\ISerializer.cs" />
-    <Compile Include="RedisClientPipeliningExtensions.cs">
-      <AutoGen>True</AutoGen>
+    <None Update="RedisClientPipeliningExtensions.tt">
       <DesignTime>True</DesignTime>
-      <DependentUpon>RedisClientPipeliningExtensions.tt</DependentUpon>
-    </Compile>
-    <Compile Include="RedisSettings.cs" />
-    <Compile Include="RoundRobinPool.cs" />
-    <Compile Include="SAssert.cs" />
-    <Compile Include="IClientsPool.cs" />
-    <Compile Include="IRedisClient.cs" />
-    <Compile Include="RedisClient.API.cs" />
-    <Compile Include="RedisClient.cs" />
-    <Compile Include="RedisClient.IO.core.cs" />
-    <Compile Include="RedisReader.cs" />
-    <Compile Include="RedisType.cs" />
-    <Compile Include="RedisWriter.cs" />
-    <Compile Include="ResponseType.cs" />
-    <Compile Include="Serialization\Serializers.cs" />
-    <Compile Include="StringExtensions.cs" />
-    <Compile Include="Serialization\StringSerializer.cs" />
-    <Compile Include="Message.cs" />
-    <Compile Include="AutoActivatingPool.cs" />
-    <Compile Include="ThreadwisePool.cs" />
-    <Compile Include="Mode.cs" />
-    <Compile Include="TrackedThreadwisePool.cs" />
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedisClientPipeliningExtensions.cs</DependentUpon>
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>RedisClientPipeliningExtensions.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <Compile Update="RedisClientPipeliningExtensions.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedisClientPipeliningExtensions.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
